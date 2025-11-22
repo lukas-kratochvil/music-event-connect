@@ -21,7 +21,7 @@ export const configSchema = Joi.object<ConfigSchema, true>({
     .uri({ scheme: ["http", "https"] })
     .required(),
   throttler: Joi.object<ConfigSchema["throttler"], true>({
-    ttl: Joi.number().integer().min(1).required(),
-    limit: Joi.number().integer().min(1).required(),
+    ttl: Joi.number().integer().min(0).required(),
+    limit: Joi.number().integer().min(0).required(),
   }).required(),
 });

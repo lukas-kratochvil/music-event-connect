@@ -3,7 +3,7 @@ webUrl:
 
 # Rate limiting
 throttler:
-  # Time-to-live (TTL) in seconds
+  # Time-to-live (TTL) in seconds that each request will last in storage
   ttl:
-  # Amount of requests client can make in given TTL
+  # Maximum amount of requests client can make in given TTL
   limit:
