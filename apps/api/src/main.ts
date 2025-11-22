@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 import type { ConfigSchema } from "./config/schema";
 
@@ -14,6 +15,9 @@ async function bootstrap() {
   // Setup logger
   const logger = createWinstonLogger("API");
   app.useLogger(logger);
+
+  // Protection from some well-known web vulnerabilities by setting HTTP headers appropriately
+  app.use(helmet());
 
   // Validation of HTTP requests
   app.useGlobalPipes(
