@@ -1,0 +1,6 @@
+# Rate limiting
+throttler:
+  # Time-to-live (TTL) in seconds
+  ttl:
+  # Amount of requests client can make in given TTL
+  limit:

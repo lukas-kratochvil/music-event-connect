@@ -33,6 +33,7 @@ services:
       target: development
     command: pnpm start:dev
     volumes:
+      - ./config-api.yaml:/app/apps/api/config.yaml:ro
       - ./logs/api:/app/apps/api/logs:rw
     environment:
       - NODE_ENV=development
