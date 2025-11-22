@@ -25,6 +25,10 @@ async function bootstrap() {
     })
   );
 
+  // CORS
+  const webUrl = config.get("webUrl", { infer: true });
+  app.enableCors({ origin: webUrl });
+
   // Starting the app
   const port = config.get("port", { infer: true });
   logger.log(`API is running on: http://localhost:${port}`);

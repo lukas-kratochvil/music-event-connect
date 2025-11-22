@@ -1,3 +1,6 @@
+# Web app URL
+webUrl:
+
 # Rate limiting
 throttler:
   # Time-to-live (TTL) in seconds
