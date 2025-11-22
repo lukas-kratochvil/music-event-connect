@@ -12,7 +12,7 @@ You should specify RDF files to be loaded to Virtuoso in the [prepare-import](./
 docker exec -it <virtuoso_container> bash //import/scripts/import.sh
 ```
 
-Virtuoso may display the warning shown below, but there is no need to worry. It simply means that Virtuoso attempted to preload data pages from disk into RAM, but the operation failed, and these pages will be loaded normally later.
+Virtuoso may display warnings like the one shown below, but there is no need to worry. It simply means that Virtuoso attempted to preload data pages from disk into RAM, but the operation failed, and these pages will be loaded normally later.
 ```
 *** read-ahead of a free or out of range page dp L=147624, database not necessarily corrupted.
 ```
