@@ -6,6 +6,9 @@ import { ns, prefixes } from "./ontology";
 
 const { literal, namedNode, triple } = DataFactory;
 
+/**
+ * Serialize domain object (entity) into RDF data.
+ */
 @Injectable()
 // eslint-disable-next-line @darraghor/nestjs-typed/injectable-should-be-provided
 export class RdfEntitySerializerService {
@@ -94,15 +97,15 @@ export class RdfEntitySerializerService {
         continue;
       }
 
-      const metadata = Reflect.getMetadata(RDF_METADATA_KEYS.property, entity.constructor, propertyKey) as
+      const propertyMetadata = Reflect.getMetadata(RDF_METADATA_KEYS.property, entity.constructor, propertyKey) as
         | RDFPropertyMetadata
         | undefined;
 
-      if (!metadata) {
+      if (!propertyMetadata) {
         continue;
       }
 
-      this.#serializeRDFProperty(rdfSubject, metadata.iri, rdfObject, metadata.options, quads);
+      this.#serializeRDFProperty(rdfSubject, propertyMetadata.iri, rdfObject, propertyMetadata.options, quads);
     }
 
     return quads;

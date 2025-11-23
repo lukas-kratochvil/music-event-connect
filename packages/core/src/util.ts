@@ -1,12 +1,12 @@
-import { plainToClass, type ClassConstructor } from "class-transformer";
+import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import type { AbstractEntity } from "./entities";
 
 /**
  * Converts plain (literal) object to entity.
  */
-export const plainToEntity = <T extends AbstractEntity>(cls: ClassConstructor<T>, plain: object): T =>
-  plainToClass(cls, plain);
+export const plainToEntity = <T extends AbstractEntity>(...parameters: Parameters<typeof plainToInstance<T, object>>) =>
+  plainToInstance<T, object>(...parameters);
 
 /**
  * Validates given entity.

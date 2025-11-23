@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import "reflect-metadata"; // modifies the native global Reflect object with metadata methods
 
 export { RDF_METADATA_KEYS } from "./metadata-keys";
 export { RDFClass } from "./RDFClass.decorator";
