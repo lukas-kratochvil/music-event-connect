@@ -4,7 +4,7 @@ ISQL_PORT=$1
 PARALLEL_LOADERS=$2
 
 # Setup periodical checkpoint watchdog to avoid transaction log overflow
-CHECKPOINT_INTERVAL_SEC=300  # 5 mins
+CHECKPOINT_INTERVAL_SEC=900  # 15 mins
 (
   while true; do
     sleep $CHECKPOINT_INTERVAL_SEC

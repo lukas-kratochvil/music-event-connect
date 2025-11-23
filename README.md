@@ -7,9 +7,10 @@ Firstly, adjust the values of the env variables `VIRT_Parameters_NumberOfBuffers
 
 There is [import.sh](./virtuoso/scripts/import.sh) script to load initial data which uses [import-helpers](./virtuoso/scripts/import-helpers/). **Please, change the parameters, graph names etc. as you need.**
 The command below can be used to load Virtuoso with initial RDF data (MusicBrainz, OSM CZE, etc.).
+For `<num_of_parallel_loaders>` it is recommended a maximum of **num_cpu_cores/2.5**, to optimally parallelize the data load and hence maximize load speed. See section [Running multiple Loaders](https://vos.openlinksw.com/owiki/wiki/VOS/VirtBulkRDFLoader).
 You should specify RDF files to be loaded to Virtuoso in the [prepare-import](./virtuoso/scripts/import-helpers/prepare.sql) file.
 ```bash
-docker exec -it <virtuoso_container> bash //import/scripts/import.sh
+docker exec -it <virtuoso_container> bash //import/scripts/import.sh <isql_port> <num_of_parallel_loaders>
 ```
 
 Virtuoso may display warnings like the one shown below, but there is no need to worry. It simply means that Virtuoso attempted to preload data pages from disk into RAM, but the operation failed, and these pages will be loaded normally later.
