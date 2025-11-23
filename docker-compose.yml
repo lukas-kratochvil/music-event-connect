@@ -33,7 +33,7 @@ services:
       target: development
     command: pnpm start:dev
     volumes:
-      - ./config-api.yaml:/app/apps/api/config.yaml:ro
+      - ./configs/config-api.yaml:/app/apps/api/config.yaml:ro
       - ./logs/api:/app/apps/api/logs:rw
     environment:
       - NODE_ENV=development
@@ -53,7 +53,7 @@ services:
       target: development
     command: pnpm start:dev
     volumes:
-      - ./config-handler.yaml:/app/apps/handler/config.yaml:ro
+      - ./configs/config-handler.yaml:/app/apps/handler/config.yaml:ro
       - ./logs/handler:/app/apps/handler/logs:rw
     environment:
       - NODE_ENV=development
@@ -70,7 +70,7 @@ services:
       target: development
     command: pnpm start:dev
     volumes:
-      - ./config-scraper.yaml:/app/apps/scraper/config.yaml:ro
+      - ./configs/config-scraper.yaml:/app/apps/scraper/config.yaml:ro
       - ./logs/scraper:/app/apps/scraper/logs:rw
     environment:
       - NODE_ENV=development

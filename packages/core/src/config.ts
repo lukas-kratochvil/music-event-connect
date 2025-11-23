@@ -8,7 +8,7 @@ export const ALLOWED_NODE_ENVS = ["development", "production"] as const;
 export type NodeEnv = ArrayToUnion<typeof ALLOWED_NODE_ENVS>;
 
 export const loadYamlConfig = <
-  TConfigSchema extends { [K in keyof TEnvVars]: unknown },
+  TConfigSchema extends Record<keyof TEnvVars, unknown>,
   TEnvVars extends Record<string, unknown>,
 >(
   configYamlFile: string,
