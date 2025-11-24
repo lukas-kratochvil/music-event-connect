@@ -1,3 +1,3 @@
-export const CUSTOM_PROVIDERS = {
+export const CRON_MANAGER_PROVIDERS = {
   cronJobServices: Symbol("CronJobServices"),
 };

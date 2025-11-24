@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Interval, SchedulerRegistry } from "@nestjs/schedule";
 import { minutesToMilliseconds } from "date-fns";
-import { CUSTOM_PROVIDERS } from "./constants";
+import { CRON_MANAGER_PROVIDERS } from "./constants";
 import type { ICronJobService } from "./cron-job-service.interface";
 
 @Injectable()
@@ -10,7 +10,7 @@ export class CronManagerService {
 
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
-    @Inject(CUSTOM_PROVIDERS.cronJobServices) private readonly cronJobServices: ICronJobService[]
+    @Inject(CRON_MANAGER_PROVIDERS.cronJobServices) private readonly cronJobServices: ICronJobService[]
   ) {}
 
   @Interval(minutesToMilliseconds(5))

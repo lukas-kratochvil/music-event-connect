@@ -5,7 +5,7 @@ import { TicketmasterModule } from "../services/ticketmaster/ticketmaster.module
 import { TicketmasterService } from "../services/ticketmaster/ticketmaster.service";
 import { TicketportalModule } from "../services/ticketportal/ticketportal.module";
 import { TicketportalService } from "../services/ticketportal/ticketportal.service";
-import { CUSTOM_PROVIDERS } from "./constants";
+import { CRON_MANAGER_PROVIDERS } from "./constants";
 import { CronManagerService } from "./cron-manager.service";
 
 @Module({
@@ -13,7 +13,7 @@ import { CronManagerService } from "./cron-manager.service";
   providers: [
     CronManagerService,
     {
-      provide: CUSTOM_PROVIDERS.cronJobServices,
+      provide: CRON_MANAGER_PROVIDERS.cronJobServices,
       useFactory: (goout, ticketportal, ticketmaster) => [goout, ticketportal, ticketmaster],
       inject: [GooutService, TicketportalService, TicketmasterService],
     },

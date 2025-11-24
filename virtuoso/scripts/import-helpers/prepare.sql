@@ -3,4 +3,4 @@ checkpoint_interval(0);
 
 -- Register the files to be loaded
 ld_dir('/import/data/musicbrainz', '*.ttl', 'http://music-event-connect.cz/musicbrainz');
-ld_dir('/import/data/osm/parts', '*.ttl.gz', 'http://music-event-connect.cz/osm/cze');
+ld_dir('/import/data/osm2rdf/parts', '*.ttl.gz', 'http://music-event-connect.cz/osm/cze');
