@@ -5,11 +5,9 @@ import { ns, prefixes } from "../rdf/ontology";
 
 @RDFPrefixIRI(prefixes.mec)
 export abstract class AbstractEntity {
-  constructor() {
-    this.id = uuidv7();
-  }
-
   @IsUUID(7)
   @RDFProperty(ns.schema.identifier)
-  id: string;
+  // The easiest way to create ids for all the nested objects.
+  // When entity is retrieved from the database the default value is overwritten.
+  id: string = uuidv7();
 }
