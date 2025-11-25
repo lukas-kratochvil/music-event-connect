@@ -160,6 +160,7 @@ export class TicketmasterService implements ICronJobService {
                 ? Object.values(a.externalLinks)
                     .flat()
                     .map((url) => url.url)
+                    .filter((url) => url.startsWith("http"))
                 : [],
             })),
           venues: event._embedded.venues.map((v) => ({

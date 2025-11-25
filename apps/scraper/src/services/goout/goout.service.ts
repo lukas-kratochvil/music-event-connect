@@ -63,7 +63,7 @@ export class GooutService implements ICronJobService {
       name = await artistPage.$eval("header h1", (elem) => elem.innerText.trim());
       sameAs = await artistPage.$$eval(
         `::-p-xpath(//header/descendant::ul[contains(@class, 'links-row')]/descendant::a)`,
-        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href)
+        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href).filter((url) => url.startsWith("http"))
       );
       genres = await artistPage.$$eval(
         `::-p-xpath(//section[contains(@class, 'py-4')]/p/span[not(contains(@class, 'tags-title'))]/a)`,
