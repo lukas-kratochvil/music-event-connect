@@ -25,10 +25,11 @@ export class CronManagerService {
             const timeout = setTimeout(async () => {
               try {
                 await cronJobService.run();
-                this.schedulerRegistry.deleteTimeout(cronJobService.jobName);
                 this.#logger.log("Job '" + cronJobService.jobName + "' has finished.");
               } catch (e) {
                 this.#logger.error("Job '" + cronJobService.jobName + "' thrown error:", e);
+              } finally {
+                this.schedulerRegistry.deleteTimeout(cronJobService.jobName);
               }
             }, 1_000);
             this.schedulerRegistry.addTimeout(cronJobService.jobName, timeout);
