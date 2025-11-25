@@ -10,10 +10,10 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { AxiosError } from "axios";
 import type { Queue } from "bullmq";
-import { addDays, max, set } from "date-fns";
+import { addDays, addHours, compareAsc, max, set } from "date-fns";
 import { catchError, firstValueFrom } from "rxjs";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
-import { TicketmasterResponse, type Dates } from "./ticketmaster-api.types";
+import { TicketmasterResponse, type AccessDate, type Dates } from "./ticketmaster-api.types";
 
 @Injectable()
 export class TicketmasterService implements ICronJobService {
@@ -65,18 +65,46 @@ export class TicketmasterService implements ICronJobService {
     this.#runDate = max([nextAvailableDate, nextPeriodDate]);
   }
 
+  /**
+   * Access date holds only the local time but is represented as UTC date string.
+   * @param refDate reference Date from which we create correct date (year, month, day)
+   */
+  #getAccessDate(accessDates: AccessDate | undefined, refDate: Date): Date | undefined {
+    const dateTimeStr = accessDates?.startDateTime;
+
+    if (!dateTimeStr || Number.isNaN(refDate.getTime())) {
+      return undefined;
+    }
+
+    const incorrectAccessDate = new Date(dateTimeStr);
+    incorrectAccessDate.setUTCFullYear(refDate.getUTCFullYear());
+    incorrectAccessDate.setUTCMonth(refDate.getUTCMonth());
+    incorrectAccessDate.setUTCDate(refDate.getUTCDate());
+    // `AccessDate.startDateTime` is incorrect - it is 1 hour more than it should be
+    return addHours(incorrectAccessDate, -1);
+  }
+
+  #getEventDoorTime(accessDates: AccessDate | undefined, startDate: Date): Date | undefined {
+    const doorTime = this.#getAccessDate(accessDates, startDate);
+
+    if (!doorTime) {
+      return undefined;
+    }
+
+    return compareAsc(doorTime, startDate) === 1 ? undefined : doorTime;
+  }
+
   #getEventStartDate(dates: Dates): Date {
     if (dates.start.dateTime) {
-      return new Date(dates.start.dateTime.trim());
+      return new Date(dates.start.dateTime);
     }
     if (dates.start.localDate && dates.start.localTime) {
       const localDateTimeStr = `${dates.start.localDate}T${dates.start.localTime}`;
       return new TZDateMini(localDateTimeStr, dates.timezone);
     }
-    if (dates.access?.startDateTime) {
-      return new Date(dates.access.startDateTime);
-    }
-    return new TZDateMini(dates.start.localDate, dates.timezone);
+
+    const tzDate = new TZDateMini(dates.start.localDate, dates.timezone);
+    return this.#getAccessDate(dates.access, tzDate) ?? tzDate;
   }
 
   async run() {
@@ -137,13 +165,14 @@ export class TicketmasterService implements ICronJobService {
     this.#currentPage++;
 
     // extract music event data
-    const musicEvents = data._embedded.events.map<MusicEventsQueueDataType>(
-      (event): MusicEventsQueueDataType => ({
+    const musicEvents = data._embedded.events.map<MusicEventsQueueDataType>((event): MusicEventsQueueDataType => {
+      const startDate = this.#getEventStartDate(event.dates);
+      return {
         event: {
           name: event.name.trim(),
           url: event.url,
-          doorTime: event.dates.access ? new Date(event.dates.access.startDateTime.trim()) : undefined,
-          startDate: this.#getEventStartDate(event.dates),
+          doorTime: this.#getEventDoorTime(event.dates.access, startDate),
+          startDate,
           endDate: undefined,
           artists: event._embedded.attractions
             .filter(
@@ -178,8 +207,8 @@ export class TicketmasterService implements ICronJobService {
             availability: event.dates.status.code === "onsale" ? ItemAvailability.InStock : ItemAvailability.SoldOut,
           },
         },
-      })
-    );
+      };
+    });
     // add data to the queue
     await this.musicEventsQueue.addBulk(musicEvents.map((event) => ({ name: "ticketmaster", data: event })));
   }

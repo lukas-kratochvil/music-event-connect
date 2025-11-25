@@ -69,8 +69,9 @@ export type Dates = {
 };
 
 export type AccessDate = {
-  startDateTime: string;
+  startDateTime?: string;
   startApproximate: boolean;
+  endDateTime?: string;
   endApproximate: boolean;
 };
 
