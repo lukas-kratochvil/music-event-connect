@@ -18,7 +18,11 @@ export const IsDateEqualOrMoreInFutureThan
           const [comparedPropertyName] = args.constraints;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const comparedValue = (args.object as any)[comparedPropertyName] as unknown;
-          return !(comparedValue instanceof Date) || value.getTime() >= comparedValue.getTime();
+          return (
+            !(comparedValue instanceof Date)
+            || Number.isNaN(comparedValue.getTime())
+            || value.getTime() >= comparedValue.getTime()
+          );
         },
         defaultMessage: (args: ValidationArguments) =>
           `'${args.property}' must be a Date equal to '${args.constraints.at(0)}' or more in the future.`,
