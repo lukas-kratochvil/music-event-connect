@@ -61,6 +61,7 @@ export type Sales = {
 export type Dates = {
   access?: AccessDate;
   start: StartDate;
+  end?: EndDate;
   timezone: string;
   status: {
     code: "onsale" | "offsale" | "cancelled" | "postponed" | "rescheduled";
@@ -82,6 +83,14 @@ export type StartDate = {
   dateTBD: boolean;
   dateTBA: boolean;
   timeTBA: boolean;
+  noSpecificTime: boolean;
+};
+
+export type EndDate = {
+  localDate: string;
+  localTime?: string;
+  dateTime?: string;
+  approximate: boolean;
   noSpecificTime: boolean;
 };
 

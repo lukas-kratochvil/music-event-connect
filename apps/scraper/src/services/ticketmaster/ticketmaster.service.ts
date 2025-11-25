@@ -107,6 +107,17 @@ export class TicketmasterService implements ICronJobService {
     return this.#getAccessDate(dates.access, tzDate) ?? tzDate;
   }
 
+  #getEventEndDate(dates: Dates): Date | undefined {
+    if (dates.end?.dateTime) {
+      return new Date(dates.end.dateTime);
+    }
+    if (dates.end?.localDate && dates.end?.localTime) {
+      const localDateTimeStr = `${dates.end.localDate}T${dates.end.localTime}`;
+      return new TZDateMini(localDateTimeStr, dates.timezone);
+    }
+    return undefined;
+  }
+
   async run() {
     // The default quota is 5000 API calls per day and rate limitation of 5 requests per second.
     // Deep Paging: only supports retrieving the 1000th item. i.e. (size * page < 1000).
@@ -173,7 +184,7 @@ export class TicketmasterService implements ICronJobService {
           url: event.url,
           doorTime: this.#getEventDoorTime(event.dates.access, startDate),
           startDate,
-          endDate: undefined,
+          endDate: this.#getEventEndDate(event.dates),
           artists: event._embedded.attractions
             .filter(
               (a) =>
