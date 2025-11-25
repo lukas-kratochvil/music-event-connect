@@ -1,5 +1,5 @@
 import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
+import { validate, type ValidatorOptions } from "class-validator";
 import type { AbstractEntity } from "./entities";
 
 /**
@@ -11,4 +11,5 @@ export const plainToEntity = <T extends AbstractEntity>(...parameters: Parameter
 /**
  * Validates given entity.
  */
-export const validateEntity = <T extends AbstractEntity>(entity: T) => validate(entity);
+export const validateEntity = <T extends AbstractEntity>(entity: T, validatorOptions?: ValidatorOptions) =>
+  validate(entity, validatorOptions);
