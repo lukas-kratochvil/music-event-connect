@@ -173,8 +173,8 @@ export type Country = {
 };
 
 export type Location = {
-  longitude: string;
-  latitude: string;
+  longitude?: string;
+  latitude?: string;
 };
 
 export type VenueUpcomingEvents = {

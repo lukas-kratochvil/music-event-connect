@@ -165,8 +165,8 @@ export class TicketmasterService implements ICronJobService {
             })),
           venues: event._embedded.venues.map((v) => ({
             name: v.name.trim(),
-            latitude: +v.location.latitude,
-            longitude: +v.location.longitude,
+            latitude: Number(v.location.latitude) || undefined,
+            longitude: Number(v.location.longitude) || undefined,
             address: {
               country: "CZ",
               locality: v.city.name.trim(),
