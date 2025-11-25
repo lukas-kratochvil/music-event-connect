@@ -6,7 +6,7 @@ import { AbstractEntity } from "./abstract.entity";
 
 @RDFClass(ns.schema.Offer)
 export class TicketEntity extends AbstractEntity implements ITicket {
-  @IsUrl()
+  @IsUrl({ protocols: ["http", "https"] })
   @RDFProperty(ns.schema.url, { discriminator: "datatype", datatype: ns.xsd.anyURI })
   url: string;
 

@@ -24,7 +24,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @RDFProperty(ns.schema.name)
   name: string;
 
-  @IsUrl()
+  @IsUrl({ protocols: ["http", "https"] })
   @RDFProperty(ns.schema.url, { discriminator: "datatype", datatype: ns.xsd.anyURI })
   url: string;
 
