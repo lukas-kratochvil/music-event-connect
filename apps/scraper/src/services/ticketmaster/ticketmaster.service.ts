@@ -56,6 +56,7 @@ export class TicketmasterService implements ICronJobService {
       runDate = addDays(runDate, 1);
     }
 
+    this.#logger.log("Next run date: " + runDate.toJSON());
     return runDate;
   }
 

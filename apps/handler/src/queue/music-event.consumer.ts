@@ -43,7 +43,11 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
 
       if (validationErrors.length > 0) {
         const validationErrorStr = validationErrors
-          .map((error) => `Property ${error.property}: ` + error.toString())
+          .map(
+            (error) =>
+              `Property ${error.property} [${error.value instanceof Date ? error.value.toJSON() : error.value}]: `
+              + error.toString()
+          )
           .join("\n");
         throw new Error(validationErrorStr);
       }

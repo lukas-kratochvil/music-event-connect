@@ -27,7 +27,10 @@ export class CronManagerService {
                 await cronJobService.run();
                 this.#logger.log("Job '" + cronJobService.jobName + "' has finished.");
               } catch (e) {
-                this.#logger.error("Job '" + cronJobService.jobName + "' thrown error:", e);
+                this.#logger.error(
+                  "Job '" + cronJobService.jobName + "' thrown error: " + (e instanceof Error ? e.message : e),
+                  e
+                );
               } finally {
                 this.schedulerRegistry.deleteTimeout(cronJobService.jobName);
               }
@@ -43,7 +46,10 @@ export class CronManagerService {
                   this.#logger.log("Job '" + cronJobService.jobName + "' has finished.");
                 }
               } catch (e) {
-                this.#logger.error("Job '" + cronJobService.jobName + "' thrown error:", e);
+                this.#logger.error(
+                  "Job '" + cronJobService.jobName + "' thrown error: " + (e instanceof Error ? e.message : e),
+                  e
+                );
               }
             }, 1_000);
             this.schedulerRegistry.addInterval(cronJobService.jobName, interval);
