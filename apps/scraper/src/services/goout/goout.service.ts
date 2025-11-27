@@ -3,7 +3,7 @@ import {
   type MusicEventsQueueNameType,
   MusicEventsQueue,
 } from "@music-event-connect/core";
-import { ItemAvailability, type IArtist } from "@music-event-connect/core/interfaces";
+import type { IArtist } from "@music-event-connect/core/interfaces";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -243,7 +243,7 @@ export class GooutService implements ICronJobService {
         ],
         ticket: {
           url: ticketsUrl,
-          availability: isOnSale ? ItemAvailability.InStock : ItemAvailability.SoldOut,
+          availability: isOnSale ? "InStock" : "SoldOut",
         },
       },
     };

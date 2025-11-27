@@ -12,21 +12,18 @@ export class VenueEntity extends AbstractEntity implements IVenue {
   @RDFProperty(ns.schema.name)
   name: string;
 
-  @ValidateIf((venue: IVenue) => venue.address === undefined || venue.longitude !== undefined)
+  @ValidateIf((venue: IVenue) => venue.longitude !== undefined)
   @IsLatitude()
   @RDFProperty(ns.schema.latitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
   latitude: number | undefined;
 
-  @ValidateIf((venue: IVenue) => venue.address === undefined || venue.latitude !== undefined)
+  @ValidateIf((venue: IVenue) => venue.latitude !== undefined)
   @IsLongitude()
   @RDFProperty(ns.schema.longitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
   longitude: number | undefined;
 
-  @ValidateIf(
-    (venue: IVenue) => venue.address !== undefined || venue.latitude === undefined || venue.longitude === undefined
-  )
   @Type(() => AddressEntity)
   @ValidateNested()
   @RDFProperty(ns.schema.address)
-  address: AddressEntity | undefined;
+  address: AddressEntity;
 }

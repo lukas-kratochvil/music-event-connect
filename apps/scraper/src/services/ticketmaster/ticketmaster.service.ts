@@ -4,7 +4,6 @@ import {
   type MusicEventsQueueNameType,
   MusicEventsQueue,
 } from "@music-event-connect/core";
-import { ItemAvailability } from "@music-event-connect/core/interfaces";
 import { HttpService } from "@nestjs/axios";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
@@ -216,7 +215,7 @@ export class TicketmasterService implements ICronJobService {
           })),
           ticket: {
             url: event.url.trim(),
-            availability: event.dates.status.code === "onsale" ? ItemAvailability.InStock : ItemAvailability.SoldOut,
+            availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
           },
         },
       };

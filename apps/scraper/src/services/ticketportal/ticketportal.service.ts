@@ -4,7 +4,6 @@ import {
   type MusicEventsQueueNameType,
   MusicEventsQueue,
 } from "@music-event-connect/core";
-import { ItemAvailability } from "@music-event-connect/core/interfaces";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -274,7 +273,7 @@ export class TicketportalService implements ICronJobService {
           venues: [{ ...venueData }],
           ticket: {
             url: musicEventUrl,
-            availability: soldOutBox === null ? ItemAvailability.InStock : ItemAvailability.SoldOut,
+            availability: soldOutBox === null ? "InStock" : "SoldOut",
           },
         });
       } catch (e) {

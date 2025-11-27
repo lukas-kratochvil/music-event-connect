@@ -12,7 +12,7 @@ export interface IVenue {
   /**
    * The address.
    */
-  address: IAddress | undefined;
+  address: IAddress;
 
   /**
    * The latitude of a location.
