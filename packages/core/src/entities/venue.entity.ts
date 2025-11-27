@@ -1,5 +1,5 @@
-import { Type } from "class-transformer";
 import { IsLatitude, IsLongitude, IsString, ValidateIf, ValidateNested } from "class-validator";
+import { Expose, Type } from "class-transformer";
 import type { IVenue } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
@@ -8,20 +8,24 @@ import { AddressEntity } from "./address.entity";
 
 @RDFClass(ns.schema.Place)
 export class VenueEntity extends AbstractEntity implements IVenue {
+  @Expose()
   @IsString()
   @RDFProperty(ns.schema.name)
   name: string;
 
+  @Expose()
   @ValidateIf((venue: IVenue) => venue.longitude !== undefined)
   @IsLatitude()
   @RDFProperty(ns.schema.latitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
   latitude: number | undefined;
 
+  @Expose()
   @ValidateIf((venue: IVenue) => venue.latitude !== undefined)
   @IsLongitude()
   @RDFProperty(ns.schema.longitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
   longitude: number | undefined;
 
+  @Expose()
   @Type(() => AddressEntity)
   @ValidateNested()
   @RDFProperty(ns.schema.address)

@@ -36,7 +36,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
   override async process(job: Job<MusicEventsQueueDataType, MusicEventsQueueDataType, MusicEventsQueueNameType>) {
     try {
       // 1) Transform to MusicEventEntity
-      const musicEvent = plainToEntity(MusicEventEntity, job.data.event);
+      const musicEvent = plainToEntity(MusicEventEntity, job.data.event, { excludeExtraneousValues: true });
 
       // 2) Validate MusicEventEntity
       const validationErrors = await validateEntity(musicEvent);

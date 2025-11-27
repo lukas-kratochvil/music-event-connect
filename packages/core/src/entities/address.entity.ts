@@ -1,3 +1,4 @@
+import { Expose } from "class-transformer";
 import { IsISO31661Alpha2, IsOptional, IsString } from "class-validator";
 import type { IAddress } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
@@ -6,14 +7,17 @@ import { AbstractEntity } from "./abstract.entity";
 
 @RDFClass(ns.schema.PostalAddress)
 export class AddressEntity extends AbstractEntity implements IAddress {
+  @Expose()
   @IsISO31661Alpha2()
   @RDFProperty(ns.schema.addressCountry)
   country: "CZ";
 
+  @Expose()
   @IsString()
   @RDFProperty(ns.schema.addressLocality)
   locality: string;
 
+  @Expose()
   @IsOptional()
   @IsString()
   @RDFProperty(ns.schema.streetAddress)

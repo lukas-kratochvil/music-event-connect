@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+import { Expose, Type } from "class-transformer";
 import {
   Allow,
   ArrayNotEmpty,
@@ -20,14 +20,17 @@ import { VenueEntity } from "./venue.entity";
 
 @RDFClass(ns.schema.MusicEvent)
 export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
+  @Expose()
   @IsString()
   @RDFProperty(ns.schema.name)
   name: string;
 
+  @Expose()
   @IsUrl({ protocols: ["http", "https"] })
   @RDFProperty(ns.schema.url, { discriminator: "datatype", datatype: ns.xsd.anyURI })
   url: string;
 
+  @Expose()
   @Type(() => ArtistEntity)
   @IsArray()
   @ArrayUnique<ArtistEntity>((elem) => elem.name)
@@ -35,6 +38,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @RDFProperty(ns.schema.performer)
   artists: ArtistEntity[];
 
+  @Expose()
   @Type(() => VenueEntity)
   @IsArray()
   @ArrayNotEmpty()
@@ -43,12 +47,14 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @RDFProperty(ns.schema.location)
   venues: VenueEntity[];
 
+  @Expose()
   @Type(() => Date)
   @IsOptional()
   @IsFutureDate()
   @RDFProperty(ns.schema.doorTime, { discriminator: "datatype", datatype: ns.xsd.dateTime })
   doorTime: Date | undefined;
 
+  @Expose()
   @Type(() => Date)
   @Allow() // only to satisfy "@darraghor/nestjs-typed/all-properties-are-whitelisted" rule, because it does not recognize custom validators implemented with class-validator as class-validator's decorators
   @IsFutureDate()
@@ -56,6 +62,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @RDFProperty(ns.schema.startDate, { discriminator: "datatype", datatype: ns.xsd.dateTime })
   startDate: Date;
 
+  @Expose()
   @Type(() => Date)
   @IsOptional()
   @IsFutureDate()
@@ -63,6 +70,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @RDFProperty(ns.schema.endDate, { discriminator: "datatype", datatype: ns.xsd.dateTime })
   endDate: Date | undefined;
 
+  @Expose()
   @Type(() => TicketEntity)
   @ValidateNested()
   @RDFProperty(ns.schema.offers)
