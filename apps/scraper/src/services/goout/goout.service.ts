@@ -71,7 +71,11 @@ export class GooutService implements ICronJobService {
       );
     } catch (e) {
       await artistPage.close();
-      this.#logger.error("[" + artistUrl + "]", e);
+      if (e instanceof Error) {
+        this.#logger.error("[" + artistUrl + "]: " + e.message, e.stack);
+      } else {
+        this.#logger.error("[" + artistUrl + "]: " + String(e));
+      }
       return null;
     }
 
@@ -323,6 +327,7 @@ export class GooutService implements ICronJobService {
           const newUrls = await page.$$eval(linksSelector, (links) => links.map((link) => link.href));
 
           const musicEventPage = await browser.newPage();
+
           // extract music event data and add it to the queue
           for (const url of newUrls) {
             try {
@@ -333,7 +338,11 @@ export class GooutService implements ICronJobService {
               const musicEvent = await this.#getMusicEvent(musicEventPage, url, availableGenres);
               await this.musicEventsQueue.add("goout", musicEvent);
             } catch (e) {
-              this.#logger.error("[" + url + "]", e);
+              if (e instanceof Error) {
+                this.#logger.error("[" + url + "]: " + e.message, e.stack);
+              } else {
+                this.#logger.error("[" + url + "]: " + String(e));
+              }
             }
           }
 
@@ -341,12 +350,20 @@ export class GooutService implements ICronJobService {
           // load new music events
           await showMoreButton.click({ delay: 2_000 });
         } catch (e) {
-          this.#logger.error(e instanceof Error ? e.message : e, e);
+          if (e instanceof Error) {
+            this.#logger.error(e.message, e.stack);
+          } else {
+            this.#logger.error(String(e));
+          }
           break;
         }
       }
     } catch (e) {
-      this.#logger.error(e instanceof Error ? e.message : e, e);
+      if (e instanceof Error) {
+        this.#logger.error(e.message, e.stack);
+      } else {
+        this.#logger.error(e);
+      }
     } finally {
       await browser.close();
       this.#isInProcess = false;

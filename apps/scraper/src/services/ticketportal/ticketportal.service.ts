@@ -163,6 +163,10 @@ export class TicketportalService implements ICronJobService {
     genreName: string,
     multipleEventDatesChecker: Set<string>
   ): Promise<MusicEventsQueueDataType[]> {
+    if (!(await page.goto(musicEventUrl))) {
+      throw new Error("Cannot navigate to the URL: " + musicEventUrl);
+    }
+
     const tickets = await page.$$("::-p-xpath(.//section[@id='vstupenky']/div[contains(@id, 'vstupenka-')])");
 
     if (tickets.length > 1) {
@@ -274,7 +278,11 @@ export class TicketportalService implements ICronJobService {
           },
         });
       } catch (e) {
-        this.#logger.error("[" + musicEventUrl + "]", e);
+        if (e instanceof Error) {
+          this.#logger.error("[" + musicEventUrl + "]: " + e.message, e.stack);
+        } else {
+          this.#logger.error("[" + musicEventUrl + "]" + String(e));
+        }
       }
     }
     return musicEventData.map((event): MusicEventsQueueDataType => ({ event }));
@@ -342,7 +350,11 @@ export class TicketportalService implements ICronJobService {
               try {
                 await nextButton.click();
               } catch (e) {
-                this.#logger.error("[" + genreName + "] - Panel next button error:", e);
+                if (e instanceof Error) {
+                  this.#logger.error("[" + genreName + "] - Panel next button error: " + e.message, e.stack);
+                } else {
+                  this.#logger.error("[" + genreName + "] - Panel next button error: " + String(e));
+                }
                 break;
               }
             }
@@ -357,10 +369,6 @@ export class TicketportalService implements ICronJobService {
               const musicEventPage = await browser.newPage();
 
               try {
-                if (!(await musicEventPage.goto(url))) {
-                  throw new Error("Cannot navigate to the URL.");
-                }
-
                 const musicEvents = await this.#getMusicEvents(
                   musicEventPage,
                   url,
@@ -371,20 +379,32 @@ export class TicketportalService implements ICronJobService {
                   musicEvents.map((event) => ({ name: "ticketportal", data: event }))
                 );
               } catch (e) {
-                this.#logger.error("[" + url + "]", e);
+                if (e instanceof Error) {
+                  this.#logger.error("[" + url + "]: " + e.message, e.stack);
+                } else {
+                  this.#logger.error("[" + url + "]: " + String(e));
+                }
               } finally {
                 await musicEventPage.close();
               }
             }
           }
         } catch (e) {
-          this.#logger.error(e instanceof Error ? e.message : e, e);
+          if (e instanceof Error) {
+            this.#logger.error(e.message, e.stack);
+          } else {
+            this.#logger.error(String(e));
+          }
         } finally {
           multipleEventDatesChecker.clear();
         }
       }
     } catch (e) {
-      this.#logger.error(e instanceof Error ? e.message : e, e);
+      if (e instanceof Error) {
+        this.#logger.error(e.message, e.stack);
+      } else {
+        this.#logger.error(String(e));
+      }
     } finally {
       await browser.close();
       this.#isInProcess = false;
