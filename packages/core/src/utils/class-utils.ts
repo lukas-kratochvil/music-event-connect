@@ -1,6 +1,6 @@
 import { plainToInstance } from "class-transformer";
 import { validate, type ValidatorOptions } from "class-validator";
-import type { AbstractEntity } from "./entities";
+import type { AbstractEntity } from "../entities";
 
 /**
  * Converts plain (literal) object to entity.
