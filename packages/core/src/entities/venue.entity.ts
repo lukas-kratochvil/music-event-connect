@@ -1,5 +1,6 @@
-import { IsLatitude, IsLongitude, IsString, ValidateIf, ValidateNested } from "class-validator";
 import { Expose, Type } from "class-transformer";
+import { IsLatitude, IsLongitude, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
+import { uuidv7 } from "uuidv7";
 import type { IVenue } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
@@ -8,6 +9,11 @@ import { AddressEntity } from "./address.entity";
 
 @RDFClass(ns.schema.Place)
 export class VenueEntity extends AbstractEntity implements IVenue {
+  @IsUUID(7)
+  // The easiest way to create ids for all the `MusicEventEntity` nested objects.
+  // When entity is retrieved from the database the default value is overwritten.
+  override id: string = uuidv7();
+
   @Expose()
   @IsString()
   @RDFProperty(ns.schema.name)

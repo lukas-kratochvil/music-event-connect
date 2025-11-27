@@ -180,6 +180,7 @@ export class TicketmasterService implements ICronJobService {
       const startDate = this.#getEventStartDate(event.dates);
       return {
         event: {
+          id: event.id.trim(),
           name: event.name.trim(),
           url: event.url,
           doorTime: this.#getEventDoorTime(event.dates.access, startDate),

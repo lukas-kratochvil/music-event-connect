@@ -1,6 +1,9 @@
 import type { ItemAvailability } from "../interfaces";
 
 export type ScrapedMusicEvent = {
+  /**
+   * Music event identifier specific for the scraped site.
+   */
   id: string;
   name: string;
   url: string;

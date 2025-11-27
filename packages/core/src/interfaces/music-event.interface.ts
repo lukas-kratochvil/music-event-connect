@@ -7,6 +7,13 @@ import type { IVenue } from "./venue.interface";
  */
 export interface IMusicEvent {
   /**
+   * Unique identifier in the format `origin:id`.
+   * - `origin` - the name of the site where this music event comes from
+   * - `id` - event id specific to the site
+   */
+  id: string;
+
+  /**
    * The name.
    */
   name: string;

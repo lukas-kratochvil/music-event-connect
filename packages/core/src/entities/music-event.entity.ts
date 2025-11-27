@@ -12,7 +12,7 @@ import {
 import type { IMusicEvent } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
-import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate } from "../validation";
+import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate, isMusicEventId } from "../validation";
 import { AbstractEntity } from "./abstract.entity";
 import { ArtistEntity } from "./artist.entity";
 import { TicketEntity } from "./ticket.entity";
@@ -20,6 +20,11 @@ import { VenueEntity } from "./venue.entity";
 
 @RDFClass(ns.schema.MusicEvent)
 export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
+  @Expose()
+  @Allow() // only to satisfy "@darraghor/nestjs-typed/all-properties-are-whitelisted" rule, because it does not recognize custom validators implemented with class-validator as class-validator's decorators
+  @isMusicEventId()
+  override id: string;
+
   @Expose()
   @IsString()
   @RDFProperty(ns.schema.name)

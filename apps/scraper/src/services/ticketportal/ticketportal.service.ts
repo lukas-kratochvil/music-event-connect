@@ -180,6 +180,12 @@ export class TicketportalService implements ICronJobService {
 
     for (const ticket of tickets) {
       try {
+        const id = await ticket.evaluate((el) => el.getAttribute("performance"));
+
+        if (!id) {
+          throw new Error("[" + musicEventUrl + "] - Missing event id.");
+        }
+
         const eventName = await ticket.$eval(".ticket-info > .detail > .event", (elem) =>
           (elem as HTMLElement).innerText.trim()
         );
@@ -264,6 +270,7 @@ export class TicketportalService implements ICronJobService {
         const soldOutBox = await ticket.$("div.ticket-info > div.status > div.status-content");
 
         musicEventData.push({
+          id,
           name: eventName,
           url: musicEventUrl,
           doorTime: doorsDatetime,

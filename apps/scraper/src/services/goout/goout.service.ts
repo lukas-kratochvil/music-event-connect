@@ -19,6 +19,9 @@ type EventItem = {
   linkedData: GoOutEvent | null;
 };
 
+const matchLastPathComponent = /^.*\/(\w+)\/?$/;
+const extractIdFromUrl = (url: string) => new URL(url).pathname.match(matchLastPathComponent)?.[1] ?? "";
+
 @Injectable()
 export class GooutService implements ICronJobService {
   readonly #logger = new Logger(GooutService.name);
@@ -227,6 +230,7 @@ export class GooutService implements ICronJobService {
           });
     return {
       event: {
+        id: extractIdFromUrl(eventItem.url),
         name: eventName,
         url: eventItem.url,
         doorTime: doorsDatetime,
