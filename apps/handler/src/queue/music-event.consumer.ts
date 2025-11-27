@@ -1,12 +1,12 @@
+import { plainToEntity, validateEntity } from "@music-event-connect/core";
+import { MusicEventEntity } from "@music-event-connect/core/entities";
+import { MusicEventMapper } from "@music-event-connect/core/mappers";
 import {
   MusicEventsQueue,
-  plainToEntity,
-  validateEntity,
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
-} from "@music-event-connect/core";
-import { MusicEventEntity } from "@music-event-connect/core/entities";
 import { RdfEntitySerializerService } from "@music-event-connect/core/rdf";
+} from "@music-event-connect/core/queue";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import type { Job, Worker } from "bullmq";

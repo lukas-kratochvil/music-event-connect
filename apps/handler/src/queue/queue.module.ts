@@ -1,4 +1,4 @@
-import { MusicEventsQueue } from "@music-event-connect/core";
+import { MusicEventsQueue } from "@music-event-connect/core/queue";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";

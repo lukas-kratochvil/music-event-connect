@@ -1,9 +1,9 @@
 import {
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
+  type ScrapedMusicEvent,
   MusicEventsQueue,
-} from "@music-event-connect/core";
-import type { IArtist } from "@music-event-connect/core/interfaces";
+} from "@music-event-connect/core/queue";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -55,7 +55,11 @@ export class GooutService implements ICronJobService {
     return this.#isInProcess;
   }
 
-  async #getArtist(browser: Browser, artistUrl: string, availableGenres: string[]): Promise<IArtist | null> {
+  async #getArtist(
+    browser: Browser,
+    artistUrl: string,
+    availableGenres: string[]
+  ): Promise<ScrapedMusicEvent["artists"][number] | null> {
     const artistPage = await browser.newPage();
     let name: string;
     let genres: string[];

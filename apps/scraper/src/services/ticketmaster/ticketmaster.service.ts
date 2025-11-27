@@ -3,7 +3,7 @@ import {
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
   MusicEventsQueue,
-} from "@music-event-connect/core";
+} from "@music-event-connect/core/queue";
 import { HttpService } from "@nestjs/axios";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";

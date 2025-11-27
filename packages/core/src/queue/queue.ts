@@ -1,4 +1,4 @@
-import type { IMusicEvent } from "./interfaces";
+import type { ScrapedMusicEvent } from "./scraped-music-event";
 
 /**
  * Music events queue metadata.
@@ -21,5 +21,5 @@ export type MusicEventsQueueNameType = keyof (typeof MusicEventsQueue)["jobs"];
  * Music events queue job data type.
  */
 export type MusicEventsQueueDataType = {
-  event: IMusicEvent;
+  event: ScrapedMusicEvent;
 };
