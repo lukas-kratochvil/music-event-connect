@@ -12,6 +12,12 @@ import { addDays, parse, set } from "date-fns";
 import { launch, type Browser, type Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
+import type { GoOutEvent } from "./goout.types";
+
+type EventItem = {
+  url: string;
+  linkedData: GoOutEvent | null;
+};
 
 @Injectable()
 export class GooutService implements ICronJobService {
@@ -125,12 +131,12 @@ export class GooutService implements ICronJobService {
     };
   }
 
-  async #getMusicEvent(
-    page: Page,
-    musicEventUrl: string,
-    availableGenres: string[]
-  ): Promise<MusicEventsQueueDataType> {
-    const eventName = await page.$eval("h1", (elem) => elem.innerText.trim());
+  async #getMusicEvent(page: Page, eventItem: EventItem, availableGenres: string[]): Promise<MusicEventsQueueDataType> {
+    if (!(await page.goto(eventItem.url))) {
+      throw new Error("Cannot navigate to the URL.");
+    }
+
+    const eventName = eventItem.linkedData?.name ?? (await page.$eval("h1", (elem) => elem.innerText.trim()));
 
     const artistsDivs = await page.$$(
       "::-p-xpath(//h2[text()='Performing artists' or text()='Vystupující umělci']/following-sibling::div[contains(@class, 'row')]/div/div[contains(@class, 'profile-box')]/div[contains(@class, 'content')]/div[1])"
@@ -160,24 +166,32 @@ export class GooutService implements ICronJobService {
     } catch {
       /* doors not found */
     }
-    const [datetime1, datetime2] = await page.$$eval(
-      "div.detail-header time",
-      // `dateTime` attribute of the HTML `time` element contains start datetime value even for the 'end datetime' element, so we have to extract the datetime from the text content
-      (elems) => elems.map((elem, i) => (i === 0 ? elem.dateTime.trim() : elem.innerText.trim()))
-    );
+    const [datetime1, datetime2] = eventItem.linkedData?.startDate
+      ? [eventItem.linkedData.startDate, eventItem.linkedData.endDate]
+      : await page.$$eval(
+          "div.detail-header time",
+          // `dateTime` attribute of the HTML `time` element contains start datetime value even for the 'end datetime' element, so we have to extract the datetime from the text content
+          (elems) => elems.map((elem, i) => (i === 0 ? elem.dateTime.trim() : elem.innerText.trim()))
+        );
 
     if (!datetime1) {
       throw new Error("Missing start date.");
     }
 
     const getEndDatetime = (value: string) => {
+      let date: Date = new Date(value);
+
+      if (!Number.isNaN(date.getTime())) {
+        return date;
+      }
+
       // `parse` returns an Invalid Date if the date-string cannot be parsed (Invalid Date is a Date, whose time value is NaN.)
       // en date format
-      let date = parse(value, "dd/MM/yyyy", new Date().setHours(0, 0, 0, 0));
+      date = parse(value, "dd/MM/yyyy", new Date().setHours(23, 59, 59, 0));
 
       if (Number.isNaN(date.getTime())) {
         // cs date format
-        date = parse(value, "d. M. yyyy", new Date().setHours(0, 0, 0, 0));
+        date = parse(value, "d. M. yyyy", new Date().setHours(23, 59, 59, 0));
       }
 
       return Number.isNaN(date.getTime()) ? undefined : date;
@@ -187,30 +201,30 @@ export class GooutService implements ICronJobService {
 
     const getVenueSelector = (valueNameEn: string, valueNameCs: string) =>
       `::-p-xpath(//section[contains(@class, 'py-1')]//div[contains(@class, 'info-item')]/div/span[text()='${valueNameEn}' or text()='${valueNameCs}']/parent::div/parent::div/div[2])` as const;
-    const venueName = await page.$eval(getVenueSelector("Venue", "Místo"), (elem) =>
-      (elem as HTMLAnchorElement).innerText.trim()
-    );
-    const [venueAddress, venueCity] = (
-      await page.$eval(getVenueSelector("Address", "Adresa"), (elem) => (elem as HTMLAnchorElement).innerText)
-    )
-      .split(",")
-      .map((e) => e.trim());
+    const venueName
+      = eventItem.linkedData?.location.name
+      ?? (await page.$eval(getVenueSelector("Venue", "Místo"), (elem) => (elem as HTMLAnchorElement).innerText.trim()));
+    const [venueAddress, venueCity] = eventItem.linkedData?.location.address
+      ? [eventItem.linkedData.location.address.streetAddress, eventItem.linkedData.location.address.addressLocality]
+      : (await page.$eval(getVenueSelector("Address", "Adresa"), (elem) => (elem as HTMLAnchorElement).innerText))
+          .split(",")
+          .map((e) => e.trim());
 
     if (!venueCity) {
       throw new Error("Missing venue city.");
     }
-    if (!venueAddress) {
-      throw new Error("Missing venue address.");
-    }
 
-    const [isOnSale, ticketsUrl] = await page.$eval(".ticket-button", (elem) => {
-      const anchor = elem as HTMLAnchorElement;
-      return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
-    });
+    const [isOnSale, ticketsUrl]
+      = eventItem.linkedData?.offers.at(0) && eventItem.linkedData.offers[0]?.url
+        ? [eventItem.linkedData.offers[0]?.availability === "InStock", eventItem.linkedData.offers[0]?.url]
+        : await page.$eval(".ticket-button", (elem) => {
+            const anchor = elem as HTMLAnchorElement;
+            return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
+          });
     return {
       event: {
         name: eventName,
-        url: musicEventUrl,
+        url: eventItem.url,
         doorTime: doorsDatetime,
         startDate: startDatetime,
         endDate: endDatetime,
@@ -221,7 +235,7 @@ export class GooutService implements ICronJobService {
             address: {
               country: "CZ",
               locality: venueCity,
-              street: venueAddress,
+              street: venueAddress || undefined, // check for empty string
             },
             latitude: undefined,
             longitude: undefined,
@@ -325,17 +339,33 @@ export class GooutService implements ICronJobService {
           const linksSelector = "div.event > div.info > a.title";
           await page.waitForSelector(linksSelector);
           const newUrls = await page.$$eval(linksSelector, (links) => links.map((link) => link.href));
+          const eventsLinkedData = await page
+            .$$eval('script[type="application/ld+json"]', (scripts) =>
+              scripts.map((script) => {
+                try {
+                  return JSON.parse(script.textContent || "{}") as GoOutEvent;
+                } catch {
+                  return null;
+                }
+              })
+            )
+            .catch((e) => {
+              if (e instanceof Error) {
+                this.#logger.error(e.message, e.stack);
+              } else {
+                this.#logger.error(String(e));
+              }
+              return null;
+            });
 
           const musicEventPage = await browser.newPage();
 
           // extract music event data and add it to the queue
           for (const url of newUrls) {
-            try {
-              if (!(await musicEventPage.goto(url))) {
-                throw new Error("Cannot navigate to the URL.");
-              }
+            const linkedData = eventsLinkedData?.find((eventLd) => eventLd?.url === url) ?? null;
 
-              const musicEvent = await this.#getMusicEvent(musicEventPage, url, availableGenres);
+            try {
+              const musicEvent = await this.#getMusicEvent(musicEventPage, { url, linkedData }, availableGenres);
               await this.musicEventsQueue.add("goout", musicEvent);
             } catch (e) {
               if (e instanceof Error) {
