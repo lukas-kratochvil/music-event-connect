@@ -28,10 +28,11 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
    *    2) If exists, check if any property is updated
    *        1) If updated, continue with step 4)
    *        2) If not updated, return without further processing
-   * 4) Serialize MusicEventEntity to RDF
-   * 5) Store RDF in the triple store
+   * 4) Serialize MusicEventEntity and store it in the triple store
    *    1) If step 3) determined that the object is new, perform an INSERT operation
    *    2) If step 3) determined that the object is updated, perform a DELETE + INSERT operation
+   *
+   * Also, duplicate artists, venues, addresses in the database. Change in one event shouldn't influence other events.
    */
   override async process(job: Job<MusicEventsQueueDataType, MusicEventsQueueDataType, MusicEventsQueueNameType>) {
     try {
@@ -45,11 +46,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
 
       if (validationErrors.length > 0) {
         const validationErrorStr = validationErrors
-          .map(
-            (error) =>
-              `Property ${error.property} [${error.value instanceof Date ? error.value.toJSON() : error.value}]: `
-              + error.toString()
-          )
+          .map((error) => `Property ${error.property} ${JSON.stringify(error.value)}:\n` + error.toString())
           .join("\n");
         throw new Error(validationErrorStr);
       }
