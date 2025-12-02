@@ -26,22 +26,6 @@ services:
       - VIRT_Parameters_MaxDirtyBuffers=130000
     restart: unless-stopped
 
-  api:
-    build:
-      context: .
-      dockerfile: ./apps/api/Dockerfile
-      target: development
-    command: pnpm start:dev
-    volumes:
-      - ./configs/config-api.yaml:/app/apps/api/config.yaml:ro
-      - ./logs/api:/app/apps/api/logs:rw
-    environment:
-      - NODE_ENV=development
-      - PORT=3030
-    depends_on:
-      - virtuoso
-    restart: unless-stopped
-
   redis:
     image: redis:alpine3.22
     restart: unless-stopped
@@ -78,3 +62,19 @@ services:
     depends_on:
       - redis
     restart: unless-stopped
+
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/api/Dockerfile
+  #     target: development
+  #   command: pnpm start:dev
+  #   volumes:
+  #     - ./configs/config-api.yaml:/app/apps/api/config.yaml:ro
+  #     - ./logs/api:/app/apps/api/logs:rw
+  #   environment:
+  #     - NODE_ENV=development
+  #     - PORT=3030
+  #   depends_on:
+  #     - virtuoso
+  #   restart: unless-stopped
