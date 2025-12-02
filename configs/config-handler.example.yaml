@@ -3,3 +3,8 @@ redis:
   # name of the Redis Docker container
   host:
   port:
+
+# Triple store
+tripleStore:
+  # full SPARQL read endpoint URL
+  endpointUrl:

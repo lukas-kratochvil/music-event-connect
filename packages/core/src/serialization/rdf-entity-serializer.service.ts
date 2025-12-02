@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { DataFactory, Writer, type MimeFormat, type Quad } from "n3";
+import { DataFactory, type Quad } from "n3";
 import { AbstractEntity } from "../entities";
-import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "./decorators";
-import { ns, prefixes } from "./ontology";
+import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "../rdf/decorators";
+import { ns } from "../rdf/ontology";
 
 const { literal, namedNode, triple } = DataFactory;
 
@@ -10,7 +10,6 @@ const { literal, namedNode, triple } = DataFactory;
  * Serialize domain object (entity) into RDF data.
  */
 @Injectable()
-// eslint-disable-next-line @darraghor/nestjs-typed/injectable-should-be-provided
 export class RdfEntitySerializerService {
   #createEntityIRI(entity: AbstractEntity): string {
     const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor) as string | undefined;
@@ -111,15 +110,7 @@ export class RdfEntitySerializerService {
     return quads;
   }
 
-  serialize(entity: AbstractEntity, format: MimeFormat): Promise<string> {
-    const quads = this.#serializeRDFClass(entity);
-    return new Promise((resolve, reject) => {
-      const writer = new Writer({
-        format,
-        prefixes,
-      });
-      writer.addQuads(quads);
-      writer.end((error, result) => (error ? reject(error) : resolve(result)));
-    });
+  serialize(entity: AbstractEntity): Quad[] {
+    return this.#serializeRDFClass(entity);
   }
 }

@@ -30,10 +30,10 @@
       "require": "./dist/interfaces/index.js",
       "default": "./dist/interfaces/index.js"
     },
-    "./rdf": {
-      "types": "./dist/rdf/index.d.ts",
-      "require": "./dist/rdf/index.js",
-      "default": "./dist/rdf/index.js"
+    "./mappers": {
+      "types": "./dist/mappers/index.d.ts",
+      "require": "./dist/mappers/index.js",
+      "default": "./dist/mappers/index.js"
     },
     "./queue": {
       "types": "./dist/queue/index.d.ts",
@@ -45,11 +45,13 @@
     "@music-event-connect/eslint-config": "workspace:*",
     "@types/js-yaml": "^4.0.9",
     "@types/n3": "^1.26.1",
+    "@types/sparql-http-client": "^3.1.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@music-event-connect/shared": "workspace:*",
     "@nestjs/common": "^11.1.2",
+    "@tpluscode/sparql-builder": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "joi": "^17.13.3",
@@ -58,6 +60,7 @@
     "nest-winston": "^1.10.2",
     "rdf-namespaces": "^1.16.0",
     "reflect-metadata": "^0.2.2",
+    "sparql-http-client": "^3.1.0",
     "uuidv7": "^1.0.2",
     "winston": "^3.17.0"
   }

@@ -1,8 +1,8 @@
 import { loadYamlConfig } from "@music-event-connect/core";
-import { RdfEntitySerializerService } from "@music-event-connect/core/rdf";
+import { MapperModule } from "@music-event-connect/core/mappers";
 import { Logger, Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { configSchema } from "./config/schema";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { configSchema, type ConfigSchema } from "./config/schema";
 import { MusicEventConsumer } from "./queue/music-event.consumer";
 import { QueueModule } from "./queue/queue.module";
 
@@ -15,7 +15,16 @@ import { QueueModule } from "./queue/queue.module";
       ],
     }),
     QueueModule,
+    MapperModule.registerAsync({
+      useFactory: (config: ConfigService<ConfigSchema, true>) => ({
+        tripleStore: {
+          endpointUrl: config.get("tripleStore.endpointUrl", { infer: true }),
+        },
+      }),
+      imports: [ConfigModule],
+      inject: [ConfigService],
+    }),
   ],
-  providers: [Logger, MusicEventConsumer, RdfEntitySerializerService],
+  providers: [Logger, MusicEventConsumer],
 })
 export class AppModule {}

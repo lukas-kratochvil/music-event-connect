@@ -8,6 +8,9 @@ export type ConfigSchema = {
     host: string;
     port: number;
   };
+  tripleStore: {
+    endpointUrl: string;
+  };
 };
 
 export const configSchema = Joi.object<ConfigSchema, true>({
@@ -19,5 +22,8 @@ export const configSchema = Joi.object<ConfigSchema, true>({
   redis: Joi.object<ConfigSchema["redis"], true>({
     host: Joi.string().trim().required(),
     port: Joi.number().port().required(),
+  }),
+  tripleStore: Joi.object<ConfigSchema["tripleStore"], true>({
+    endpointUrl: Joi.string().trim().uri().required(),
   }),
 });

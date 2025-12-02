@@ -5,7 +5,6 @@ import {
   MusicEventsQueue,
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
-import { RdfEntitySerializerService } from "@music-event-connect/core/rdf";
 } from "@music-event-connect/core/queue";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
@@ -15,7 +14,7 @@ import type { Job, Worker } from "bullmq";
 export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataType, MusicEventsQueueDataType>> {
   #logger = new Logger(MusicEventConsumer.name);
 
-  constructor(private readonly rdfSerializer: RdfEntitySerializerService) {
+  constructor(private readonly musicEventMapper: MusicEventMapper) {
     super();
   }
 
@@ -51,11 +50,13 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
         throw new Error(validationErrorStr);
       }
 
-      // TODO: step 3) and further steps
+      // 3) Check if object already exists in the triple store
+      const doesExist = await this.musicEventMapper.exists(musicEvent.id);
+      this.#logger.log("Exist: " + doesExist);
 
       // 4) Serialize MusicEventEntity to RDF
-      const rdfData = await this.rdfSerializer.serialize(musicEvent, "application/n-triples");
-      return rdfData;
+      // TODO: update entity
+      return null;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
       await job.log(errorMessage);
