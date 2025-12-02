@@ -5,5 +5,5 @@ export interface MapperModuleOptions {
   tripleStore: SPARQLModuleOptions;
 }
 
-export const { ConfigurableModuleClass, ASYNC_OPTIONS_TYPE } =
-  new ConfigurableModuleBuilder<MapperModuleOptions>().build();
+export const { ConfigurableModuleClass, ASYNC_OPTIONS_TYPE }
+  = new ConfigurableModuleBuilder<MapperModuleOptions>().build();

@@ -52,7 +52,10 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
 
       // 3) Check if object already exists in the triple store
       const doesExist = await this.musicEventMapper.exists(musicEvent.id);
-      this.#logger.log("Exist: " + doesExist);
+
+      if (!doesExist) {
+        return this.musicEventMapper.create(musicEvent);
+      }
 
       // 4) Serialize MusicEventEntity to RDF
       // TODO: update entity

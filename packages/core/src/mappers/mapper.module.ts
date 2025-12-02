@@ -18,9 +18,7 @@ export class MapperModule extends ConfigurableModuleClass {
           inject: options.inject,
           useFactory: async (...args) => {
             const mapperConfig = await options.useFactory!(...args);
-            return {
-              endpointUrl: mapperConfig.tripleStore.endpointUrl,
-            };
+            return { ...mapperConfig.tripleStore };
           },
         }),
       ],
