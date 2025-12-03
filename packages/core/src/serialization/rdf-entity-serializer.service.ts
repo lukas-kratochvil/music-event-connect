@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { DataFactory, type Quad } from "n3";
+import { DataFactory, type NamedNode, type Quad } from "n3";
 import { AbstractEntity } from "../entities";
 import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
@@ -11,18 +11,18 @@ const { literal, namedNode, triple } = DataFactory;
  */
 @Injectable()
 export class RdfEntitySerializerService {
-  #createEntityIRI(entity: AbstractEntity): string {
+  #createEntityIRI(entity: AbstractEntity): NamedNode {
     const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor) as string | undefined;
 
     if (typeof prefixIRI !== "string") {
       throw new Error("Missing @RDFPrefixIRI on " + entity.constructor.name);
     }
 
-    return prefixIRI + entity.id;
+    return namedNode(prefixIRI + entity.id);
   }
 
   #serializeRDFProperty(
-    rdfSubject: string,
+    rdfSubjectIRI: NamedNode,
     rdfPredicate: string,
     rdfObject: {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
     options: RDFPropertyMetadata["options"],
@@ -32,7 +32,7 @@ export class RdfEntitySerializerService {
     if (Array.isArray(rdfObject)) {
       rdfObject.forEach((item: unknown) => {
         if (item !== null && item !== undefined) {
-          this.#serializeRDFProperty(rdfSubject, rdfPredicate, item, options, quads);
+          this.#serializeRDFProperty(rdfSubjectIRI, rdfPredicate, item, options, quads);
         }
       });
       return;
@@ -41,7 +41,7 @@ export class RdfEntitySerializerService {
     // Nested object
     if (rdfObject instanceof AbstractEntity) {
       const objectIRI = this.#createEntityIRI(rdfObject);
-      quads.push(triple(namedNode(rdfSubject), namedNode(rdfPredicate), namedNode(objectIRI)));
+      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), objectIRI));
       this.#serializeRDFClass(rdfObject, objectIRI, quads);
       return;
     }
@@ -54,7 +54,7 @@ export class RdfEntitySerializerService {
         throw new Error(`No mapping for '${rdfObject}' enum value on property '${rdfPredicate}'`);
       }
 
-      quads.push(triple(namedNode(rdfSubject), namedNode(rdfPredicate), namedNode(enumValueIRI)));
+      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), namedNode(enumValueIRI)));
       return;
     }
 
@@ -70,26 +70,24 @@ export class RdfEntitySerializerService {
 
     if (options) {
       if (options.discriminator === "datatype") {
-        quads.push(
-          triple(namedNode(rdfSubject), namedNode(rdfPredicate), literal(literalValue, namedNode(options.datatype)))
-        );
+        quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, namedNode(options.datatype))));
       } else if (options.discriminator === "language") {
-        quads.push(triple(namedNode(rdfSubject), namedNode(rdfPredicate), literal(literalValue, options.language)));
+        quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, options.language)));
       }
     } else {
-      quads.push(triple(namedNode(rdfSubject), namedNode(rdfPredicate), literal(literalValue)));
+      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue)));
     }
   }
 
-  #serializeRDFClass(entity: AbstractEntity, subjectIRI?: string, quads: Quad[] = []): Quad[] {
+  #serializeRDFClass(entity: AbstractEntity, subjectIRI?: NamedNode, quads: Quad[] = []): Quad[] {
     const classIRI = Reflect.getMetadata(RDF_METADATA_KEYS.class, entity.constructor) as string | undefined;
 
     if (typeof classIRI !== "string") {
       throw new Error("Missing @RDFClass on " + entity.constructor.name);
     }
 
-    const rdfSubject = subjectIRI ?? this.#createEntityIRI(entity);
-    quads.push(triple(namedNode(rdfSubject), namedNode(ns.rdf.type), namedNode(classIRI)));
+    const rdfSubjectIRI = subjectIRI ?? this.#createEntityIRI(entity);
+    quads.push(triple(rdfSubjectIRI, namedNode(ns.rdf.type), namedNode(classIRI)));
 
     for (const [propertyKey, rdfObject] of Object.entries(entity) as [string, unknown][]) {
       if (rdfObject === null || rdfObject === undefined) {
@@ -104,7 +102,7 @@ export class RdfEntitySerializerService {
         continue;
       }
 
-      this.#serializeRDFProperty(rdfSubject, propertyMetadata.iri, rdfObject, propertyMetadata.options, quads);
+      this.#serializeRDFProperty(rdfSubjectIRI, propertyMetadata.iri, rdfObject, propertyMetadata.options, quads);
     }
 
     return quads;

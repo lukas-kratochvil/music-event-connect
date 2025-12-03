@@ -11,18 +11,7 @@ export class SPARQLQueryBuilderService {
   constructor(@Inject(SPARQL_PROVIDERS.builder) private readonly builder: SparqlBuilderType) {}
 
   ask(quads: Quad[], graphIRI: NamedNode | undefined) {
-    // named graph
-    if (graphIRI) {
-      return this.builder.ASK`
-        GRAPH ${graphIRI} {
-          ${quads}
-        }
-      `;
-    }
-
-    // default graph
-    return this.builder.ASK`
-      ${quads}
-    `;
+    const query = this.builder.ASK`${quads}`;
+    return graphIRI ? query.FROM(graphIRI) : query;
   }
 }

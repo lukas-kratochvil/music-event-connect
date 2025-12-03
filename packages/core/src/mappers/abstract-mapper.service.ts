@@ -26,7 +26,7 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
     return this.sparqlService.insert(rdfData, this.getGraphIRI());
   }
 
-  exists(id: string): Promise<boolean> {
+  exists(id: string) {
     const entity = this.createNewEntity();
     entity.id = id;
     const rdfData = this.serializer.serialize(entity);
