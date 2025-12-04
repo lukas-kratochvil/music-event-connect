@@ -29,7 +29,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
    *        2) If not updated, return without further processing
    * 4) Serialize MusicEventEntity and store it in the triple store
    *    1) If step 3) determined that the object is new, perform an INSERT operation
-   *    2) If step 3) determined that the object is updated, perform a DELETE + INSERT operation
+   *    2) If step 3) determined that the object is updated, perform a DELETE/INSERT operation
    *
    * Also, duplicate artists, venues, addresses in the database. Change in one event shouldn't influence other events.
    */
@@ -54,20 +54,24 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       const doesExist = await this.musicEventMapper.exists(musicEvent.id);
 
       if (!doesExist) {
+        // 4) Create new MusicEventEntity
         await this.musicEventMapper.create(musicEvent);
+        this.#logger.log("Entity created: " + musicEvent.id);
         return musicEvent;
       }
 
-      // Check if some data changed
-      const originalEntity = await this.musicEventMapper.getWholeEntity(musicEvent.id);
+      // 3) Check if some properties are updated
+      const originalEvent = await this.musicEventMapper.getWholeEntity(musicEvent.id);
 
-      if (areEntitiesSame(musicEvent, originalEntity)) {
-        return originalEntity;
+      if (areEntitiesSame(musicEvent, originalEvent)) {
+        this.#logger.log("Entity unchanged: " + musicEvent.id);
+        return originalEvent;
       }
 
       // 4) Update MusicEventEntity
-      // TODO: update entity
-      return null;
+      await this.musicEventMapper.update(originalEvent, musicEvent);
+      this.#logger.log("Entity updated: " + musicEvent.id);
+      return musicEvent;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
       await job.log(errorMessage);

@@ -32,4 +32,12 @@ export class SPARQLUpdateBuilderService {
       ${quads}
     `;
   }
+
+  /**
+   * Creates SPARQL DELETE/INSERT query.
+   */
+  deleteInsert(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: NamedNode | undefined) {
+    const query = this.builder.DELETE`${deleteQuads}`.INSERT`${insertQuads}`.WHERE``;
+    return graphIRI ? this.builder.WITH(graphIRI, query) : query;
+  }
 }

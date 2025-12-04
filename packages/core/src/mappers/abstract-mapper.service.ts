@@ -26,22 +26,28 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
   }
 
   create(entity: TEntity) {
-    const rdfData = this.serializer.serialize(entity);
-    return this.sparqlService.insert(rdfData, this.getGraphIRI());
+    const quads = this.serializer.serialize(entity);
+    return this.sparqlService.insert(quads, this.getGraphIRI());
+  }
+
+  update(deleteEntity: TEntity, insertEntity: TEntity) {
+    const deleteQuads = this.serializer.serialize(deleteEntity);
+    const insertQuads = this.serializer.serialize(insertEntity);
+    return this.sparqlService.update(deleteQuads, insertQuads, this.getGraphIRI());
   }
 
   exists(id: string) {
     const entity = this.createNewEntity();
     entity.id = id;
-    const rdfData = this.serializer.serialize(entity);
-    return this.sparqlService.ask(rdfData, this.getGraphIRI());
+    const quads = this.serializer.serialize(entity);
+    return this.sparqlService.ask(quads, this.getGraphIRI());
   }
 
   async getWholeEntity(id: string) {
     const entity = this.createNewEntity();
     entity.id = id;
     const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
-    const rdfEntity = await this.sparqlService.constructEntity(entityIRI, this.getGraphIRI());
-    return this.deserializer.deserialize(this.getClassConstructor(), entityIRI, rdfEntity);
+    const dataset = await this.sparqlService.constructEntity(entityIRI, this.getGraphIRI());
+    return this.deserializer.deserialize(this.getClassConstructor(), entityIRI, dataset);
   }
 }

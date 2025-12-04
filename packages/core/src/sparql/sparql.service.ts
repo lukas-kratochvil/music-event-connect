@@ -18,12 +18,12 @@ export class SPARQLService {
 
   insert(quads: Quad[], graphIRI: NamedNode | undefined) {
     const insertQuery = this.updateBuilder.insert(quads, graphIRI);
+    return insertQuery?.execute(this.sparqlClient);
+  }
 
-    if (!insertQuery) {
-      return;
-    }
-
-    return insertQuery.execute(this.sparqlClient);
+  update(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: NamedNode | undefined) {
+    const deleteInsertQuery = this.updateBuilder.deleteInsert(deleteQuads, insertQuads, graphIRI);
+    return deleteInsertQuery.execute(this.sparqlClient);
   }
 
   ask(rdfData: Quad[], graphIRI: NamedNode | undefined) {
