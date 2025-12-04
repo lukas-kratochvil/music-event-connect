@@ -50,9 +50,9 @@ export class RdfEntityDeserializerService {
           return term.value === "true" || term.value === "1";
         }
 
-        // other types
+        // other primitive types
         return term.value;
-      // literal - string
+      // literal - language-tagged string
       case "language":
       case undefined:
         return term.value;
@@ -91,9 +91,8 @@ export class RdfEntityDeserializerService {
       }
 
       const designType = Reflect.getMetadata("design:type", entity, propertyKey);
-      const isArray = designType === Array;
 
-      if (isArray) {
+      if (designType === Array) {
         const arrayValues = propertyQuads
           .map((quad) => this.#deserializeRdfTerm(quad.object, propertyMetadata.options, store))
           .filter((val) => val !== null && val !== undefined);
@@ -117,11 +116,11 @@ export class RdfEntityDeserializerService {
     entityIRI: NamedNode,
     dataset: DatasetCore
   ): TEntity {
-    const triples: Quad[] = [];
+    const quads: Quad[] = [];
     for (const quad of dataset) {
-      triples.push(quad);
+      quads.push(quad);
     }
-    const store = new Store(triples);
+    const store = new Store(quads);
     return this.#deserializeRdfClass(cls, entityIRI, store);
   }
 }

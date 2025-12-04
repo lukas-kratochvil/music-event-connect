@@ -3,6 +3,11 @@
  */
 export interface IArtist {
   /**
+   * The unique identifier.
+   */
+  id: string;
+
+  /**
    * The name.
    */
   name: string;

@@ -13,6 +13,11 @@ export type ItemAvailability = (typeof ItemAvailability)[keyof typeof ItemAvaila
  */
 export interface ITicket {
   /**
+   * The unique identifier.
+   */
+  id: string;
+
+  /**
    * The URL to obtain the ticket.
    */
   url: string;

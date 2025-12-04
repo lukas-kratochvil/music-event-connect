@@ -5,6 +5,11 @@ import type { IAddress } from "./address.interface";
  */
 export interface IVenue {
   /**
+   * The unique identifier.
+   */
+  id: string;
+
+  /**
    * The name.
    */
   name: string;

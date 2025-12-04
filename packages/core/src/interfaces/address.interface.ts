@@ -3,6 +3,11 @@
  */
 export interface IAddress {
   /**
+   * The unique identifier.
+   */
+  id: string;
+
+  /**
    * The country in 2-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) format.
    *
    * Currently supporting only CZ.
