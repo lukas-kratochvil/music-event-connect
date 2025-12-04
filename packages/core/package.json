@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@music-event-connect/eslint-config": "workspace:*",
+    "@rdfjs/types": "^2.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/n3": "^1.26.1",
     "@types/node-fetch": "^2.6.13",
@@ -55,6 +56,7 @@
     "@tpluscode/sparql-builder": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "deep-object-diff": "^1.1.9",
     "digest-fetch": "v2",
     "joi": "^17.13.3",
     "js-yaml": "^4.1.0",

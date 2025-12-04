@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { NamedNode, Quad } from "n3";
-import type StreamClient from "sparql-http-client" with { "resolution-mode": "import" };
+import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
 import { SPARQLQueryBuilderService } from "./sparql-query-builder.service";
 import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
@@ -13,7 +13,7 @@ export class SPARQLService {
   constructor(
     private readonly queryBuilder: SPARQLQueryBuilderService,
     private readonly updateBuilder: SPARQLUpdateBuilderService,
-    @Inject(SPARQL_PROVIDERS.client) private readonly sparqlClient: StreamClient
+    @Inject(SPARQL_PROVIDERS.client) private readonly sparqlClient: ParsingClient
   ) {}
 
   insert(quads: Quad[], graphIRI: NamedNode | undefined) {
@@ -29,5 +29,10 @@ export class SPARQLService {
   ask(rdfData: Quad[], graphIRI: NamedNode | undefined) {
     const askQuery = this.queryBuilder.ask(rdfData, graphIRI);
     return askQuery.execute(this.sparqlClient);
+  }
+
+  constructEntity(entityIRI: NamedNode, graphIRI: NamedNode | undefined) {
+    const constructQuery = this.queryBuilder.constructEntity(entityIRI, graphIRI);
+    return constructQuery.execute(this.sparqlClient);
   }
 }

@@ -14,4 +14,25 @@ export class SPARQLQueryBuilderService {
     const query = this.builder.ASK`${quads}`;
     return graphIRI ? query.FROM(graphIRI) : query;
   }
+
+  /**
+   * Constructs entity and also retrieves its nested objects max. 2 levels deep.
+   */
+  constructEntity(entityIRI: NamedNode, graphIRI: NamedNode | undefined) {
+    const query = this.builder.CONSTRUCT`
+      ?s ?p1 ?child .
+      ?child ?p2 ?grandchild .
+      ?grandchild  ?p3 ?o .
+    `.WHERE`
+      VALUES ?s { ${entityIRI} }
+      ?s ?p1 ?child .
+      OPTIONAL {
+        ?child ?p2 ?grandchild .
+        OPTIONAL {
+          ?grandchild ?p3 ?o .
+        }
+      }
+    `;
+    return graphIRI ? query.FROM(graphIRI) : query;
+  }
 }

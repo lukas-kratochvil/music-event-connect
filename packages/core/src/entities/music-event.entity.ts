@@ -40,7 +40,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @IsArray()
   @ArrayUnique<ArtistEntity>((elem) => elem.name)
   @ValidateNested({ each: true })
-  @RDFProperty(ns.schema.performer)
+  @RDFProperty(ns.schema.performer, { discriminator: "class", type: () => ArtistEntity })
   artists: ArtistEntity[];
 
   @Expose()
@@ -49,7 +49,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @ArrayNotEmpty()
   @ArrayUnique<VenueEntity>((elem) => elem.name)
   @ValidateNested({ each: true })
-  @RDFProperty(ns.schema.location)
+  @RDFProperty(ns.schema.location, { discriminator: "class", type: () => VenueEntity })
   venues: VenueEntity[];
 
   @Expose()
@@ -78,6 +78,6 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @Expose()
   @Type(() => TicketEntity)
   @ValidateNested()
-  @RDFProperty(ns.schema.offers)
+  @RDFProperty(ns.schema.offers, { discriminator: "class", type: () => TicketEntity })
   ticket: TicketEntity;
 }

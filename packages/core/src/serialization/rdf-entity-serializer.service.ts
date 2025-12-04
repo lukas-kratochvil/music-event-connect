@@ -11,7 +11,7 @@ const { literal, namedNode, triple } = DataFactory;
  */
 @Injectable()
 export class RdfEntitySerializerService {
-  #createEntityIRI(entity: AbstractEntity): NamedNode {
+  static createEntityIRI(entity: AbstractEntity): NamedNode {
     const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor) as string | undefined;
 
     if (typeof prefixIRI !== "string") {
@@ -40,7 +40,7 @@ export class RdfEntitySerializerService {
 
     // Nested object
     if (rdfObject instanceof AbstractEntity) {
-      const objectIRI = this.#createEntityIRI(rdfObject);
+      const objectIRI = RdfEntitySerializerService.createEntityIRI(rdfObject);
       quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), objectIRI));
       this.#serializeRDFClass(rdfObject, objectIRI, quads);
       return;
@@ -86,7 +86,7 @@ export class RdfEntitySerializerService {
       throw new Error("Missing @RDFClass on " + entity.constructor.name);
     }
 
-    const rdfSubjectIRI = subjectIRI ?? this.#createEntityIRI(entity);
+    const rdfSubjectIRI = subjectIRI ?? RdfEntitySerializerService.createEntityIRI(entity);
     quads.push(triple(rdfSubjectIRI, namedNode(ns.rdf.type), namedNode(classIRI)));
 
     for (const [propertyKey, rdfObject] of Object.entries(entity) as [string, unknown][]) {

@@ -34,6 +34,6 @@ export class VenueEntity extends AbstractEntity implements IVenue {
   @Expose()
   @Type(() => AddressEntity)
   @ValidateNested()
-  @RDFProperty(ns.schema.address)
+  @RDFProperty(ns.schema.address, { discriminator: "class", type: () => AddressEntity })
   address: AddressEntity;
 }

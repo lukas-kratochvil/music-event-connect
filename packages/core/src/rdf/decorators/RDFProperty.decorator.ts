@@ -1,3 +1,5 @@
+import type { ClassConstructor } from "class-transformer";
+import type { AbstractEntity } from "../../entities";
 import { RDF_METADATA_KEYS } from "./metadata-keys";
 
 type RDFPropertyOptions<TFieldType extends string> =
@@ -23,6 +25,16 @@ type RDFPropertyOptions<TFieldType extends string> =
     }
   | {
       /**
+       * Indicates that the property is a class.
+       */
+      discriminator: "class";
+      /**
+       * Mapping of enum values to their corresponding IRIs.
+       */
+      type: () => ClassConstructor<AbstractEntity>;
+    }
+  | {
+      /**
        * Indicates that the property is an enumeration value.
        */
       discriminator: "enum";
@@ -42,7 +54,14 @@ export const RDFProperty = <TFieldType extends string = string>(
   options?: RDFPropertyOptions<TFieldType>
 ): PropertyDecorator => {
   return (target, propertyKey) => {
+    // define property metadata
     const metadataValue: RDFPropertyMetadata<TFieldType> = { iri, options };
     Reflect.defineMetadata(RDF_METADATA_KEYS.property, metadataValue, target.constructor, propertyKey);
+
+    // register this property key in the RDF class property set
+    const classProperties: Set<string | symbol>
+      = Reflect.getMetadata(RDF_METADATA_KEYS.classProperties, target.constructor) ?? new Set();
+    classProperties.add(propertyKey);
+    Reflect.defineMetadata(RDF_METADATA_KEYS.classProperties, classProperties, target.constructor);
   };
 };

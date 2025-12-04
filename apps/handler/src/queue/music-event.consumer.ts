@@ -1,4 +1,4 @@
-import { createMusicEventId, plainToEntity, validateEntity } from "@music-event-connect/core";
+import { areEntitiesSame, createMusicEventId, plainToEntity, validateEntity } from "@music-event-connect/core";
 import { MusicEventEntity } from "@music-event-connect/core/entities";
 import { MusicEventMapper } from "@music-event-connect/core/mappers";
 import {
@@ -54,10 +54,18 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       const doesExist = await this.musicEventMapper.exists(musicEvent.id);
 
       if (!doesExist) {
-        return this.musicEventMapper.create(musicEvent);
+        await this.musicEventMapper.create(musicEvent);
+        return musicEvent;
       }
 
-      // 4) Serialize MusicEventEntity to RDF
+      // Check if some data changed
+      const originalEntity = await this.musicEventMapper.getWholeEntity(musicEvent.id);
+
+      if (areEntitiesSame(musicEvent, originalEntity)) {
+        return originalEntity;
+      }
+
+      // 4) Update MusicEventEntity
       // TODO: update entity
       return null;
     } catch (error) {

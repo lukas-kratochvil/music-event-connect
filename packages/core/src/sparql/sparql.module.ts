@@ -18,7 +18,7 @@ import { createDigestFetch, type SparqlBuilderType } from "./util";
       provide: SPARQL_PROVIDERS.client,
       useFactory: async (options: SPARQLModuleOptions) => {
         const sparqlClient = await import("sparql-http-client");
-        return new sparqlClient.StreamClient({
+        return new sparqlClient.ParsingClient({
           endpointUrl: options.endpointUrl,
           updateUrl: options.updateUrl,
           // Virtuoso requires Digest Auth method, but sparql-http-client uses Basic Auth
