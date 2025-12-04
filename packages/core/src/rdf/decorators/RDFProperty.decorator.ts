@@ -7,7 +7,7 @@ type RDFPropertyOptions<TFieldType extends string> =
       /**
        * Indicates that the property has a datatype literal value. Cannot be used together with `language`.
        */
-      discriminator: "datatype";
+      kind: "datatype";
       /**
        * Datatype IRI of the literal value.
        */
@@ -17,7 +17,7 @@ type RDFPropertyOptions<TFieldType extends string> =
       /**
        * Indicates that the property has a language-tagged literal value. Cannot be used together with `datatype`.
        */
-      discriminator: "language";
+      kind: "language";
       /**
        * Language tag of the literal value in [ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) format.
        */
@@ -27,7 +27,7 @@ type RDFPropertyOptions<TFieldType extends string> =
       /**
        * Indicates that the property is a class.
        */
-      discriminator: "class";
+      kind: "class";
       /**
        * Mapping of enum values to their corresponding IRIs.
        */
@@ -37,7 +37,7 @@ type RDFPropertyOptions<TFieldType extends string> =
       /**
        * Indicates that the property is an enumeration value.
        */
-      discriminator: "enum";
+      kind: "enum";
       /**
        * Mapping of enum values to their corresponding IRIs.
        */

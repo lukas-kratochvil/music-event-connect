@@ -22,7 +22,7 @@ export class RdfEntityDeserializerService {
   }
 
   #deserializeRdfTerm(term: Quad_Object, options: RDFPropertyMetadata["options"], store: Store) {
-    switch (options?.discriminator) {
+    switch (options?.kind) {
       // nested object
       case "class": {
         const entityCls = options.type();

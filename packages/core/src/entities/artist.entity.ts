@@ -22,13 +22,13 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   @Transform(({ value }) => (value as string[]).map((str) => str.toLowerCase()))
   @IsArray()
   @ArrayUnique<string>()
-  @RDFProperty(ns.schema.genre, { discriminator: "language", language: "en" })
+  @RDFProperty(ns.schema.genre, { kind: "language", language: "en" })
   genres: string[];
 
   @Expose()
   @IsArray()
   @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @ArrayUnique<string>()
-  @RDFProperty(ns.schema.sameAs, { discriminator: "datatype", datatype: ns.xsd.anyURI })
+  @RDFProperty(ns.schema.sameAs, { kind: "datatype", datatype: ns.xsd.anyURI })
   sameAs: string[];
 }

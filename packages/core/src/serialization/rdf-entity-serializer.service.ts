@@ -47,7 +47,7 @@ export class RdfEntitySerializerService {
     }
 
     // Enum
-    if (options?.discriminator === "enum" && typeof rdfObject === "string") {
+    if (options?.kind === "enum" && typeof rdfObject === "string") {
       const enumValueIRI = options.map[rdfObject];
 
       if (!enumValueIRI) {
@@ -69,9 +69,9 @@ export class RdfEntitySerializerService {
     }
 
     if (options) {
-      if (options.discriminator === "datatype") {
+      if (options.kind === "datatype") {
         quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, namedNode(options.datatype))));
-      } else if (options.discriminator === "language") {
+      } else if (options.kind === "language") {
         quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, options.language)));
       }
     } else {

@@ -22,18 +22,18 @@ export class VenueEntity extends AbstractEntity implements IVenue {
   @Expose()
   @ValidateIf((venue: IVenue) => venue.longitude !== undefined)
   @IsLatitude()
-  @RDFProperty(ns.schema.latitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
+  @RDFProperty(ns.schema.latitude, { kind: "datatype", datatype: ns.xsd.decimal })
   latitude: number | undefined;
 
   @Expose()
   @ValidateIf((venue: IVenue) => venue.latitude !== undefined)
   @IsLongitude()
-  @RDFProperty(ns.schema.longitude, { discriminator: "datatype", datatype: ns.xsd.decimal })
+  @RDFProperty(ns.schema.longitude, { kind: "datatype", datatype: ns.xsd.decimal })
   longitude: number | undefined;
 
   @Expose()
   @Type(() => AddressEntity)
   @ValidateNested()
-  @RDFProperty(ns.schema.address, { discriminator: "class", type: () => AddressEntity })
+  @RDFProperty(ns.schema.address, { kind: "class", type: () => AddressEntity })
   address: AddressEntity;
 }
