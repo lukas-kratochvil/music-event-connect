@@ -2,8 +2,13 @@
   "name": "@music-event-connect/eslint-config",
   "private": true,
   "type": "module",
+  "scripts": {
+    "lint": "eslint --fix \"src/**/*\"",
+    "format": "prettier --write \"src/**/*\"",
+    "tidy": "pnpm format && pnpm lint"
+  },
   "exports": {
-    ".": "./index.js"
+    ".": "./src/index.js"
   },
   "devDependencies": {
     "@darraghor/eslint-plugin-nestjs-typed": "^6.7.0",
