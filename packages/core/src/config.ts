@@ -1,11 +1,10 @@
 import { readFileSync } from "fs";
-import type { ArrayToUnion } from "@music-event-connect/shared";
 import { ObjectSchema } from "joi";
 import { load as loadYaml } from "js-yaml";
 
 export const ALLOWED_NODE_ENVS = ["development", "production"] as const;
 
-export type NodeEnv = ArrayToUnion<typeof ALLOWED_NODE_ENVS>;
+export type NodeEnv = (typeof ALLOWED_NODE_ENVS)[number];
 
 export const loadYamlConfig = <
   TConfigSchema extends Record<keyof TEnvVars, unknown>,
