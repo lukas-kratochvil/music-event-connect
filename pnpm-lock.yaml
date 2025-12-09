@@ -201,6 +201,9 @@ importers:
         specifier: ^19.2.0
         version: 19.2.1(react@19.2.1)
     devDependencies:
+      '@music-event-connect/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
