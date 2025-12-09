@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router": "^7.10.1"
   },
   "devDependencies": {
     "@music-event-connect/eslint-config": "workspace:*",
