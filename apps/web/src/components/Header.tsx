@@ -1,4 +1,4 @@
-export const Header = () => {
+const Header = () => {
   // TODO: create header
   return (
     <header>
@@ -6,3 +6,5 @@ export const Header = () => {
     </header>
   );
 };
+
+export default Header;

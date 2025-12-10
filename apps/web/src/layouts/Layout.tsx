@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Outlet } from "react-router";
-import { Header } from "../components/header/Header";
+import Header from "../components/Header";
 import SuspensePage from "../pages/SuspensePage";
 
 export const Layout = () => (
