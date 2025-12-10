@@ -1,7 +1,7 @@
+import type { IAddress } from "@music-event-connect/shared/interfaces";
 import { Expose } from "class-transformer";
 import { IsISO31661Alpha2, IsOptional, IsString, IsUUID } from "class-validator";
 import { uuidv7 } from "uuidv7";
-import type { IAddress } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";

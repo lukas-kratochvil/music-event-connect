@@ -1,3 +1,4 @@
+import type { IMusicEvent } from "@music-event-connect/shared/interfaces";
 import { Expose, Type } from "class-transformer";
 import {
   Allow,
@@ -9,7 +10,6 @@ import {
   IsUrl,
   ValidateNested,
 } from "class-validator";
-import type { IMusicEvent } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate, isMusicEventId } from "../validation";

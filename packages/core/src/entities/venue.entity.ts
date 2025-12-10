@@ -1,7 +1,7 @@
+import type { IVenue } from "@music-event-connect/shared/interfaces";
 import { Expose, Type } from "class-transformer";
 import { IsLatitude, IsLongitude, IsString, IsUUID, ValidateIf, ValidateNested } from "class-validator";
 import { uuidv7 } from "uuidv7";
-import type { IVenue } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";

@@ -1,7 +1,7 @@
+import type { IArtist } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
 import { IsArray, ArrayUnique, IsString, IsUrl, IsUUID } from "class-validator";
 import { uuidv7 } from "uuidv7";
-import type { IArtist } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";

@@ -1,4 +1,4 @@
-import type { ItemAvailability } from "../interfaces";
+import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 
 export type ScrapedMusicEvent = {
   /**

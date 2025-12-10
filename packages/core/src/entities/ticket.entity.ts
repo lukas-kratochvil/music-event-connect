@@ -1,7 +1,7 @@
+import { ItemAvailability, type ITicket } from "@music-event-connect/shared/interfaces";
 import { Expose } from "class-transformer";
 import { IsIn, IsUrl, IsUUID } from "class-validator";
 import { uuidv7 } from "uuidv7";
-import { ItemAvailability, type ITicket } from "../interfaces";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";

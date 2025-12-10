@@ -1,6 +1,6 @@
 import type { StrictOmit } from "@music-event-connect/shared";
+import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { rdf, schema, xsd } from "rdf-namespaces";
-import type { ItemAvailability } from "../interfaces";
 
 /**
  * RDF prefixes used in the project.
