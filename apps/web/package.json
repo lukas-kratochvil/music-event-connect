@@ -13,13 +13,16 @@
   "dependencies": {
     "@music-event-connect/shared": "workspace:*",
     "date-fns": "^4.1.0",
+    "leaflet": "^1.9.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.0.0",
+    "react-leaflet": "^5.0.0",
     "react-router": "^7.10.1"
   },
   "devDependencies": {
     "@music-event-connect/eslint-config": "workspace:*",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
