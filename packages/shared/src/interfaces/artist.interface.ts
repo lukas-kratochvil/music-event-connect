@@ -31,6 +31,5 @@ export interface IArtist {
   /**
    * Images of the artist.
    */
-  // TODO: also add images?
-  // images: string[];
+  images: string[];
 }

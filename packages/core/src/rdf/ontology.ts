@@ -18,6 +18,7 @@ type SchemaProperties = Pick<
   typeof schema,
   // Thing properties
   | "identifier"
+  | "image"
   | "name"
   | "sameAs"
   | "url"

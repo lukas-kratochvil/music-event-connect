@@ -12,7 +12,7 @@ import type { Queue } from "bullmq";
 import { addDays, addHours, compareAsc, max, set } from "date-fns";
 import { catchError, firstValueFrom } from "rxjs";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
-import { TicketmasterResponse, type AccessDate, type Dates } from "./ticketmaster-api.types";
+import { TicketmasterResponse, type AccessDate, type Dates, type Image } from "./ticketmaster-api.types";
 
 @Injectable()
 export class TicketmasterService implements ICronJobService {
@@ -129,6 +129,36 @@ export class TicketmasterService implements ICronJobService {
     return url.toString();
   }
 
+  #getUniqueArtistImages(images: Image[]): Image[] {
+    const getCommonUrlPrefix = (url: string) => {
+      const urlPrefixIndex = url.lastIndexOf("/");
+      if (urlPrefixIndex === -1) {
+        return url;
+      }
+      return url.substring(0, urlPrefixIndex);
+    };
+
+    const filteredImages = images.reduce((map, image) => {
+      const prefix = getCommonUrlPrefix(image.url);
+
+      if (!map.has(prefix)) {
+        return map.set(prefix, image);
+      }
+
+      const mapImage = map.get(prefix)!;
+      const imageSize = image.width * image.height;
+      const mapImageSize = mapImage.width * mapImage.height;
+
+      // get the larger size for the same image
+      if (imageSize > mapImageSize) {
+        map.set(prefix, image);
+      }
+
+      return map;
+    }, new Map<string, Image>());
+    return Array.from(filteredImages.values());
+  }
+
   async run() {
     // The default quota is 5000 API calls per day and rate limitation of 5 requests per second.
     // Deep Paging: only supports retrieving the 1000th item. i.e. (size * page < 1000).
@@ -214,6 +244,7 @@ export class TicketmasterService implements ICronJobService {
                     .map((url) => url.url)
                     .filter((url) => url.startsWith("http"))
                 : [],
+              images: this.#getUniqueArtistImages(a.images).map((img) => img.url),
             })),
           venues: event._embedded.venues.map((v) => ({
             name: v.name.trim(),
@@ -229,6 +260,7 @@ export class TicketmasterService implements ICronJobService {
             url: this.#normalizeUrl(event.url), // remove the language URL query param
             availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
           },
+          images: [], // Ticketmaster has artist's images
         },
       };
     });

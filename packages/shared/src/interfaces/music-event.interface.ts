@@ -52,4 +52,9 @@ export interface IMusicEvent {
    * The concert ticket info.
    */
   ticket: ITicket;
+
+  /**
+   * Images for the event.
+   */
+  images: string[];
 }

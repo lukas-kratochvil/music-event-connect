@@ -31,4 +31,11 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   @ArrayUnique<string>()
   @RDFProperty(ns.schema.sameAs, { kind: "url" })
   sameAs: string[];
+
+  @Expose()
+  @IsArray()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
+  @ArrayUnique<string>()
+  @RDFProperty(ns.schema.image, { kind: "url" })
+  images: string[];
 }

@@ -80,4 +80,11 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @ValidateNested()
   @RDFProperty(ns.schema.offers, { kind: "class", type: () => TicketEntity })
   ticket: TicketEntity;
+
+  @Expose()
+  @IsArray()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
+  @ArrayUnique<string>()
+  @RDFProperty(ns.schema.image, { kind: "url" })
+  images: string[];
 }

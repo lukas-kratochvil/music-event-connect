@@ -67,6 +67,7 @@ export class GooutService implements ICronJobService {
     let name: string;
     let genres: string[];
     let sameAs: string[];
+    let images: string[];
 
     try {
       if (!(await artistPage.goto(artistUrl))) {
@@ -81,6 +82,10 @@ export class GooutService implements ICronJobService {
       genres = await artistPage.$$eval(
         `::-p-xpath(//section[contains(@class, 'py-4')]/p/span[not(contains(@class, 'tags-title'))]/a)`,
         (elem) => (elem as HTMLAnchorElement[]).map((a) => a.innerText.trim())
+      );
+      images = await artistPage.$$eval(
+        `::-p-xpath(//section[contains(@class, 'py-4')]/div[contains(@class, 'photo-gallery')]/a)`,
+        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href.trim())
       );
     } catch (e) {
       await artistPage.close();
@@ -135,6 +140,7 @@ export class GooutService implements ICronJobService {
       name,
       genres,
       sameAs,
+      images,
     };
   }
 
@@ -253,6 +259,7 @@ export class GooutService implements ICronJobService {
           url: ticketsUrl,
           availability: isOnSale ? "InStock" : "SoldOut",
         },
+        images: [], // GoOut has artist's images
       },
     };
   }

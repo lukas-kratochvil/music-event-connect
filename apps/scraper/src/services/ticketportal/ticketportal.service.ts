@@ -156,6 +156,29 @@ export class TicketportalService implements ICronJobService {
     return venue;
   }
 
+  async #getEventImages(page: Page): Promise<string[]> {
+    const images: string[] = [];
+
+    try {
+      const mainImage = await page.$eval("div.detail-header > img", (elem) => (elem as HTMLImageElement).src.trim());
+      images.push(mainImage);
+      const otherImages = await page.$$eval(
+        "::-p-xpath(//section[@id = 'galeria']/div[contains(@class, 'grid')]/div[contains(@class, 'grid-item') and not(contains(@class, 'video'))]/a)",
+        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href)
+      );
+      images.push(...otherImages);
+    } catch (e) {
+      /* event images not found */
+      if (e instanceof Error) {
+        this.#logger.error("[" + page.url() + "]: " + e.message, e.stack);
+      } else {
+        this.#logger.error("[" + page.url() + "]" + String(e));
+      }
+    }
+
+    return images;
+  }
+
   async #getMusicEvents(
     page: Page,
     musicEventUrl: string,
@@ -176,6 +199,7 @@ export class TicketportalService implements ICronJobService {
       multipleEventDatesChecker.add(musicEventUrl);
     }
 
+    const images = await this.#getEventImages(page);
     const musicEventData: Pick<MusicEventsQueueDataType, "event">["event"][] = [];
 
     for (const ticket of tickets) {
@@ -265,6 +289,7 @@ export class TicketportalService implements ICronJobService {
           name: artistName,
           genres: this.#getEnGenreNames(genreName),
           sameAs: [],
+          images: [], // Ticketportal has event images only
         }));
 
         const soldOutBox = await ticket.$("div.ticket-info > div.status > div.status-content");
@@ -282,6 +307,7 @@ export class TicketportalService implements ICronJobService {
             url: musicEventUrl,
             availability: soldOutBox === null ? "InStock" : "SoldOut",
           },
+          images,
         });
       } catch (e) {
         if (e instanceof Error) {
@@ -341,7 +367,7 @@ export class TicketportalService implements ICronJobService {
             )
             .click();
           const panelBlocks = await page.$$(
-            "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top')) and not (contains(@class, 'donekonecna'))])"
+            "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top')) and not(contains(@class, 'donekonecna'))])"
           );
 
           for (const panelBlock of panelBlocks) {

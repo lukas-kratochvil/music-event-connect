@@ -13,12 +13,14 @@ export type ScrapedMusicEvent = {
   artists: Artist[];
   venues: Venue[];
   ticket: Ticket;
+  images: string[];
 };
 
 type Artist = {
   name: string;
   genres: string[];
   sameAs: string[];
+  images: string[];
 };
 
 type Venue = {
