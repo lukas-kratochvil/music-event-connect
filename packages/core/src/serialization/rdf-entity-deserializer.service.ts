@@ -54,6 +54,7 @@ export class RdfEntityDeserializerService {
         return term.value;
       // literal - language-tagged string
       case "language":
+      case "url":
       case undefined:
         return term.value;
     }

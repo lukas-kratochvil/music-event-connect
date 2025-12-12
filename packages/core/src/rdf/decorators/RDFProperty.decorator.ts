@@ -25,6 +25,12 @@ type RDFPropertyOptions<TFieldType extends string> =
     }
   | {
       /**
+       * Indicates that the property is a URL and must be represented as an IRI in the RDF triple.
+       */
+      kind: "url";
+    }
+  | {
+      /**
        * Indicates that the property is a class.
        */
       kind: "class";

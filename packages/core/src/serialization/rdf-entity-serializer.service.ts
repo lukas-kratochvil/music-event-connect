@@ -72,6 +72,13 @@ export class RdfEntitySerializerService {
         }
         throw new Error(rdfObject.toString() + " is not a string");
       }
+      case "url": {
+        if (typeof rdfObject === "string") {
+          quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), namedNode(rdfObject)));
+          return;
+        }
+        throw new Error(rdfObject.toString() + " is not a string");
+      }
       case "datatype": {
         const literalValue = this.#serializeLiteral(rdfObject);
         quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, namedNode(options.datatype))));
