@@ -118,6 +118,17 @@ export class TicketmasterService implements ICronJobService {
     return undefined;
   }
 
+  #normalizeUrl(urlStr: string): string {
+    if (!URL.canParse(urlStr)) {
+      return urlStr.split(/[?#]/g)[0]!;
+    }
+
+    const url = new URL(urlStr);
+    url.search = "";
+    url.hash = "";
+    return url.toString();
+  }
+
   async run() {
     // The default quota is 5000 API calls per day and rate limitation of 5 requests per second.
     // Deep Paging: only supports retrieving the 1000th item. i.e. (size * page < 1000).
@@ -182,7 +193,7 @@ export class TicketmasterService implements ICronJobService {
         event: {
           id: event.id.trim(),
           name: event.name.trim(),
-          url: event.url,
+          url: this.#normalizeUrl(event.url), // remove the language URL query param
           doorTime: this.#getEventDoorTime(event.dates.access, startDate),
           startDate,
           endDate: this.#getEventEndDate(event.dates),
@@ -215,7 +226,7 @@ export class TicketmasterService implements ICronJobService {
             },
           })),
           ticket: {
-            url: event.url.trim(),
+            url: this.#normalizeUrl(event.url), // remove the language URL query param
             availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
           },
         },
