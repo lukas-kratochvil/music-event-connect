@@ -21,6 +21,17 @@ export class RdfEntitySerializerService {
     return namedNode(prefixIRI + entity.id);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  #serializeLiteral(rdfObject: {}) {
+    if (typeof rdfObject === "string") {
+      return rdfObject.replace(/"/g, '\\"');
+    }
+    if (rdfObject instanceof Date) {
+      return rdfObject.toISOString();
+    }
+    return rdfObject.toString();
+  }
+
   #serializeRDFProperty(
     rdfSubjectIRI: NamedNode,
     rdfPredicate: string,
@@ -28,7 +39,7 @@ export class RdfEntitySerializerService {
     options: RDFPropertyMetadata["options"],
     quads: Quad[]
   ) {
-    // Array
+    // array
     if (Array.isArray(rdfObject)) {
       rdfObject.forEach((item: unknown) => {
         if (item !== null && item !== undefined) {
@@ -38,44 +49,44 @@ export class RdfEntitySerializerService {
       return;
     }
 
-    // Nested object
-    if (rdfObject instanceof AbstractEntity) {
-      const objectIRI = RdfEntitySerializerService.createEntityIRI(rdfObject);
-      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), objectIRI));
-      this.#serializeRDFClass(rdfObject, objectIRI, quads);
-      return;
-    }
-
-    // Enum
-    if (options?.kind === "enum" && typeof rdfObject === "string") {
-      const enumValueIRI = options.map[rdfObject];
-
-      if (!enumValueIRI) {
-        throw new Error(`No mapping for '${rdfObject}' enum value on property '${rdfPredicate}'`);
+    switch (options?.kind) {
+      case "class": {
+        if (rdfObject instanceof AbstractEntity) {
+          const objectIRI = RdfEntitySerializerService.createEntityIRI(rdfObject);
+          quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), objectIRI));
+          this.#serializeRDFClass(rdfObject, objectIRI, quads);
+          return;
+        }
+        throw new Error(options.type().name + " does not have an id");
       }
+      case "enum": {
+        if (typeof rdfObject === "string") {
+          const enumValueIRI = options.map[rdfObject];
 
-      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), namedNode(enumValueIRI)));
-      return;
-    }
+          if (!enumValueIRI) {
+            throw new Error(`No mapping for '${rdfObject}' enum value on property '${rdfPredicate}'`);
+          }
 
-    // Literal
-    let literalValue: string;
-    if (typeof rdfObject === "string") {
-      literalValue = rdfObject.replace(/"/g, '\\"');
-    } else if (rdfObject instanceof Date) {
-      literalValue = rdfObject.toISOString();
-    } else {
-      literalValue = rdfObject.toString();
-    }
-
-    if (options) {
-      if (options.kind === "datatype") {
+          quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), namedNode(enumValueIRI)));
+          return;
+        }
+        throw new Error(rdfObject.toString() + " is not a string");
+      }
+      case "datatype": {
+        const literalValue = this.#serializeLiteral(rdfObject);
         quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, namedNode(options.datatype))));
-      } else if (options.kind === "language") {
-        quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, options.language)));
+        return;
       }
-    } else {
-      quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue)));
+      case "language": {
+        const literalValue = this.#serializeLiteral(rdfObject);
+        quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue, options.language)));
+        return;
+      }
+      case undefined: {
+        const literalValue = this.#serializeLiteral(rdfObject);
+        quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), literal(literalValue)));
+        return;
+      }
     }
   }
 
@@ -89,20 +100,20 @@ export class RdfEntitySerializerService {
     const rdfSubjectIRI = subjectIRI ?? RdfEntitySerializerService.createEntityIRI(entity);
     quads.push(triple(rdfSubjectIRI, namedNode(ns.rdf.type), namedNode(classIRI)));
 
-    for (const [propertyKey, rdfObject] of Object.entries(entity) as [string, unknown][]) {
-      if (rdfObject === null || rdfObject === undefined) {
+    for (const [propKey, propValue] of Object.entries(entity) as [string, unknown][]) {
+      if (propValue === null || propValue === undefined) {
         continue;
       }
 
-      const propertyMetadata = Reflect.getMetadata(RDF_METADATA_KEYS.property, entity.constructor, propertyKey) as
+      const propMetadata = Reflect.getMetadata(RDF_METADATA_KEYS.property, entity.constructor, propKey) as
         | RDFPropertyMetadata
         | undefined;
 
-      if (!propertyMetadata) {
+      if (!propMetadata) {
         continue;
       }
 
-      this.#serializeRDFProperty(rdfSubjectIRI, propertyMetadata.iri, rdfObject, propertyMetadata.options, quads);
+      this.#serializeRDFProperty(rdfSubjectIRI, propMetadata.iri, propValue, propMetadata.options, quads);
     }
 
     return quads;
