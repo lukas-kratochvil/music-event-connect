@@ -1,8 +1,10 @@
+import { MapperModule } from "@music-event-connect/core/mappers";
 import { MusicEventsQueue } from "@music-event-connect/core/queue";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import type { ConfigSchema } from "../config/schema";
+import { MusicEventConsumer } from "./music-event.consumer";
 
 @Module({
   imports: [
@@ -17,7 +19,20 @@ import type { ConfigSchema } from "../config/schema";
       }),
     }),
     BullModule.registerQueue({ name: MusicEventsQueue.name }),
+    MapperModule.registerAsync({
+      useFactory: (config: ConfigService<ConfigSchema, true>) => ({
+        tripleStore: {
+          endpointUrl: config.get("tripleStore.endpointUrl", { infer: true }),
+          updateUrl: config.get("tripleStore.updateUrl", { infer: true }),
+          user: config.get("tripleStore.user", { infer: true }),
+          password: config.get("tripleStore.password", { infer: true }),
+        },
+      }),
+      imports: [ConfigModule],
+      inject: [ConfigService],
+    }),
   ],
+  providers: [MusicEventConsumer],
   exports: [BullModule],
 })
 export class QueueModule {}
