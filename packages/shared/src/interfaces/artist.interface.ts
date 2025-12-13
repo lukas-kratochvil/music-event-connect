@@ -23,12 +23,6 @@ export interface IArtist {
   genres: string[];
 
   /**
-   * Artist's country of origin.
-   */
-  // TODO: include artist's country?
-  // country: string | undefined;
-
-  /**
    * Images of the artist.
    */
   images: string[];

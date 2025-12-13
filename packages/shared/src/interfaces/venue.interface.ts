@@ -28,10 +28,4 @@ export interface IVenue {
    * The longitude of a location.
    */
   longitude: number | undefined;
-
-  /**
-   * Images of the venue.
-   */
-  // TODO: also add images?
-  // images: string[];
 }
