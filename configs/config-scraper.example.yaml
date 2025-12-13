@@ -1,22 +1,22 @@
-# Ticketmaster for developers: https://developer.ticketmaster.com/
-ticketmaster:
-  # Base URL for the ticketmaster API
-  url:
-  # Get your API key here: https://developer-acct.ticketmaster.com/user/login
-  apiKey:
-
-# GoOut
-goout:
-  # Base URL of the GoOut - cs/en localization
-  url:
-
-# Ticketportal
-ticketportal:
-  # Base URL of the ticketportal music page
-  url:
-
-# Redis cache
+# Redis - message queue
 redis:
   # name of the Redis Docker container
   host:
   port:
+
+# Ticketmaster for developers: https://developer.ticketmaster.com/
+ticketmaster:
+  # base URL for the Ticketmaster API
+  url:
+  # get your API key here: https://developer-acct.ticketmaster.com/user/login
+  apiKey:
+
+# GoOut
+goout:
+  # base URL of the GoOut - cs/en localization supported
+  url:
+
+# Ticketportal
+ticketportal:
+  # base URL of the Ticketportal music page
+  url:

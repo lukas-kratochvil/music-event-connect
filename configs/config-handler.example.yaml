@@ -1,4 +1,4 @@
-# Redis cache
+# Redis - cache and message queue
 redis:
   # name of the Redis Docker container
   host:
