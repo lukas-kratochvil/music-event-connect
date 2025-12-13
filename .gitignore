@@ -20,8 +20,14 @@ config*.yaml
 config*.json
 !*config*.example.*
 
-# IDEs and editors
-.vscode
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Other IDEs and editors
 .idea
 .project
 .classpath
@@ -29,13 +35,6 @@ config*.json
 *.launch
 .settings/
 *.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 
 # Testing
 coverage
