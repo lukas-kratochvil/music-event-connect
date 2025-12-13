@@ -44,7 +44,13 @@ export class GooutService implements ICronJobService {
     >,
     config: ConfigService<ConfigSchema, true>
   ) {
-    this.#baseUrl = config.get("goout.url", { infer: true });
+    const gooutConfig = config.get("goout", { infer: true });
+
+    if (!gooutConfig) {
+      throw new Error("Config not present!");
+    }
+
+    this.#baseUrl = gooutConfig.url;
     // Running as root without --no-sandbox is not supported. See https://crbug.com/638180.
     this.#puppeteerArgs
       = config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];

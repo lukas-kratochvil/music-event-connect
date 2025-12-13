@@ -4,21 +4,23 @@ import Joi from "joi";
 export type ConfigSchema = {
   nodeEnv: NodeEnv;
   port: number;
-  ticketmaster: {
-    url: string;
-    apiKey: string;
-  };
-  goout: {
-    url: string;
-  };
-  ticketportal: {
-    url: string;
-  };
   redis: {
     host: string;
     port: number;
   };
+  goout?: {
+    url: string;
+  };
+  ticketmaster?: {
+    url: string;
+    apiKey: string;
+  };
+  ticketportal?: {
+    url: string;
+  };
 };
+
+export type MusicEventServices = keyof Pick<ConfigSchema, "goout" | "ticketmaster" | "ticketportal">;
 
 export const configSchema = Joi.object<ConfigSchema, true>({
   nodeEnv: Joi.string()
@@ -26,18 +28,18 @@ export const configSchema = Joi.object<ConfigSchema, true>({
     .valid(...ALLOWED_NODE_ENVS)
     .required(),
   port: Joi.number().port().required(),
-  ticketmaster: Joi.object<ConfigSchema["ticketmaster"], true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-    apiKey: Joi.string().trim().required(),
-  }),
-  goout: Joi.object<ConfigSchema["goout"], true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-  }),
-  ticketportal: Joi.object<ConfigSchema["ticketportal"], true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-  }),
   redis: Joi.object<ConfigSchema["redis"], true>({
     host: Joi.string().trim().required(),
     port: Joi.number().port().required(),
   }),
+  goout: Joi.object<NonNullable<ConfigSchema["goout"]>, true>({
+    url: Joi.string().trim().uri({ scheme: "https" }).required(),
+  }).optional(),
+  ticketmaster: Joi.object<NonNullable<ConfigSchema["ticketmaster"]>, true>({
+    url: Joi.string().trim().uri({ scheme: "https" }).required(),
+    apiKey: Joi.string().trim().required(),
+  }).optional(),
+  ticketportal: Joi.object<NonNullable<ConfigSchema["ticketportal"]>, true>({
+    url: Joi.string().trim().uri({ scheme: "https" }).required(),
+  }).optional(),
 });

@@ -9,14 +9,20 @@ export class TicketmasterHttpConfigService implements HttpModuleOptionsFactory {
   constructor(private readonly config: ConfigService<ConfigSchema, true>) {}
 
   createHttpOptions(): HttpModuleOptions {
+    const ticketmasterConfig = this.config.get("ticketmaster", { infer: true });
+
+    if (!ticketmasterConfig) {
+      throw new Error("Config not present!");
+    }
+
     return {
-      baseURL: this.config.get("ticketmaster.url", { infer: true }),
+      baseURL: ticketmasterConfig.url,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       params: {
-        apikey: this.config.get("ticketmaster.apiKey", { infer: true }),
+        apikey: ticketmasterConfig.apiKey,
       },
     };
   }
