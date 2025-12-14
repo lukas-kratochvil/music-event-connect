@@ -2,6 +2,7 @@
   "typescript.tsdk": "apps/scraper/node_modules/typescript/lib",
   "cSpell.words": [
     "Goout",
+    "LOCATIONIQ",
     "ticketmaster",
     "Ticketportal"
   ]

@@ -9,12 +9,16 @@ import {
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import type { Job, Worker } from "bullmq";
+import { LocationIQApiProxy } from "../geocoding/locationiq-api-proxy.service";
 
 @Processor(MusicEventsQueue.name)
 export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataType, MusicEventsQueueDataType>> {
   #logger = new Logger(MusicEventConsumer.name);
 
-  constructor(private readonly musicEventMapper: MusicEventMapper) {
+  constructor(
+    private readonly geocodingService: LocationIQApiProxy,
+    private readonly musicEventMapper: MusicEventMapper
+  ) {
     super();
   }
 
@@ -37,7 +41,21 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
     try {
       // 1) Transform to MusicEventEntity
       const eventId = createMusicEventId(job.name, job.data.event.id);
-      const plain = { ...job.data.event, id: eventId };
+      const venuesWithCoords = await Promise.all(
+        job.data.event.venues.map(async (venue) => {
+          const coords = await this.geocodingService.search(venue.name, venue.address);
+          return {
+            ...venue,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          };
+        })
+      );
+      const plain = {
+        ...job.data.event,
+        id: eventId,
+        venues: venuesWithCoords,
+      } satisfies MusicEventsQueueDataType["event"];
       const musicEvent = plainToEntity(MusicEventEntity, plain, { excludeExtraneousValues: true });
 
       // 2) Validate MusicEventEntity

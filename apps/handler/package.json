@@ -14,15 +14,22 @@
     "tidy": "pnpm format && pnpm lint"
   },
   "dependencies": {
+    "@keyv/redis": "^5.1.5",
     "@music-event-connect/core": "workspace:*",
     "@music-event-connect/shared": "workspace:*",
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/bullmq": "^11.0.2",
+    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.1.2",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.2",
     "@nestjs/platform-express": "^11.1.2",
+    "axios": "^1.9.0",
+    "bottleneck": "^2.19.5",
     "bullmq": "^5.56.1",
-    "joi": "^17.13.3"
+    "cache-manager": "^7.2.7",
+    "joi": "^17.13.3",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@music-event-connect/eslint-config": "workspace:*",

@@ -4,6 +4,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import type { ConfigSchema } from "../config/schema";
+import { GeocodingModule } from "../geocoding/geocoding.module";
 import { MusicEventConsumer } from "./music-event.consumer";
 
 @Module({
@@ -20,6 +21,8 @@ import { MusicEventConsumer } from "./music-event.consumer";
     }),
     BullModule.registerQueue({ name: MusicEventsQueue.name }),
     MapperModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
       useFactory: (config: ConfigService<ConfigSchema, true>) => ({
         tripleStore: {
           endpointUrl: config.get("tripleStore.endpointUrl", { infer: true }),
@@ -28,9 +31,8 @@ import { MusicEventConsumer } from "./music-event.consumer";
           password: config.get("tripleStore.password", { infer: true }),
         },
       }),
-      imports: [ConfigModule],
-      inject: [ConfigService],
     }),
+    GeocodingModule,
   ],
   providers: [MusicEventConsumer],
   exports: [BullModule],

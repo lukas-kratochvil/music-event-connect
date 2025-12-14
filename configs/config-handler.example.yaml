@@ -3,6 +3,9 @@ redis:
   # name of the Redis Docker container
   host:
   port:
+  cache:
+    # time-to-live (TTL) in seconds that each record will last in cache (0 = infinite)
+    ttl:
 
 # Triple store
 tripleStore:
@@ -12,3 +15,10 @@ tripleStore:
   updateUrl:
   user:
   password:
+
+# LocationIQ geocoding: https://my.locationiq.com/dashboard
+locationIQ:
+  # base URL for the LocationIQ API
+  url:
+  # get your API key here: https://my.locationiq.com/dashboard#accesstoken
+  apiKey:
