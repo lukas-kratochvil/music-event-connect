@@ -65,7 +65,7 @@ export class LocationIQApi implements ILocationIQApi {
       throw new Error(res.message);
     }
 
-    const { data: locations, status, statusText } = res;
+    const { data, status, statusText } = res;
 
     if (status === 404) {
       throw new Error("Location not found");
@@ -78,7 +78,7 @@ export class LocationIQApi implements ILocationIQApi {
     }
 
     const location = this.#getTheBestSearchResult(
-      locations,
+      data,
       [
         // match location by address name (e.g. a music club name)
         (loc) => loc.address?.name === name,

@@ -23,8 +23,8 @@ export class LocationIQApiProxy implements ILocationIQApi {
   readonly #rateLimiter: Bottleneck;
 
   constructor(
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private readonly locationIQApi: LocationIQApi
+    private readonly locationIQApi: LocationIQApi,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache
   ) {
     const dayRateLimiter = new Bottleneck({
       id: "locationiq-api-limiter-day",

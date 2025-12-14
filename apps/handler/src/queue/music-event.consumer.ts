@@ -11,6 +11,10 @@ import { Logger } from "@nestjs/common";
 import type { Job, Worker } from "bullmq";
 import { LocationIQApiProxy } from "../geocoding/locationiq-api-proxy.service";
 
+type VenueWithCoordinates = {
+  [K in keyof MusicEventsQueueDataType["event"]["venues"][number]]: MusicEventsQueueDataType["event"]["venues"][number][K] & {};
+};
+
 @Processor(MusicEventsQueue.name)
 export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataType, MusicEventsQueueDataType>> {
   #logger = new Logger(MusicEventConsumer.name);
@@ -41,16 +45,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
     try {
       // 1) Transform to MusicEventEntity
       const eventId = createMusicEventId(job.name, job.data.event.id);
-      const venuesWithCoords = await Promise.all(
-        job.data.event.venues.map(async (venue) => {
-          const coords = await this.geocodingService.search(venue.name, venue.address);
-          return {
-            ...venue,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          };
-        })
-      );
+      const venuesWithCoords = await this.#getEventVenuesWithCoordinates(job.data.event.venues);
       const plain = {
         ...job.data.event,
         id: eventId,
@@ -99,5 +94,31 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       );
       throw error;
     }
+  }
+
+  async #getEventVenuesWithCoordinates(
+    venues: MusicEventsQueueDataType["event"]["venues"]
+  ): Promise<VenueWithCoordinates[]> {
+    const isVenueWithCoords = (venue: (typeof venues)[number]): venue is VenueWithCoordinates =>
+      venue.latitude !== undefined && venue.longitude !== undefined;
+
+    if (venues.every(isVenueWithCoords)) {
+      return venues;
+    }
+
+    return Promise.all(
+      venues.map(async (venue) => {
+        if (isVenueWithCoords(venue)) {
+          return venue;
+        }
+
+        const coords = await this.geocodingService.search(venue.name, venue.address);
+        return {
+          ...venue,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        };
+      })
+    );
   }
 }

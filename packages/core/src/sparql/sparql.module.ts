@@ -16,6 +16,7 @@ import { createDigestFetch, type SparqlBuilderType } from "./util";
     SPARQLUpdateBuilderService,
     {
       provide: SPARQL_PROVIDERS.client,
+      inject: [MODULE_OPTIONS_TOKEN],
       useFactory: async (options: SPARQLModuleOptions) => {
         const sparqlClient = await import("sparql-http-client");
         return new sparqlClient.ParsingClient({
@@ -25,7 +26,6 @@ import { createDigestFetch, type SparqlBuilderType } from "./util";
           fetch: createDigestFetch(options.user, options.password),
         });
       },
-      inject: [MODULE_OPTIONS_TOKEN],
     },
     SPARQLService,
   ],
