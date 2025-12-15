@@ -175,6 +175,9 @@ importers:
       axios:
         specifier: ^1.9.0
         version: 1.9.0
+      bottleneck:
+        specifier: ^2.19.5
+        version: 2.19.5
       bullmq:
         specifier: ^5.56.1
         version: 5.56.1

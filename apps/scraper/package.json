@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "^11.1.2",
     "@nestjs/schedule": "^6.0.0",
     "axios": "^1.9.0",
+    "bottleneck": "^2.19.5",
     "bullmq": "^5.56.1",
     "date-fns": "^4.1.0",
     "joi": "^17.13.3",

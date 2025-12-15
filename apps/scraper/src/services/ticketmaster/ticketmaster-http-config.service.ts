@@ -19,7 +19,6 @@ export class TicketmasterHttpConfigService implements HttpModuleOptionsFactory {
       baseURL: ticketmasterConfig.url,
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
       params: {
         apikey: ticketmasterConfig.apiKey,

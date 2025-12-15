@@ -6,7 +6,7 @@ redis:
 
 # Ticketmaster for developers: https://developer.ticketmaster.com/
 ticketmaster:
-  # base URL for the Ticketmaster API
+  # base URL for the Ticketmaster Discovery API: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
   url:
   # get your API key here: https://developer-acct.ticketmaster.com/user/login
   apiKey:

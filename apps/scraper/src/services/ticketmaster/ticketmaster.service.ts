@@ -1,18 +1,17 @@
 import { TZDateMini } from "@date-fns/tz";
 import {
+  MusicEventsQueue,
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
-  MusicEventsQueue,
 } from "@music-event-connect/core/queue";
-import { HttpService } from "@nestjs/axios";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
-import { AxiosError } from "axios";
 import type { Queue } from "bullmq";
 import { addDays, addHours, compareAsc, max, set } from "date-fns";
-import { catchError, firstValueFrom } from "rxjs";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
-import { TicketmasterResponse, type AccessDate, type Dates, type Image } from "./ticketmaster-api.types";
+import { RateLimitError } from "./rate-limit.error";
+import { TicketmasterApiProxy } from "./ticketmaster-api-proxy.service";
+import type { AccessDate, Dates, Image } from "./ticketmaster-api.types";
 
 @Injectable()
 export class TicketmasterService implements ICronJobService {
@@ -31,7 +30,7 @@ export class TicketmasterService implements ICronJobService {
       MusicEventsQueueDataType,
       MusicEventsQueueNameType
     >,
-    private readonly http: HttpService
+    private readonly ticketmasterApi: TicketmasterApiProxy
   ) {}
 
   getRunDate(): Date {
@@ -160,64 +159,33 @@ export class TicketmasterService implements ICronJobService {
   }
 
   async run() {
-    // The default quota is 5000 API calls per day and rate limitation of 5 requests per second.
-    // Deep Paging: only supports retrieving the 1000th item. i.e. (size * page < 1000).
-    const res = await firstValueFrom(
-      this.http
-        .get<TicketmasterResponse>("events.json", {
-          params: {
-            page: this.#currentPage, // `page` behaves like an offset, default `size` is 20 items per page
-            countryCode: "cz",
-            classificationName: ["music"],
-            sort: "date,name,asc",
-            locale: "en", // values adjusted to a given locale (names, URLs etc.)
-          },
-        })
-        .pipe(
-          catchError(
-            (error: AxiosError<TicketmasterResponse>) =>
-              new Promise<AxiosError<TicketmasterResponse>>((resolve) => resolve(error))
-          )
-        )
-    );
+    let data: Awaited<ReturnType<typeof this.ticketmasterApi.getMusicEvents>>;
 
-    if (res instanceof AxiosError) {
-      this.#logger.error(res.message);
-      return;
-    }
-
-    const { data, headers, status } = res;
-
-    // headers["rate-limit"] - what’s the rate limit available to you, the default is 5000
-    // headers["rate-limit-available"] - how many requests are available to you, this will be 5000 minus all the requests you’ve done
-    // headers["rate-limit-over"] - how many requests over your quota you’ve made
-    // headers["rate-limit-reset"] - the UTC date and time of when your quota will be reset
-    this.#logger.log(
-      `Limit: ${headers["rate-limit"]}, Available: ${headers["rate-limit-available"]}, Over: ${headers["rate-limit-over"]}, Reset: ${headers["rate-limit-reset"]}`
-    );
-
-    if ("fault" in data) {
-      // HTTP 401 - invalid API key
-      // HTTP 429 - quota reached
-      if (status === 429) {
-        this.#setNewStartDate(Number(headers["rate-limit-reset"]));
+    try {
+      data = await this.ticketmasterApi.getMusicEvents(this.#currentPage);
+    } catch (e) {
+      if (e instanceof RateLimitError) {
+        this.#setNewStartDate(e.resetTime);
       }
-
-      this.#logger.error(data.fault.faultstring);
+      if (e instanceof Error) {
+        this.#logger.error(e.message, e.stack);
+      } else {
+        this.#logger.error(e);
+      }
       return;
     }
 
     if (!data._embedded || data.page.number >= data.page.totalPages) {
       this.#logger.log("No more events.");
       this.#currentPage = 0;
-      this.#setNewStartDate(Number(headers["rate-limit-reset"]));
+      this.#runDate = this.#computeNextRunDate();
       return;
     }
 
     this.#currentPage++;
 
     // extract music event data
-    const musicEvents = data._embedded.events.map<MusicEventsQueueDataType>((event): MusicEventsQueueDataType => {
+    const musicEvents = data._embedded.events.map<MusicEventsQueueDataType>((event) => {
       const startDate = this.#getEventStartDate(event.dates);
       return {
         event: {

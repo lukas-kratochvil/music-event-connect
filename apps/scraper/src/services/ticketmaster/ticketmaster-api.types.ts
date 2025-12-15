@@ -1,9 +1,9 @@
 /**
  * Types converted from the ticketmaster example response.
  */
-export type TicketmasterResponse = TicketmasterData | TicketmasterError;
+export type TicketmasterEventsResponse = TicketmasterEventsData | TicketmasterEventsError;
 
-type TicketmasterError = {
+type TicketmasterEventsError = {
   fault: {
     faultstring: string;
     detail: {
@@ -12,7 +12,7 @@ type TicketmasterError = {
   };
 };
 
-type TicketmasterData = {
+export type TicketmasterEventsData = {
   _embedded?: Embedded;
   _links: RootLinks;
   page: CurrentPageInfo;
