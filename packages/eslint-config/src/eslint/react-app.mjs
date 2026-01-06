@@ -71,7 +71,7 @@ export default ts.config(
         project: "tsconfig.app.json",
       },
       globals: {
-        ...globals.node,
+        ...globals.browser,
       },
     },
   }
