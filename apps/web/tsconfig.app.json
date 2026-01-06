@@ -14,7 +14,7 @@
     "types": [
       "vite/client"
     ],
-    /* Bundler mode */
+    /* For React app */
     "jsx": "react-jsx",
   },
   "include": [

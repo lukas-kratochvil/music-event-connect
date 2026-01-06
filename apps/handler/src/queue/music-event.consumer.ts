@@ -11,8 +11,9 @@ import { Logger } from "@nestjs/common";
 import type { Job, Worker } from "bullmq";
 import { LocationIQApiProxy } from "../geocoding/locationiq-api-proxy.service";
 
+type Venue = MusicEventsQueueDataType["event"]["venues"][number];
 type VenueWithCoordinates = {
-  [K in keyof MusicEventsQueueDataType["event"]["venues"][number]]: MusicEventsQueueDataType["event"]["venues"][number][K] & {};
+  [K in keyof Venue]: Venue[K] & {};
 };
 
 @Processor(MusicEventsQueue.name)
