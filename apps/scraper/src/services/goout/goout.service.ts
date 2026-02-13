@@ -144,9 +144,9 @@ export class GooutService implements ICronJobService {
     await artistPage.close();
     return {
       name,
-      genres,
-      sameAs,
-      images,
+      genres: [...new Set(genres)],
+      sameAs: [...new Set(sameAs)],
+      images: [...new Set(images)],
     };
   }
 

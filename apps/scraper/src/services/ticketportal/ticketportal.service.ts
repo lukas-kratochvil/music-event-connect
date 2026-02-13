@@ -57,7 +57,7 @@ export class TicketportalService implements ICronJobService {
     return this.#isInProcess;
   }
 
-  #getEnGenreNames(csGenreNames: string): string[] {
+  #getUniqueEnGenreNames(csGenreNames: string): string[] {
     return [
       ...new Set(
         csGenreNames
@@ -162,7 +162,7 @@ export class TicketportalService implements ICronJobService {
     return venue;
   }
 
-  async #getEventImages(page: Page): Promise<string[]> {
+  async #getUniqueEventImages(page: Page): Promise<string[]> {
     const images: string[] = [];
 
     try {
@@ -182,7 +182,7 @@ export class TicketportalService implements ICronJobService {
       }
     }
 
-    return images;
+    return [...new Set(images)];
   }
 
   async #getMusicEvents(
@@ -205,7 +205,7 @@ export class TicketportalService implements ICronJobService {
       multipleEventDatesChecker.add(musicEventUrl);
     }
 
-    const images = await this.#getEventImages(page);
+    const images = await this.#getUniqueEventImages(page);
     const musicEventData: Pick<MusicEventsQueueDataType, "event">["event"][] = [];
 
     for (const ticket of tickets) {
@@ -293,7 +293,7 @@ export class TicketportalService implements ICronJobService {
 
         const artists = artistNames.map((artistName): MusicEventsQueueDataType["event"]["artists"][number] => ({
           name: artistName,
-          genres: this.#getEnGenreNames(genreName),
+          genres: this.#getUniqueEnGenreNames(genreName),
           sameAs: [],
           images: [], // Ticketportal has event images only
         }));

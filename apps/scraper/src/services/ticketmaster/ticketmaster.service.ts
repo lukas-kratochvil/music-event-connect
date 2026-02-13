@@ -207,10 +207,14 @@ export class TicketmasterService implements ICronJobService {
               name: a.name.trim(),
               genres: [...new Set(a.classifications.map((c) => [c.genre.name.trim(), c.subGenre.name.trim()]).flat())],
               sameAs: a.externalLinks
-                ? Object.values(a.externalLinks)
-                    .flat()
-                    .map((url) => url.url)
-                    .filter((url) => url.startsWith("http"))
+                ? [
+                    ...new Set(
+                      Object.values(a.externalLinks)
+                        .flat()
+                        .map((url) => url.url)
+                        .filter((url) => url.startsWith("http"))
+                    ),
+                  ]
                 : [],
               images: this.#getUniqueArtistImages(a.images).map((img) => img.url),
             })),
