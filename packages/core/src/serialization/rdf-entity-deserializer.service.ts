@@ -12,7 +12,7 @@ import { ns } from "../rdf/ontology";
 @Injectable()
 export class RdfEntityDeserializerService {
   #getEntityId<TEntity extends AbstractEntity>(cls: ClassConstructor<TEntity>, entityIRI: NamedNode): string {
-    const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, cls) as string | undefined;
+    const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, cls);
 
     if (typeof prefixIRI === "string" && entityIRI.value.startsWith(prefixIRI)) {
       return entityIRI.value.replace(prefixIRI, "");

@@ -9,7 +9,7 @@ export type Coordinates = {
 
 export interface ILocationIQApi {
   /**
-   * Performs geocoding to get the location fot the given place.
+   * Performs geocoding to get the location for the given place.
    *
    * @param name name of the place
    * @param address address of the place

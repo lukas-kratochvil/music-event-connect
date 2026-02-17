@@ -197,35 +197,41 @@ export class TicketmasterService implements ICronJobService {
           endDate: this.#getEventEndDate(event.dates),
           artists: event._embedded.attractions
             .filter(
-              (a) =>
-                !a.classifications
-                  .map((c) => c.subType.name)
+              (attraction) =>
+                !attraction.classifications
+                  .map((classification) => classification.subType.name)
                   .flat()
                   .includes("Concert")
             )
-            .map((a) => ({
-              name: a.name.trim(),
-              genres: [...new Set(a.classifications.map((c) => [c.genre.name.trim(), c.subGenre.name.trim()]).flat())],
-              sameAs: a.externalLinks
+            .map((attraction) => ({
+              name: attraction.name.trim(),
+              genres: [
+                ...new Set(
+                  attraction.classifications
+                    .map((classification) => [classification.genre.name.trim(), classification.subGenre.name.trim()])
+                    .flat()
+                ),
+              ],
+              sameAs: attraction.externalLinks
                 ? [
                     ...new Set(
-                      Object.values(a.externalLinks)
+                      Object.values(attraction.externalLinks)
                         .flat()
                         .map((url) => url.url)
                         .filter((url) => url.startsWith("http"))
                     ),
                   ]
                 : [],
-              images: this.#getUniqueArtistImages(a.images).map((img) => img.url),
+              images: this.#getUniqueArtistImages(attraction.images).map((img) => img.url),
             })),
-          venues: event._embedded.venues.map((v) => ({
-            name: v.name.trim(),
-            latitude: Number(v.location.latitude) || undefined,
-            longitude: Number(v.location.longitude) || undefined,
+          venues: event._embedded.venues.map((venue) => ({
+            name: venue.name.trim(),
+            latitude: Number(venue.location.latitude) || undefined,
+            longitude: Number(venue.location.longitude) || undefined,
             address: {
               country: "CZ",
-              locality: v.city.name.trim(),
-              street: v.address.line1.trim(),
+              locality: venue.city.name.trim(),
+              street: venue.address.line1.trim(),
             },
           })),
           ticket: {

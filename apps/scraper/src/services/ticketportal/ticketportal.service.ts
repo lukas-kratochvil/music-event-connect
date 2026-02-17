@@ -166,7 +166,7 @@ export class TicketportalService implements ICronJobService {
     const images: string[] = [];
 
     try {
-      const mainImage = await page.$eval("div.detail-header > img", (elem) => (elem as HTMLImageElement).src.trim());
+      const mainImage = await page.$eval("div.detail-header > img", (elem) => elem.src.trim());
       images.push(mainImage);
       const otherImages = await page.$$eval(
         "::-p-xpath(//section[@id = 'galeria']/div[contains(@class, 'grid')]/div[contains(@class, 'grid-item') and not(contains(@class, 'video'))]/a)",
@@ -256,7 +256,7 @@ export class TicketportalService implements ICronJobService {
           throw new Error("[" + musicEventUrl + "] - Missing venue info.");
         }
 
-        const venueUrl = await venueBlock.$eval("a.building", (elem) => (elem as HTMLAnchorElement).href.trim());
+        const venueUrl = await venueBlock.$eval("a.building", (elem) => elem.href.trim());
         let venueData: MusicEventsQueueDataType["event"]["venues"][number];
 
         try {

@@ -12,7 +12,7 @@ const { literal, namedNode, triple } = DataFactory;
 @Injectable()
 export class RdfEntitySerializerService {
   static createEntityIRI(entity: AbstractEntity): NamedNode {
-    const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor) as string | undefined;
+    const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor);
 
     if (typeof prefixIRI !== "string") {
       throw new Error("Missing @RDFPrefixIRI on " + entity.constructor.name);
@@ -98,7 +98,7 @@ export class RdfEntitySerializerService {
   }
 
   #serializeRDFClass(entity: AbstractEntity, subjectIRI?: NamedNode, quads: Quad[] = []): Quad[] {
-    const classIRI = Reflect.getMetadata(RDF_METADATA_KEYS.class, entity.constructor) as string | undefined;
+    const classIRI = Reflect.getMetadata(RDF_METADATA_KEYS.class, entity.constructor);
 
     if (typeof classIRI !== "string") {
       throw new Error("Missing @RDFClass on " + entity.constructor.name);

@@ -15,6 +15,7 @@ export const isMusicEventId = (validationOptions?: ValidationOptions) => (object
 
         const parts = value.split(MUSIC_EVENT_ID_DELIM);
 
+        // don't check the exact equality of 2 parts, because the origin id can possibly contain the same delimiter that is used for separation of the origin's prefix and id
         if (parts.length < 2) {
           return false;
         }
@@ -23,7 +24,7 @@ export const isMusicEventId = (validationOptions?: ValidationOptions) => (object
         const originId = parts.slice(1).join(MUSIC_EVENT_ID_DELIM);
         return (
           originPrefix !== undefined
-          && VALID_MUSIC_EVENT_ID_PREFIXES.includes(originPrefix as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+          && VALID_MUSIC_EVENT_ID_PREFIXES.some((validIdPrefix) => validIdPrefix === originPrefix)
           && originId.length > 0
         );
       },

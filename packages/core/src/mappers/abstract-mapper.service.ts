@@ -20,9 +20,11 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
 
   protected abstract getClassConstructor(): ClassConstructor<TEntity>;
 
-  private createNewEntity() {
+  private createNewEntity(id: string) {
     const cls = this.getClassConstructor();
-    return new cls();
+    const entity = new cls();
+    entity.id = id;
+    return entity;
   }
 
   create(entity: TEntity) {
@@ -37,15 +39,13 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
   }
 
   exists(id: string) {
-    const entity = this.createNewEntity();
-    entity.id = id;
+    const entity = this.createNewEntity(id);
     const quads = this.serializer.serialize(entity);
     return this.sparqlService.ask(quads, this.getGraphIRI());
   }
 
   async getWholeEntity(id: string) {
-    const entity = this.createNewEntity();
-    entity.id = id;
+    const entity = this.createNewEntity(id);
     const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
     const dataset = await this.sparqlService.constructEntity(entityIRI, this.getGraphIRI());
     return this.deserializer.deserialize(this.getClassConstructor(), entityIRI, dataset);
