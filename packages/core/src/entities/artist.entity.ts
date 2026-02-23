@@ -1,17 +1,17 @@
+import { hash } from "crypto";
 import type { IArtist } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
-import { IsArray, ArrayUnique, IsString, IsUrl, IsUUID } from "class-validator";
-import { uuidv7 } from "uuidv7";
+import { IsArray, ArrayUnique, IsString, IsUrl } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";
 
 @RDFClass(ns.schema.MusicGroup)
 export class ArtistEntity extends AbstractEntity implements IArtist {
-  @IsUUID(7)
-  // The easiest way to create ids for all the `MusicEventEntity` nested objects.
-  // When entity is retrieved from the database the default value is overwritten.
-  override id: string = uuidv7();
+  @Expose()
+  @Transform(({ value, obj }) => (value ? value : hash("sha256", obj["name"], "hex")))
+  @IsString()
+  override id: string;
 
   @Expose()
   @IsString()

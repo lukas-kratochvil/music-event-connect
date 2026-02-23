@@ -1,4 +1,10 @@
-import { areEntitiesSame, createMusicEventId, plainToEntity, validateEntity } from "@music-event-connect/core";
+import {
+  areEntitiesSame,
+  createMusicEventId,
+  plainToEntity,
+  validateEntity,
+  type ObjectWithIds,
+} from "@music-event-connect/core";
 import { MusicEventEntity } from "@music-event-connect/core/entities";
 import { MusicEventMapper } from "@music-event-connect/core/mappers";
 import {
@@ -45,14 +51,31 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
   override async process(job: Job<MusicEventsQueueDataType, MusicEventsQueueDataType, MusicEventsQueueNameType>) {
     try {
       // 1) Transform to MusicEventEntity
-      const eventId = createMusicEventId(job.name, job.data.event.id);
-      const venuesWithCoords = await this.#getEventVenuesWithCoordinates(job.data.event.venues);
-      const plain = {
-        ...job.data.event,
+      const event = job.data.event;
+      const eventId = createMusicEventId(job.name, event.id);
+      const venuesWithCoords = await this.#getEventVenuesWithCoordinates(event.venues);
+      // IDs will be assigned by the transformation
+      const eventWithIds = {
+        ...event,
         id: eventId,
-        venues: venuesWithCoords,
-      } satisfies MusicEventsQueueDataType["event"];
-      const musicEvent = plainToEntity(MusicEventEntity, plain, { excludeExtraneousValues: true });
+        artists: event.artists.map((artist) => ({
+          ...artist,
+          id: "",
+        })),
+        ticket: {
+          ...event.ticket,
+          id: "",
+        },
+        venues: venuesWithCoords.map((venue) => ({
+          ...venue,
+          id: "",
+          address: {
+            ...venue.address,
+            id: "",
+          },
+        })),
+      } satisfies ObjectWithIds<typeof event>;
+      const musicEvent = plainToEntity(MusicEventEntity, eventWithIds, { excludeExtraneousValues: true });
 
       // 2) Validate MusicEventEntity
       const validationErrors = await validateEntity(musicEvent);

@@ -4,11 +4,24 @@ import { diff } from "deep-object-diff";
 import type { AbstractEntity } from "../entities";
 import { cloneObject, deepSortArraysInPlace, deleteExtraObjectProperties, isDiffEmpty } from "./internal";
 
+type IdObject = { id: string };
+
+export type ObjectWithIds<T extends object & IdObject> = {
+  [K in keyof T]: T[K] extends Record<string, unknown>
+    ? ObjectWithIds<T[K] & IdObject>
+    : T[K] extends (infer U)[]
+      ? U extends Record<string, unknown>
+        ? ObjectWithIds<U & IdObject>[]
+        : T[K]
+      : T[K];
+};
+
 /**
  * Converts plain (literal) object to entity.
  */
-export const plainToEntity = <T extends AbstractEntity>(...parameters: Parameters<typeof plainToInstance<T, object>>) =>
-  plainToInstance<T, object>(...parameters);
+export const plainToEntity = <T extends AbstractEntity>(
+  ...parameters: Parameters<typeof plainToInstance<T, ObjectWithIds<T>>>
+) => plainToInstance<T, ObjectWithIds<T>>(...parameters);
 
 /**
  * Validates given entity.

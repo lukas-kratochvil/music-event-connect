@@ -1,17 +1,23 @@
+import { hash } from "crypto";
 import type { IAddress } from "@music-event-connect/shared/interfaces";
-import { Expose } from "class-transformer";
-import { IsISO31661Alpha2, IsOptional, IsString, IsUUID } from "class-validator";
-import { uuidv7 } from "uuidv7";
+import { Expose, Transform } from "class-transformer";
+import { IsISO31661Alpha2, IsOptional, IsString } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";
 
 @RDFClass(ns.schema.PostalAddress)
 export class AddressEntity extends AbstractEntity implements IAddress {
-  @IsUUID(7)
-  // The easiest way to create ids for all the `MusicEventEntity` nested objects.
-  // When entity is retrieved from the database the default value is overwritten.
-  override id: string = uuidv7();
+  @Expose()
+  @Transform(({ value, obj }) => {
+    if (value) {
+      return value;
+    }
+    const uniqueStr = `${obj["country"]}-${obj["locality"]}-${obj["street"] ?? ""}`;
+    return hash("sha256", uniqueStr, "hex");
+  })
+  @IsString()
+  override id: string;
 
   @Expose()
   @IsISO31661Alpha2()

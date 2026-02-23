@@ -1,17 +1,17 @@
+import { hash } from "crypto";
 import { ItemAvailability, type ITicket } from "@music-event-connect/shared/interfaces";
-import { Expose } from "class-transformer";
-import { IsIn, IsUrl, IsUUID } from "class-validator";
-import { uuidv7 } from "uuidv7";
+import { Expose, Transform } from "class-transformer";
+import { IsIn, IsString, IsUrl } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";
 
 @RDFClass(ns.schema.Offer)
 export class TicketEntity extends AbstractEntity implements ITicket {
-  @IsUUID(7)
-  // The easiest way to create ids for all the `MusicEventEntity` nested objects.
-  // When entity is retrieved from the database the default value is overwritten.
-  override id: string = uuidv7();
+  @Expose()
+  @Transform(({ value, obj }) => (value ? value : hash("sha256", obj["url"], "hex")))
+  @IsString()
+  override id: string;
 
   @Expose()
   @IsUrl({ protocols: ["http", "https"] })
