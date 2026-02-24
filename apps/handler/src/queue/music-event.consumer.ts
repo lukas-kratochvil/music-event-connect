@@ -61,7 +61,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
         artists: event.artists.map((artist) => ({
           ...artist,
           id: "",
-          accounts: artist.sameAs.map((link) => ({
+          accounts: artist.profiles.map((link) => ({
             id: "",
             url: link,
             accountName: "",

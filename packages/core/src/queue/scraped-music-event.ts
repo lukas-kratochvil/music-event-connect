@@ -19,7 +19,7 @@ export type ScrapedMusicEvent = {
 type Artist = {
   name: string;
   genres: string[];
-  sameAs: string[];
+  profiles: string[];
   images: string[];
 };
 

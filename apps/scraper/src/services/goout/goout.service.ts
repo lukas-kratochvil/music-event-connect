@@ -72,7 +72,7 @@ export class GooutService implements ICronJobService {
     const artistPage = await browser.newPage();
     let name: string;
     let genres: string[];
-    let sameAs: string[];
+    let profiles: string[];
     let images: string[];
 
     try {
@@ -81,7 +81,7 @@ export class GooutService implements ICronJobService {
       }
 
       name = await artistPage.$eval("header h1", (elem) => elem.innerText.trim());
-      sameAs = await artistPage.$$eval(
+      profiles = await artistPage.$$eval(
         `::-p-xpath(//header/descendant::ul[contains(@class, 'links-row')]/descendant::a)`,
         (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href).filter((url) => url.startsWith("http"))
       );
@@ -145,7 +145,7 @@ export class GooutService implements ICronJobService {
     return {
       name,
       genres: [...new Set(genres)],
-      sameAs: [...new Set(sameAs)],
+      profiles: [...new Set(profiles)],
       images: [...new Set(images)],
     };
   }
