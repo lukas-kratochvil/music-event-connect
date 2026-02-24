@@ -1,3 +1,5 @@
+import type { IOnlineAccount } from "./online-account.interface";
+
 /**
  * Artist performing in music event.
  */
@@ -13,9 +15,9 @@ export interface IArtist {
   name: string;
 
   /**
-   * Links to other artist's profiles like Spotify or MusicBrainz.
+   * Links to other artist's accounts like Facebook, Spotify or MusicBrainz.
    */
-  sameAs: string[];
+  accounts: IOnlineAccount[];
 
   /**
    * Names of music genres of artist's work.

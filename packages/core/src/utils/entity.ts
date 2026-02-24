@@ -6,7 +6,7 @@ import { cloneObject, deepSortArraysInPlace, deleteExtraObjectProperties, isDiff
 
 type IdObject = { id: string };
 
-export type ObjectWithIds<T extends object & IdObject> = {
+type ObjectWithIds<T extends object & IdObject> = {
   [K in keyof T]: T[K] extends Record<string, unknown>
     ? ObjectWithIds<T[K] & IdObject>
     : T[K] extends (infer U)[]

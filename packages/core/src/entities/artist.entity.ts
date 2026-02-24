@@ -1,10 +1,11 @@
 import { hash } from "crypto";
-import type { IArtist } from "@music-event-connect/shared/interfaces";
-import { Expose, Transform } from "class-transformer";
-import { IsArray, ArrayUnique, IsString, IsUrl } from "class-validator";
+import type { IArtist, IOnlineAccount } from "@music-event-connect/shared/interfaces";
+import { Expose, Transform, Type } from "class-transformer";
+import { IsArray, ArrayUnique, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { AbstractEntity } from "./abstract.entity";
+import { OnlineAccountEntity } from "./online-account.entity";
 
 @RDFClass(ns.schema.MusicGroup)
 export class ArtistEntity extends AbstractEntity implements IArtist {
@@ -26,11 +27,12 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   genres: string[];
 
   @Expose()
+  @Type(() => OnlineAccountEntity)
   @IsArray()
-  @IsUrl({ protocols: ["http", "https"] }, { each: true })
-  @ArrayUnique<string>()
-  @RDFProperty(ns.schema.sameAs, { kind: "url" })
-  sameAs: string[];
+  @ArrayUnique<OnlineAccountEntity>((elem) => elem.url)
+  @ValidateNested({ each: true })
+  @RDFProperty(ns.foaf.account, { kind: "class", type: () => OnlineAccountEntity })
+  accounts: IOnlineAccount[];
 
   @Expose()
   @IsArray()

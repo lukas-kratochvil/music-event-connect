@@ -4,7 +4,6 @@ import {
   getMusicEventGraphIRI,
   plainToEntity,
   validateEntity,
-  type ObjectWithIds,
 } from "@music-event-connect/core";
 import { MusicEventEntity } from "@music-event-connect/core/entities";
 import { MusicEventMapper } from "@music-event-connect/core/mappers";
@@ -62,6 +61,12 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
         artists: event.artists.map((artist) => ({
           ...artist,
           id: "",
+          accounts: artist.sameAs.map((link) => ({
+            id: "",
+            url: link,
+            accountName: "",
+            accountServiceHomepage: "",
+          })),
         })),
         ticket: {
           ...event.ticket,
@@ -75,7 +80,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
             id: "",
           },
         })),
-      } satisfies ObjectWithIds<typeof event>;
+      } satisfies MusicEventEntity;
       const musicEvent = plainToEntity(MusicEventEntity, eventWithIds, { excludeExtraneousValues: true });
 
       // 2) Validate MusicEventEntity
