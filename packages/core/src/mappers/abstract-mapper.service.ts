@@ -1,6 +1,6 @@
 import { Inject } from "@nestjs/common";
 import type { ClassConstructor } from "class-transformer";
-import type { NamedNode } from "n3";
+import { DataFactory } from "n3";
 import type { AbstractEntity } from "../entities/abstract.entity";
 import { RdfEntityDeserializerService } from "../serialization/rdf-entity-deserializer.service";
 import { RdfEntitySerializerService } from "../serialization/rdf-entity-serializer.service";
@@ -16,8 +16,6 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
   @Inject(SPARQLService)
   private readonly sparqlService: SPARQLService;
 
-  protected abstract getGraphIRI(): NamedNode;
-
   protected abstract getClassConstructor(): ClassConstructor<TEntity>;
 
   private createNewEntity(id: string) {
@@ -27,27 +25,27 @@ export abstract class AbstractMapper<TEntity extends AbstractEntity> {
     return entity;
   }
 
-  create(entity: TEntity) {
+  create(entity: TEntity, graphIri: string) {
     const quads = this.serializer.serialize(entity);
-    return this.sparqlService.insert(quads, this.getGraphIRI());
+    return this.sparqlService.insert(quads, DataFactory.namedNode(graphIri));
   }
 
-  update(deleteEntity: TEntity, insertEntity: TEntity) {
+  update(deleteEntity: TEntity, insertEntity: TEntity, graphIri: string) {
     const deleteQuads = this.serializer.serialize(deleteEntity);
     const insertQuads = this.serializer.serialize(insertEntity);
-    return this.sparqlService.update(deleteQuads, insertQuads, this.getGraphIRI());
+    return this.sparqlService.update(deleteQuads, insertQuads, DataFactory.namedNode(graphIri));
   }
 
-  exists(id: string) {
+  exists(id: string, graphIri: string) {
     const entity = this.createNewEntity(id);
     const quads = this.serializer.serialize(entity);
-    return this.sparqlService.ask(quads, this.getGraphIRI());
+    return this.sparqlService.ask(quads, DataFactory.namedNode(graphIri));
   }
 
-  async getWholeEntity(id: string) {
+  async getWholeEntity(id: string, graphIri: string) {
     const entity = this.createNewEntity(id);
     const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
-    const dataset = await this.sparqlService.constructEntity(entityIRI, this.getGraphIRI());
+    const dataset = await this.sparqlService.constructEntity(entityIRI, DataFactory.namedNode(graphIri));
     return this.deserializer.deserialize(this.getClassConstructor(), entityIRI, dataset);
   }
 }

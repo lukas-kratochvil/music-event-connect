@@ -1,5 +1,5 @@
 import { registerDecorator, type ValidationArguments, type ValidationOptions } from "class-validator";
-import { MUSIC_EVENT_ID_DELIM, VALID_MUSIC_EVENT_ID_PREFIXES } from "../utils/music-event-id";
+import { MUSIC_EVENT_ID_DELIM, VALID_MUSIC_EVENT_ID_PREFIXES } from "../utils/music-event";
 
 export const isMusicEventId = (validationOptions?: ValidationOptions) => (object: object, propertyName: string) => {
   registerDecorator({

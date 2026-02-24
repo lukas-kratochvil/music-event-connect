@@ -17,3 +17,6 @@ export const MUSIC_EVENT_ID_DELIM = "-";
  */
 export const createMusicEventId = (origin: keyof typeof MUSIC_EVENT_ID_MAPPER, id: string) =>
   `${MUSIC_EVENT_ID_MAPPER[origin]}${MUSIC_EVENT_ID_DELIM}${encodeURIComponent(id)}` as const;
+
+export const getMusicEventGraphIRI = (source: MusicEventsQueueNameType) =>
+  `http://music-event-connect.cz/events/${source}` as const;

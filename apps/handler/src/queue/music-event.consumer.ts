@@ -1,6 +1,7 @@
 import {
   areEntitiesSame,
   createMusicEventId,
+  getMusicEventGraphIRI,
   plainToEntity,
   validateEntity,
   type ObjectWithIds,
@@ -88,17 +89,18 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       }
 
       // 3) Check if object already exists in the triple store
-      const doesExist = await this.musicEventMapper.exists(musicEvent.id);
+      const graphIri = getMusicEventGraphIRI(job.name);
+      const doesExist = await this.musicEventMapper.exists(musicEvent.id, graphIri);
 
       if (!doesExist) {
         // 4) Create new MusicEventEntity
-        await this.musicEventMapper.create(musicEvent);
+        await this.musicEventMapper.create(musicEvent, graphIri);
         this.#logger.log("Entity created: " + musicEvent.id);
         return musicEvent;
       }
 
       // 3) Check if some properties are updated
-      const originalEvent = await this.musicEventMapper.getWholeEntity(musicEvent.id);
+      const originalEvent = await this.musicEventMapper.getWholeEntity(musicEvent.id, graphIri);
 
       if (areEntitiesSame(musicEvent, originalEvent)) {
         this.#logger.log("Entity unchanged: " + musicEvent.id);
@@ -106,7 +108,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       }
 
       // 4) Update MusicEventEntity
-      await this.musicEventMapper.update(originalEvent, musicEvent);
+      await this.musicEventMapper.update(originalEvent, musicEvent, graphIri);
       this.#logger.log("Entity updated: " + musicEvent.id);
       return musicEvent;
     } catch (error) {

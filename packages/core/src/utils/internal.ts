@@ -26,7 +26,7 @@ export const cloneObject = <T>(obj: T): T => {
 /**
  * Checks whether the object is empty.
  */
-export const isObjectEmpty = (obj: object) => {
+const isObjectEmpty = (obj: object) => {
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       return false;
