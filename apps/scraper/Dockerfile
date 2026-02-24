@@ -67,7 +67,7 @@ RUN pnpm install -g turbo@^2
 
 COPY . .
 
-# # Generate a partial monorepo with a pruned lockfile for a target workspace (https://turbo.build/repo/docs/guides/tools/docker#the-solution).
+# Generate a partial monorepo with a pruned lockfile for a target workspace (https://turbo.build/repo/docs/guides/tools/docker#the-solution).
 RUN turbo prune scraper --docker
 
 
