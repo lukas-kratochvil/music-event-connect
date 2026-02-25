@@ -6,7 +6,7 @@ import { RdfEntityDeserializerService } from "../serialization/rdf-entity-deseri
 import { RdfEntitySerializerService } from "../serialization/rdf-entity-serializer.service";
 import { SPARQLService } from "../sparql/sparql.service";
 
-export abstract class AbstractMapper<TEntity extends AbstractEntity> {
+export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   @Inject(RdfEntitySerializerService)
   private readonly serializer: RdfEntitySerializerService;
 
