@@ -64,9 +64,9 @@ type Artist = {
   genres: string[];
 
   /**
-   * Links to artist's profiles.
+   * Links to artist's official pages or third-party web sites.
    */
-  profiles: string[];
+  webSites: string[];
 
   /**
    * Images of the artist.

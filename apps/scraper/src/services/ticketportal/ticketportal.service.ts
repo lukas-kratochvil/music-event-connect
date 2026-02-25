@@ -294,7 +294,7 @@ export class TicketportalService implements ICronJobService {
         const artists = artistNames.map((artistName): MusicEventsQueueDataType["event"]["artists"][number] => ({
           name: artistName,
           genres: this.#getUniqueEnGenreNames(genreName),
-          profiles: [],
+          webSites: [],
           images: [], // Ticketportal has event images only
         }));
 

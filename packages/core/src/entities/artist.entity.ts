@@ -27,6 +27,13 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   genres: string[];
 
   @Expose()
+  @IsArray()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
+  @ArrayUnique<string>()
+  @RDFProperty(ns.schema.url, { kind: "url" })
+  url: string[];
+
+  @Expose()
   @Type(() => OnlineAccountEntity)
   @IsArray()
   @ArrayUnique<OnlineAccountEntity>((elem) => elem.url)

@@ -212,7 +212,7 @@ export class TicketmasterService implements ICronJobService {
                     .flat()
                 ),
               ],
-              profiles: attraction.externalLinks
+              webSites: attraction.externalLinks
                 ? [
                     ...new Set(
                       Object.values(attraction.externalLinks)

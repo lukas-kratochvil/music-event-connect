@@ -58,16 +58,33 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       const eventWithIds = {
         ...event,
         id: eventId,
-        artists: event.artists.map((artist) => ({
-          ...artist,
-          id: "",
-          accounts: artist.profiles.map((link) => ({
+        artists: event.artists.map((artist) => {
+          const [homepages, onlineAccounts] = artist.webSites.reduce<[string[], string[]]>(
+            (acc, link) => {
+              const isHomepage = new URL(link).pathname.split("/").filter(Boolean).at(-1) === undefined;
+
+              if (isHomepage) {
+                acc[0].push(link);
+              } else {
+                acc[1].push(link);
+              }
+
+              return acc;
+            },
+            [[], []]
+          );
+          return {
+            ...artist,
             id: "",
-            url: link,
-            accountName: "",
-            accountServiceHomepage: "",
-          })),
-        })),
+            url: homepages,
+            accounts: onlineAccounts.map((link) => ({
+              id: "",
+              url: link,
+              accountName: "",
+              accountServiceHomepage: "",
+            })),
+          };
+        }),
         ticket: {
           ...event.ticket,
           id: "",

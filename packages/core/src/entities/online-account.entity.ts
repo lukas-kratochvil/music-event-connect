@@ -19,12 +19,7 @@ export class OnlineAccountEntity extends AbstractEntity implements IOnlineAccoun
   url: string;
 
   @Expose()
-  @Transform(({ obj }) =>
-    new URL(obj["url"]).pathname
-      .split("/")
-      .filter((part) => !!part)
-      .slice(-1)
-  )
+  @Transform(({ obj }) => new URL(obj["url"]).pathname.split("/").filter(Boolean).at(-1))
   @IsString()
   @RDFProperty(ns.foaf.accountName)
   accountName: string;
