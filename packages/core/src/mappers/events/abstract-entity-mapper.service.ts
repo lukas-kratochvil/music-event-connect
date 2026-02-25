@@ -1,10 +1,10 @@
 import { Inject } from "@nestjs/common";
 import type { ClassConstructor } from "class-transformer";
 import { DataFactory } from "n3";
-import type { AbstractEntity } from "../entities/abstract.entity";
-import { RdfEntityDeserializerService } from "../serialization/rdf-entity-deserializer.service";
-import { RdfEntitySerializerService } from "../serialization/rdf-entity-serializer.service";
-import { SPARQLService } from "../sparql/sparql.service";
+import type { AbstractEntity } from "../../entities/abstract.entity";
+import { RdfEntityDeserializerService } from "../../serialization/rdf-entity-deserializer.service";
+import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
+import { SPARQLService } from "../../sparql/sparql.service";
 
 export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   @Inject(RdfEntitySerializerService)

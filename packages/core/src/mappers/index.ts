@@ -1,2 +1,2 @@
 export { MapperModule } from "./mapper.module";
-export { MusicEventMapper } from "./music-event-mapper.service";
+export { MusicEventMapper } from "./events/music-event-mapper.service";
