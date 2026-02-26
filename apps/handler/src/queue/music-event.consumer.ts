@@ -1,7 +1,7 @@
 import {
+  ALL_GRAPHS_MAP,
   areEntitiesSame,
   createMusicEventId,
-  getMusicEventGraphIRI,
   plainToEntity,
   validateEntity,
 } from "@music-event-connect/core";
@@ -111,7 +111,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       }
 
       // 3) Check if object already exists in the triple store
-      const graphIri = getMusicEventGraphIRI(job.name);
+      const graphIri = ALL_GRAPHS_MAP.events[job.name];
       const doesExist = await this.musicEventMapper.exists(musicEvent.id, graphIri);
 
       if (!doesExist) {
