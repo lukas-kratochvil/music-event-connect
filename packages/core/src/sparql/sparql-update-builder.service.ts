@@ -1,7 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { NamedNode, Quad } from "n3";
+import { DataFactory, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
 import type { SparqlBuilderType } from "./util";
+
+const { namedNode } = DataFactory;
 
 /**
  * SPARQL service for building [SPARQL 1.1 Update](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/) queries.
@@ -13,7 +15,7 @@ export class SPARQLUpdateBuilderService {
   /**
    * Creates SPARQL INSERT query. Returns undefined if no quads present.
    */
-  insert(quads: Quad[], graphIRI: NamedNode | undefined) {
+  insert(quads: Quad[], graphIRI: string | undefined) {
     if (quads.length === 0) {
       return undefined;
     }
@@ -21,7 +23,7 @@ export class SPARQLUpdateBuilderService {
     // named graph
     if (graphIRI) {
       return this.builder.INSERT.DATA`
-        GRAPH ${graphIRI} {
+        GRAPH ${namedNode(graphIRI)} {
           ${quads}
         }
       `;
@@ -36,8 +38,8 @@ export class SPARQLUpdateBuilderService {
   /**
    * Creates SPARQL DELETE/INSERT query.
    */
-  deleteInsert(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: NamedNode | undefined) {
+  deleteInsert(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: string | undefined) {
     const query = this.builder.DELETE`${deleteQuads}`.INSERT`${insertQuads}`.WHERE``;
-    return graphIRI ? this.builder.WITH(graphIRI, query) : query;
+    return graphIRI ? this.builder.WITH(namedNode(graphIRI), query) : query;
   }
 }

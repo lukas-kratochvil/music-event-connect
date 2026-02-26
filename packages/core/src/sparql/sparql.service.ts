@@ -16,22 +16,22 @@ export class SPARQLService {
     @Inject(SPARQL_PROVIDERS.client) private readonly sparqlClient: ParsingClient
   ) {}
 
-  insert(quads: Quad[], graphIRI: NamedNode | undefined) {
+  insert(quads: Quad[], graphIRI: string | undefined) {
     const insertQuery = this.updateBuilder.insert(quads, graphIRI);
     return insertQuery?.execute(this.sparqlClient);
   }
 
-  update(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: NamedNode | undefined) {
+  update(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: string | undefined) {
     const deleteInsertQuery = this.updateBuilder.deleteInsert(deleteQuads, insertQuads, graphIRI);
     return deleteInsertQuery.execute(this.sparqlClient);
   }
 
-  ask(rdfData: Quad[], graphIRI: NamedNode | undefined) {
+  ask(rdfData: Quad[], graphIRI: string | undefined) {
     const askQuery = this.queryBuilder.ask(rdfData, graphIRI);
     return askQuery.execute(this.sparqlClient);
   }
 
-  constructEntity(entityIRI: NamedNode, graphIRI: NamedNode | undefined) {
+  constructEntity(entityIRI: NamedNode, graphIRI: string | undefined) {
     const constructQuery = this.queryBuilder.constructEntity(entityIRI, graphIRI);
     return constructQuery.execute(this.sparqlClient);
   }
