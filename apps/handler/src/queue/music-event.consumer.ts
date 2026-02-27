@@ -6,7 +6,7 @@ import {
   validateEntity,
 } from "@music-event-connect/core";
 import { MusicEventEntity } from "@music-event-connect/core/entities";
-import { MusicEventMapper } from "@music-event-connect/core/mappers";
+import { MusicEventMapper, LinksMapper } from "@music-event-connect/core/mappers";
 import {
   MusicEventsQueue,
   type MusicEventsQueueDataType,
@@ -28,7 +28,8 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
 
   constructor(
     private readonly geocodingService: LocationIQApiProxy,
-    private readonly musicEventMapper: MusicEventMapper
+    private readonly musicEventMapper: MusicEventMapper,
+    private readonly linksMapper: LinksMapper
   ) {
     super();
   }
@@ -43,7 +44,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
    *        1) If updated, continue with step 4)
    *        2) If not updated, return without further processing
    * 4) Serialize MusicEventEntity and store it in the triple store
-   *    1) If step 3) determined that the object is new, perform an INSERT operation
+   *    1) If step 3) determined that the object is new, perform an INSERT operation and update the Links graph
    *    2) If step 3) determined that the object is updated, perform a DELETE/INSERT operation
    *
    * Also, duplicate artists, venues, addresses in the database. Change in one event shouldn't influence other events.
@@ -115,9 +116,10 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       const doesExist = await this.musicEventMapper.exists(musicEvent.id, graphIri);
 
       if (!doesExist) {
-        // 4) Create new MusicEventEntity
+        // 4) Create new MusicEventEntity and also create `sameAs` links in the Links graphs
         await this.musicEventMapper.create(musicEvent, graphIri);
         this.#logger.log("Entity created: " + musicEvent.id);
+        await this.linksMapper.createLinks(musicEvent);
         return musicEvent;
       }
 

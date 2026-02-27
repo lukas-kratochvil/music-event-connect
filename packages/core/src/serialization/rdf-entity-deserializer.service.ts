@@ -6,6 +6,8 @@ import { AbstractEntity } from "../entities";
 import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 
+const { namedNode } = DataFactory;
+
 /**
  * Deserialize RDF data into domain object (entity).
  */
@@ -85,7 +87,7 @@ export class RdfEntityDeserializerService {
         continue;
       }
 
-      const propertyQuads = store.match(subjectIRI, DataFactory.namedNode(propertyMetadata.iri)).toArray();
+      const propertyQuads = store.match(subjectIRI, namedNode(propertyMetadata.iri)).toArray();
 
       if (propertyQuads.length === 0) {
         continue;

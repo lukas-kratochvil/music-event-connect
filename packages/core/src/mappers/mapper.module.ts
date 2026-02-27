@@ -2,12 +2,13 @@ import { DynamicModule, Module } from "@nestjs/common";
 import { RdfEntityDeserializerService } from "../serialization/rdf-entity-deserializer.service";
 import { RdfEntitySerializerService } from "../serialization/rdf-entity-serializer.service";
 import { SPARQLModule } from "../sparql/sparql.module";
-import { ConfigurableModuleClass, ASYNC_OPTIONS_TYPE } from "./mapper.module-definition";
 import { MusicEventMapper } from "./events/music-event-mapper.service";
+import { LinksMapper } from "./links/links-mapper.service";
+import { ConfigurableModuleClass, ASYNC_OPTIONS_TYPE } from "./mapper.module-definition";
 
 @Module({
-  providers: [RdfEntitySerializerService, RdfEntityDeserializerService, MusicEventMapper],
-  exports: [MusicEventMapper],
+  providers: [RdfEntitySerializerService, RdfEntityDeserializerService, MusicEventMapper, LinksMapper],
+  exports: [MusicEventMapper, LinksMapper],
 })
 export class MapperModule extends ConfigurableModuleClass {
   static registerAsync(options: typeof ASYNC_OPTIONS_TYPE): DynamicModule {
