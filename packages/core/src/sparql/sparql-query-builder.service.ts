@@ -1,9 +1,39 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
+import { ns } from "../rdf/ontology";
 import type { SparqlBuilderType } from "./util";
 
-const { namedNode } = DataFactory;
+const { literal, namedNode, variable } = DataFactory;
+
+export const SPARQL_QUERY_BUILDER_VARIABLES = {
+  selectLinks: {
+    linkedResource: {
+      iri: "linkedResource",
+      graph: "sourceGraph",
+    },
+  },
+  selectEventsByDate: {
+    event: {
+      iri: "eventIRI",
+      name: "eventName",
+    },
+    artist: {
+      iri: "artistIRI",
+      name: "artistName",
+    },
+    place: {
+      iri: "placeIRI",
+      name: "placeName",
+      latitude: "placeLatitude",
+      longitude: "placeLongitude",
+    },
+    address: {
+      iri: "addressIRI",
+      street: "addressStreet",
+    },
+  },
+};
 
 /**
  * SPARQL service for building [SPARQL 1.1 Query Language](http://www.w3.org/TR/2013/REC-sparql11-query-20130321/) queries.
@@ -39,5 +69,80 @@ export class SPARQLQueryBuilderService {
       }
     `;
     return graphIRI ? query.FROM(namedNode(graphIRI)) : query;
+  }
+
+  /**
+   * Selects all the linked resources to the given resource.
+   */
+  selectLinks(resourceIRI: NamedNode, linksGraphIRI: string) {
+    const linksGraph = namedNode(linksGraphIRI);
+    const linkedResourceIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.iri);
+    const linkedResourceGraph = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.graph);
+
+    return this.builder.SELECT.DISTINCT`${linkedResourceIRI} ${linkedResourceGraph}`.WHERE`
+      GRAPH ${linksGraph} {
+        {
+          ${resourceIRI} ${namedNode(ns.schema.sameAs)} ${linkedResourceIRI} .
+        }
+        UNION
+        {
+          ${linkedResourceIRI} ${namedNode(ns.schema.sameAs)} ${resourceIRI} .
+        }
+      }
+
+      GRAPH ${linkedResourceGraph} {
+        ${linkedResourceIRI} ${variable("p")} ${variable("o")} .
+      }
+
+      FILTER (${linkedResourceGraph} != ${linksGraph})
+    `;
+  }
+
+  /**
+   * Selects all the events for the given start date.
+   */
+  selectEventsByDate(startDate: Date, eventGraphIRI: string) {
+    const sourceGraph = namedNode(eventGraphIRI);
+    const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
+    const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
+    const eventStartDate = variable("eventStartDate");
+    const eventStartDatePrefix = startDate.toISOString().split("T").at(0);
+    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.artist.iri);
+    const artistName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.artist.name);
+    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.iri);
+    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.name);
+    const placeLatitude = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.latitude);
+    const placeLongitude = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.longitude);
+    const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.iri);
+    const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.street);
+
+    return this.builder
+      .SELECT`${eventIRI} ${eventName} ${artistIRI} ${artistName} ${placeIRI} ${placeName} ${placeLatitude} ${placeLongitude} ${addressIRI} ${addressStreet}`
+      .WHERE`
+        GRAPH ${sourceGraph} {
+          ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicEvent)} ;
+                      ${namedNode(ns.schema.name)} ${eventName} ;
+                      ${namedNode(ns.schema.startDate)} ${eventStartDate} .
+          FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
+
+          OPTIONAL {
+            ${eventIRI} ${namedNode(ns.schema.performer)} ${artistIRI} .
+            ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
+                          ${namedNode(ns.schema.name)} ${artistName} .
+          }
+
+          OPTIONAL {
+            ${eventIRI} ${namedNode(ns.schema.location)} ${placeIRI} .
+            ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
+                        ${namedNode(ns.schema.name)} ${placeName} ;
+                        ${namedNode(ns.schema.latitude)} ${placeLatitude} ;
+                        ${namedNode(ns.schema.longitude)} ${placeLongitude} ;
+                        ${namedNode(ns.schema.address)} ${addressIRI} .
+
+            ${addressIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.PostalAddress)} .
+            OPTIONAL { ${addressIRI} ${namedNode(ns.schema.streetAddress)} ${addressStreet} }
+          }
+        }
+      `;
   }
 }

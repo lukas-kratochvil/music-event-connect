@@ -61,6 +61,7 @@
     "rdf-namespaces": "^1.16.0",
     "reflect-metadata": "^0.2.2",
     "sparql-http-client": "^3.1.0",
+    "string-similarity-js": "^2.1.4",
     "winston": "^3.17.0"
   }
 }
