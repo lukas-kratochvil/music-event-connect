@@ -33,6 +33,11 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
       street: "addressStreet",
     },
   },
+  selectArtistsByName: {
+    artist: {
+      iri: "artistIRI",
+    },
+  },
 };
 
 /**
@@ -144,5 +149,21 @@ export class SPARQLQueryBuilderService {
           }
         }
       `;
+  }
+
+  /**
+   * Selects all the artists by the given name (case insensitive).
+   */
+  selectArtistsByName(artistName: string, eventGraphIRI: string) {
+    const sourceGraph = namedNode(eventGraphIRI);
+    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
+    const name = variable("name");
+    return this.builder.SELECT`${artistIRI}`.WHERE`
+      GRAPH ${sourceGraph} {
+        ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
+                      ${namedNode(ns.schema.name)} ${name} .
+        FILTER(LCASE(${name}) = LCASE(${literal(artistName)}))
+      }
+    `;
   }
 }

@@ -136,4 +136,13 @@ export class SPARQLService {
 
     return Array.from(eventMap.values());
   }
+
+  async getArtistsByName(artistName: string, eventGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectArtistsByName(artistName, eventGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
+    return results.map((row) => ({
+      iri: row[VARIABLES.artist.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
+  }
 }

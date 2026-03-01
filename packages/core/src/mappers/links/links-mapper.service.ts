@@ -31,7 +31,17 @@ export class LinksMapper {
       }
     }
 
-    // TODO: match MusicGroup
+    // match MusicGroup
+    for (const artist of event.artists) {
+      const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
+      const artistMissingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
+      for (const targetGraphIRI of artistMissingGraphs) {
+        const candidates = await this.sparqlService.getArtistsByName(artist.name, targetGraphIRI);
+        await Promise.all(
+          candidates.map((candidate) => this.sparqlService.insertLinks(artistIRI, candidate.iri, ALL_GRAPHS_MAP.links))
+        );
+      }
+    }
 
     // TODO: match Place and PostalAddress
 
