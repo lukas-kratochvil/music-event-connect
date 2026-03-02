@@ -13,7 +13,7 @@ export type GoOutEvent = {
   startDate: string;
   endDate: string;
   location: Location;
-  offers: Offer[];
+  offers: Offer[] | null;
 };
 
 type Location = {

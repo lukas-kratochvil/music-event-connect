@@ -234,7 +234,7 @@ export class GooutService implements ICronJobService {
     }
 
     const [isOnSale, ticketsUrl]
-      = eventItem.linkedData?.offers.at(0) && eventItem.linkedData.offers[0]?.url
+      = eventItem.linkedData?.offers?.at(0) && eventItem.linkedData.offers[0]?.url
         ? [eventItem.linkedData.offers[0]?.availability === "InStock", eventItem.linkedData.offers[0]?.url]
         : await page.$eval(".ticket-button", (elem) => {
             const anchor = elem as HTMLAnchorElement;
