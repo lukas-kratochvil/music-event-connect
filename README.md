@@ -3,7 +3,7 @@
 ## Initial setup
 
 ### Scraper
-Ticket services (like GoOut, Ticketmaster, TIcketportal) are used based on the config file. If an available service is not defined in the config (is commented etc.) it won't be instantiated in the scraper app.
+Ticket services (like GoOut, Ticketmaster, Ticketportal) are used based on the config file. If an available service is not defined in the config (is commented etc.) it won't be instantiated in the scraper app.
 
 ### Virtuoso
 #### Import data from MusicBrainz and OpenStreetMap
