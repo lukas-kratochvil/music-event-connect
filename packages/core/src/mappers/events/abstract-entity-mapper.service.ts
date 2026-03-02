@@ -31,17 +31,17 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
 
   async create(entity: TEntity, graphIri: MusicEventGraph) {
     const quads = this.serializer.serialize(entity);
-    const insertionResult = await this.sparqlService.insert(quads, graphIri);
+    const insertResult = await this.sparqlService.insert(quads, graphIri);
     await this.linksMapper.createLinks(entity, graphIri);
-    return insertionResult;
+    return insertResult;
   }
 
-  update(deleteEntity: TEntity, insertEntity: TEntity, graphIri: MusicEventGraph) {
-    // FIXME: cannot delete entities - they can be in multiple relationships
-    const deleteQuads = this.serializer.serialize(deleteEntity);
+  async update(deleteEntity: TEntity, insertEntity: TEntity, graphIri: MusicEventGraph) {
+    const deleteSourceIRI = RdfEntitySerializerService.createEntityIRI(deleteEntity);
     const insertQuads = this.serializer.serialize(insertEntity);
-    // TODO: update/create links
-    return this.sparqlService.update(deleteQuads, insertQuads, graphIri);
+    const updateResult = await this.sparqlService.update(deleteSourceIRI, insertQuads, graphIri);
+    await this.linksMapper.createLinks(insertEntity, graphIri);
+    return updateResult;
   }
 
   exists(id: string, graphIri: MusicEventGraph) {

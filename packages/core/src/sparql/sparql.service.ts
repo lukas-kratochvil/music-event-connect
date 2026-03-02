@@ -21,8 +21,8 @@ export class SPARQLService {
     return insertQuery?.execute(this.sparqlClient);
   }
 
-  update(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: string | undefined) {
-    const deleteInsertQuery = this.updateBuilder.deleteInsert(deleteQuads, insertQuads, graphIRI);
+  update(deleteSourceIRI: NamedNode, insertQuads: Quad[], graphIRI: string | undefined) {
+    const deleteInsertQuery = this.updateBuilder.deleteInsert(deleteSourceIRI, insertQuads, graphIRI);
     return deleteInsertQuery.execute(this.sparqlClient);
   }
 

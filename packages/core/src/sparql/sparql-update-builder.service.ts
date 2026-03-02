@@ -4,7 +4,7 @@ import { SPARQL_PROVIDERS } from "../constants";
 import { ns } from "../rdf/ontology";
 import type { SparqlBuilderType } from "./util";
 
-const { namedNode } = DataFactory;
+const { namedNode, variable } = DataFactory;
 
 /**
  * SPARQL service for building [SPARQL 1.1 Update](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/) queries.
@@ -37,10 +37,15 @@ export class SPARQLUpdateBuilderService {
   }
 
   /**
-   * Creates SPARQL DELETE/INSERT query.
+   * Creates an atomic SPARQL DELETE/INSERT query (UPSERT).
+   *
+   * Deletes only the direct properties of the `deleteSourceIRI`, preserving nested entities, and inserts the updated properties.
    */
-  deleteInsert(deleteQuads: Quad[], insertQuads: Quad[], graphIRI: string | undefined) {
-    const query = this.builder.DELETE`${deleteQuads}`.INSERT`${insertQuads}`.WHERE``;
+  deleteInsert(deleteSourceIRI: NamedNode, insertQuads: Quad[], graphIRI: string | undefined) {
+    const p = variable("p");
+    const o = variable("o");
+    const query = this.builder.DELETE`${deleteSourceIRI} ${p} ${o}`.INSERT`${insertQuads}`
+      .WHERE`${deleteSourceIRI} ${p} ${o}`;
     return graphIRI ? this.builder.WITH(namedNode(graphIRI), query) : query;
   }
 
