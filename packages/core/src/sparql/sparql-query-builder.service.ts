@@ -115,7 +115,6 @@ export class SPARQLQueryBuilderService {
                       ${namedNode(ns.schema.name)} ${eventName} ;
                       ${namedNode(ns.schema.startDate)} ${eventStartDate} .
           FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
-          }
         }
       `;
   }
