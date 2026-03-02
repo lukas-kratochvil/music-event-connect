@@ -115,9 +115,4 @@ export class LinksMapper {
     });
     return bestResult.score >= MIN_SIMILARITY_SCORE ? bestResult.candidate : undefined;
   }
-
-  async updateLinks(musicEvent: MusicEventEntity) {
-    // TODO: implement this
-    console.log(musicEvent);
-  }
 }

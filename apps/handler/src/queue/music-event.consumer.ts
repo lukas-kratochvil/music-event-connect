@@ -6,7 +6,7 @@ import {
   validateEntity,
 } from "@music-event-connect/core";
 import { MusicEventEntity } from "@music-event-connect/core/entities";
-import { MusicEventMapper, LinksMapper } from "@music-event-connect/core/mappers";
+import { MusicEventMapper } from "@music-event-connect/core/mappers";
 import {
   MusicEventsQueue,
   type MusicEventsQueueDataType,
@@ -28,8 +28,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
 
   constructor(
     private readonly geocodingService: LocationIQApiProxy,
-    private readonly musicEventMapper: MusicEventMapper,
-    private readonly linksMapper: LinksMapper
+    private readonly musicEventMapper: MusicEventMapper
   ) {
     super();
   }
@@ -119,7 +118,6 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
         // 4) Create new MusicEventEntity and also create `sameAs` links in the Links graphs
         await this.musicEventMapper.create(musicEvent, graphIri);
         this.#logger.log("Entity created: " + musicEvent.id);
-        await this.linksMapper.createLinks(musicEvent);
         return musicEvent;
       }
 
