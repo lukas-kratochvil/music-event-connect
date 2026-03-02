@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { NamedNode } from "n3";
 import { stringSimilarity } from "string-similarity-js";
 import type { MusicEventEntity } from "../../entities";
@@ -10,6 +10,8 @@ import { ALL_GRAPHS_MAP, getMusicEventIdPrefix, MUSIC_EVENT_GRAPHS, REVERSED_MUS
 export class LinksMapper {
   @Inject(SPARQLService)
   private readonly sparqlService: SPARQLService;
+
+  readonly #logger = new Logger(LinksMapper.name);
 
   async #getEntityMissingLinkGraphs(iri: NamedNode, sourceGraph: (typeof MUSIC_EVENT_GRAPHS)[number]) {
     const linkedResources = await this.sparqlService.getLinkedResources(iri, ALL_GRAPHS_MAP.links);
@@ -28,6 +30,9 @@ export class LinksMapper {
       const bestEventCandidateMatch = await this.#findBestEventCandidateMatch(event, targetGraphIRI);
       if (bestEventCandidateMatch) {
         await this.sparqlService.insertLinks(eventIRI, bestEventCandidateMatch.iri, ALL_GRAPHS_MAP.links);
+        this.#logger.log(
+          `Link created between events: ${eventIRI.value} (${sourceGraph}) <--> ${bestEventCandidateMatch.iri} (${targetGraphIRI})`
+        );
       }
     }
 
@@ -38,7 +43,12 @@ export class LinksMapper {
       for (const targetGraphIRI of artistMissingGraphs) {
         const candidates = await this.sparqlService.getArtistsByName(artist.name, targetGraphIRI);
         await Promise.all(
-          candidates.map((candidate) => this.sparqlService.insertLinks(artistIRI, candidate.iri, ALL_GRAPHS_MAP.links))
+          candidates.map(async (candidate) => {
+            await this.sparqlService.insertLinks(artistIRI, candidate.iri, ALL_GRAPHS_MAP.links);
+            this.#logger.log(
+              `Link created between artists: ${artistIRI.value} (${sourceGraph}) <--> ${candidate.iri} (${targetGraphIRI})`
+            );
+          })
         );
       }
     }
@@ -56,11 +66,20 @@ export class LinksMapper {
           const venueNameSimilarityScore = stringSimilarity(venue.name, place.name);
           if (venueNameSimilarityScore >= 0.9) {
             await this.sparqlService.insertLinks(venueIRI, place.iri, ALL_GRAPHS_MAP.links);
+            this.#logger.log(
+              `Link created between venues: ${venueIRI.value} (${sourceGraph}) <--> ${place.iri} (${targetGraphIRI})`
+            );
             await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
+            this.#logger.log(
+              `Link created between addresses: ${addressIRI.value} (${sourceGraph}) <--> ${place.address.iri} (${targetGraphIRI})`
+            );
           } else if (venue.address.street && place.address.street) {
             const addressStreetSimilarityScore = stringSimilarity(venue.address.street, place.address.street);
             if (addressStreetSimilarityScore >= 0.9) {
               await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
+              this.#logger.log(
+                `Link created between addresses: ${addressIRI.value} (${sourceGraph}) <--> ${place.address.iri} (${targetGraphIRI})`
+              );
             }
           }
         }
@@ -94,5 +113,9 @@ export class LinksMapper {
     });
     return bestResult.score >= 0.9 ? bestResult.candidate : undefined;
   }
+
+  async updateLinks(musicEvent: MusicEventEntity) {
+    // TODO: implement this
+    console.log(musicEvent);
   }
 }

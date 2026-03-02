@@ -131,8 +131,8 @@ export class SPARQLQueryBuilderService {
     const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.iri);
     const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.street);
 
-    return this.builder
-      .SELECT`${eventIRI} ${eventName} ${artistIRI} ${artistName} ${placeIRI} ${placeName} ${placeLatitude} ${placeLongitude} ${addressIRI} ${addressStreet}`
+    return this.builder.SELECT
+      .DISTINCT`${eventIRI} ${eventName} ${artistIRI} ${artistName} ${placeIRI} ${placeName} ${placeLatitude} ${placeLongitude} ${addressIRI} ${addressStreet}`
       .WHERE`
         GRAPH ${sourceGraph} {
           ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicEvent)} ;
@@ -168,7 +168,7 @@ export class SPARQLQueryBuilderService {
     const sourceGraph = namedNode(eventGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
     const name = variable("name");
-    return this.builder.SELECT`${artistIRI}`.WHERE`
+    return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
                       ${namedNode(ns.schema.name)} ${name} .
@@ -191,7 +191,7 @@ export class SPARQLQueryBuilderService {
     const latVar = variable("latitude");
     const lonVar = variable("longitude");
 
-    return this.builder.SELECT`${venueIRI} ${name} ${addressIRI} ${addressStreet}`.WHERE`
+    return this.builder.SELECT.DISTINCT`${venueIRI} ${name} ${addressIRI} ${addressStreet}`.WHERE`
       GRAPH ${sourceGraph} {
         ${venueIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
                     ${namedNode(ns.schema.name)} ${name} ;
