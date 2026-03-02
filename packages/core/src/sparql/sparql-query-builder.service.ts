@@ -18,20 +18,6 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
       iri: "eventIRI",
       name: "eventName",
     },
-    artist: {
-      iri: "artistIRI",
-      name: "artistName",
-    },
-    place: {
-      iri: "placeIRI",
-      name: "placeName",
-      latitude: "placeLatitude",
-      longitude: "placeLongitude",
-    },
-    address: {
-      iri: "addressIRI",
-      street: "addressStreet",
-    },
   },
   selectArtistsByName: {
     artist: {
@@ -122,40 +108,13 @@ export class SPARQLQueryBuilderService {
     const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
     const eventStartDate = variable("eventStartDate");
     const eventStartDatePrefix = startDate.toISOString().split("T").at(0);
-    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.artist.iri);
-    const artistName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.artist.name);
-    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.iri);
-    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.name);
-    const placeLatitude = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.latitude);
-    const placeLongitude = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.place.longitude);
-    const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.iri);
-    const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.address.street);
 
-    return this.builder.SELECT
-      .DISTINCT`${eventIRI} ${eventName} ${artistIRI} ${artistName} ${placeIRI} ${placeName} ${placeLatitude} ${placeLongitude} ${addressIRI} ${addressStreet}`
-      .WHERE`
+    return this.builder.SELECT.DISTINCT`${eventIRI} ${eventName}`.WHERE`
         GRAPH ${sourceGraph} {
           ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicEvent)} ;
                       ${namedNode(ns.schema.name)} ${eventName} ;
                       ${namedNode(ns.schema.startDate)} ${eventStartDate} .
           FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
-
-          OPTIONAL {
-            ${eventIRI} ${namedNode(ns.schema.performer)} ${artistIRI} .
-            ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
-                          ${namedNode(ns.schema.name)} ${artistName} .
-          }
-
-          OPTIONAL {
-            ${eventIRI} ${namedNode(ns.schema.location)} ${placeIRI} .
-            ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
-                        ${namedNode(ns.schema.name)} ${placeName} ;
-                        ${namedNode(ns.schema.latitude)} ${placeLatitude} ;
-                        ${namedNode(ns.schema.longitude)} ${placeLongitude} ;
-                        ${namedNode(ns.schema.address)} ${addressIRI} .
-
-            ${addressIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.PostalAddress)} .
-            OPTIONAL { ${addressIRI} ${namedNode(ns.schema.streetAddress)} ${addressStreet} }
           }
         }
       `;

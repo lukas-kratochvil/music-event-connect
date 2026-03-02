@@ -6,6 +6,8 @@ import { RdfEntitySerializerService } from "../../serialization/rdf-entity-seria
 import { SPARQLService } from "../../sparql/sparql.service";
 import { ALL_GRAPHS_MAP, getMusicEventIdPrefix, MUSIC_EVENT_GRAPHS, REVERSED_MUSIC_EVENT_ID_MAPPER } from "../../utils";
 
+const MIN_SIMILARITY_SCORE = 0.9;
+
 @Injectable()
 export class LinksMapper {
   @Inject(SPARQLService)
@@ -27,11 +29,11 @@ export class LinksMapper {
     const eventMissingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
 
     for (const targetGraphIRI of eventMissingGraphs) {
-      const bestEventCandidateMatch = await this.#findBestEventCandidateMatch(event, targetGraphIRI);
-      if (bestEventCandidateMatch) {
-        await this.sparqlService.insertLinks(eventIRI, bestEventCandidateMatch.iri, ALL_GRAPHS_MAP.links);
+      const bestEventCandidate = await this.#findBestEventCandidate(event, targetGraphIRI);
+      if (bestEventCandidate) {
+        await this.sparqlService.insertLinks(eventIRI, bestEventCandidate.iri, ALL_GRAPHS_MAP.links);
         this.#logger.log(
-          `Link created between events: ${eventIRI.value} (${sourceGraph}) <--> ${bestEventCandidateMatch.iri} (${targetGraphIRI})`
+          `Link created between events: ${eventIRI.value} (${sourceGraph}) <--> ${bestEventCandidate.iri} (${targetGraphIRI})`
         );
       }
     }
@@ -64,7 +66,7 @@ export class LinksMapper {
 
         for (const { place } of candidates) {
           const venueNameSimilarityScore = stringSimilarity(venue.name, place.name);
-          if (venueNameSimilarityScore >= 0.9) {
+          if (venueNameSimilarityScore >= MIN_SIMILARITY_SCORE) {
             await this.sparqlService.insertLinks(venueIRI, place.iri, ALL_GRAPHS_MAP.links);
             this.#logger.log(
               `Link created between venues: ${venueIRI.value} (${sourceGraph}) <--> ${place.iri} (${targetGraphIRI})`
@@ -75,7 +77,7 @@ export class LinksMapper {
             );
           } else if (venue.address.street && place.address.street) {
             const addressStreetSimilarityScore = stringSimilarity(venue.address.street, place.address.street);
-            if (addressStreetSimilarityScore >= 0.9) {
+            if (addressStreetSimilarityScore >= MIN_SIMILARITY_SCORE) {
               await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
               this.#logger.log(
                 `Link created between addresses: ${addressIRI.value} (${sourceGraph}) <--> ${place.address.iri} (${targetGraphIRI})`
@@ -89,7 +91,7 @@ export class LinksMapper {
     // TODO: match MusicBrainz entities
   }
 
-  async #findBestEventCandidateMatch(event: MusicEventEntity, targetGraphIRI: string) {
+  async #findBestEventCandidate(event: MusicEventEntity, targetGraphIRI: string) {
     const candidates = await this.sparqlService.getMusicEventsByDate(event.startDate, targetGraphIRI);
 
     if (candidates.length === 0) {
@@ -111,7 +113,7 @@ export class LinksMapper {
         };
       }
     });
-    return bestResult.score >= 0.9 ? bestResult.candidate : undefined;
+    return bestResult.score >= MIN_SIMILARITY_SCORE ? bestResult.candidate : undefined;
   }
 
   async updateLinks(musicEvent: MusicEventEntity) {

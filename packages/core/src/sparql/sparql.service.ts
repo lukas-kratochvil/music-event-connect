@@ -1,34 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { Term } from "@rdfjs/types";
 import type { NamedNode, Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
 import { SPARQL_QUERY_BUILDER_VARIABLES, SPARQLQueryBuilderService } from "./sparql-query-builder.service";
 import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
-
-type LinkedEntityInfo = {
-  iri: string;
-  graph: string;
-};
-
-type MusicEventCandidate = {
-  iri: string;
-  name: string;
-  artists: {
-    iri: string;
-    name: string;
-  }[];
-  places: {
-    iri: string;
-    name: string;
-    latitude: string;
-    longitude: string;
-    address: {
-      iri: string;
-      street?: string;
-    };
-  }[];
-};
 
 /**
  * SPARQL service realizes communication with RDF triple store.
@@ -70,71 +45,20 @@ export class SPARQLService {
     const selectQuery = this.queryBuilder.selectLinks(resourceIRI, linksGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectLinks;
-    return results
-      .map((row) => ({
-        iri: row[VARIABLES.linkedResource.iri]?.value,
-        graph: row[VARIABLES.linkedResource.graph]?.value,
-      }))
-      .filter((info): info is LinkedEntityInfo => Boolean(info.iri && info.graph));
+    return results.map((row) => ({
+      iri: row[VARIABLES.linkedResource.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+      graph: row[VARIABLES.linkedResource.graph]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
   }
 
   async getMusicEventsByDate(startDate: Date, eventGraphIRI: string) {
     const selectQuery = this.queryBuilder.selectEventsByDate(startDate, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
-    return this.#parseEventsByDateResults(results);
-  }
-
-  #parseEventsByDateResults(results: Record<string, Term>[]) {
-    const eventMap = new Map<string, MusicEventCandidate>();
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate;
-
-    for (const row of results) {
-      const eventIRI = row[VARIABLES.event.iri]?.value;
-      if (!eventIRI) {
-        continue;
-      }
-
-      let event = eventMap.get(eventIRI);
-      if (!event) {
-        event = {
-          iri: eventIRI,
-          name: row[VARIABLES.event.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-          artists: [],
-          places: [],
-        };
-        eventMap.set(eventIRI, event);
-      }
-
-      const artistIRI = row[VARIABLES.artist.iri]?.value;
-      if (artistIRI) {
-        const isArtistAdded = eventMap.get(eventIRI)?.artists.some((a) => a.iri === artistIRI);
-        if (!isArtistAdded) {
-          event.artists.push({
-            iri: artistIRI,
-            name: row[VARIABLES.artist.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-          });
-        }
-      }
-
-      const placeIRI = row[VARIABLES.place.iri]?.value;
-      if (placeIRI) {
-        const isPlaceAdded = eventMap.get(eventIRI)?.places.some((p) => p.iri === placeIRI);
-        if (!isPlaceAdded) {
-          event.places.push({
-            iri: placeIRI,
-            name: row[VARIABLES.place.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-            latitude: row[VARIABLES.place.latitude]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-            longitude: row[VARIABLES.place.longitude]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-            address: {
-              iri: row[VARIABLES.address.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-              street: row[VARIABLES.address.street]?.value,
-            },
-          });
-        }
-      }
-    }
-
-    return Array.from(eventMap.values());
+    return results.map((row) => ({
+      iri: row[VARIABLES.event.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+      name: row[VARIABLES.event.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
   }
 
   async getArtistsByName(artistName: string, eventGraphIRI: string) {
