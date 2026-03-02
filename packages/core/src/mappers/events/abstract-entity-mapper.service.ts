@@ -32,7 +32,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   async create(entity: TEntity, graphIri: MusicEventGraph) {
     const quads = this.serializer.serialize(entity);
     const insertionResult = await this.sparqlService.insert(quads, graphIri);
-    await this.linksMapper.createLinks(entity);
+    await this.linksMapper.createLinks(entity, graphIri);
     return insertionResult;
   }
 
