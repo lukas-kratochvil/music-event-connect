@@ -22,3 +22,5 @@ export const MUSIC_EVENT_GRAPHS = [
   ALL_GRAPHS_MAP.events.ticketmaster,
   ALL_GRAPHS_MAP.events.ticketportal,
 ] as const;
+
+export type MusicEventGraph = (typeof MUSIC_EVENT_GRAPHS)[number];

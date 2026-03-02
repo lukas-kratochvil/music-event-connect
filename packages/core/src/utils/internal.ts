@@ -135,7 +135,14 @@ export const deleteExtraObjectProperties = <T extends object>(data: T): T => {
 /**
  * Checks if diff object returned by `diff` from `deep-object-diff` is empty.
  *
- * Empty object is also for example: `{ artists: { '1': {} } }`.
+ * As an empty object is also considered for example:
+ * ```ts
+ * {
+ *    artists: {
+ *      '1': {}
+ *     }
+ * }
+ * ```
  */
 export const isDiffEmpty = <T extends object>(diffObj: T): boolean => {
   for (const key in diffObj) {
