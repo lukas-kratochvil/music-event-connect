@@ -43,7 +43,29 @@ export class LinksMapper {
       }
     }
 
-    // TODO: match Place and PostalAddress
+    // match Place and PostalAddress
+    for (const venue of event.venues) {
+      const venueIRI = RdfEntitySerializerService.createEntityIRI(venue);
+      const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
+      const venueMissingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
+
+      for (const targetGraphIRI of venueMissingGraphs) {
+        const candidates = await this.sparqlService.getPlacesByCoords(venue.latitude, venue.longitude, targetGraphIRI);
+
+        for (const { place } of candidates) {
+          const venueNameSimilarityScore = stringSimilarity(venue.name, place.name);
+          if (venueNameSimilarityScore >= 0.9) {
+            await this.sparqlService.insertLinks(venueIRI, place.iri, ALL_GRAPHS_MAP.links);
+            await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
+          } else if (venue.address.street && place.address.street) {
+            const addressStreetSimilarityScore = stringSimilarity(venue.address.street, place.address.street);
+            if (addressStreetSimilarityScore >= 0.9) {
+              await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
+            }
+          }
+        }
+      }
+    }
 
     // TODO: match MusicBrainz entities
   }

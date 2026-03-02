@@ -38,6 +38,16 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
       iri: "artistIRI",
     },
   },
+  selectPlacesByCoords: {
+    place: {
+      iri: "placeIRI",
+      name: "placeName",
+      address: {
+        iri: "addressIRI",
+        street: "addressStreet",
+      },
+    },
+  },
 };
 
 /**
@@ -163,6 +173,39 @@ export class SPARQLQueryBuilderService {
         ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
                       ${namedNode(ns.schema.name)} ${name} .
         FILTER(LCASE(${name}) = LCASE(${literal(artistName)}))
+      }
+    `;
+  }
+
+  /**
+   * Selects all the venues close enough to the given coordinates.
+   *
+   * @param toleranceInDegrees default tolerance is set to ~222 meters
+   */
+  selectPlacesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
+    const sourceGraph = namedNode(eventGraphIRI);
+    const venueIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
+    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
+    const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.iri);
+    const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.street);
+    const latVar = variable("latitude");
+    const lonVar = variable("longitude");
+
+    return this.builder.SELECT`${venueIRI} ${name} ${addressIRI} ${addressStreet}`.WHERE`
+      GRAPH ${sourceGraph} {
+        ${venueIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
+                    ${namedNode(ns.schema.name)} ${name} ;
+                    ${namedNode(ns.schema.latitude)} ${latVar} ;
+                    ${namedNode(ns.schema.longitude)} ${lonVar} ;
+                    ${namedNode(ns.schema.address)} ${addressIRI} .
+
+        ${addressIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.PostalAddress)} ;
+                      ${namedNode(ns.schema.streetAddress)} ${addressStreet} .
+
+        FILTER (
+          ABS(${latVar} - ${latitude}) <= ${toleranceInDegrees} &&
+          ABS(${lonVar} - ${longitude}) <= ${toleranceInDegrees}
+        )
       }
     `;
   }

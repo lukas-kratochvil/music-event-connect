@@ -145,4 +145,20 @@ export class SPARQLService {
       iri: row[VARIABLES.artist.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
     }));
   }
+
+  async getPlacesByCoords(latitude: number, longitude: number, eventGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectPlacesByCoords(latitude, longitude, eventGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
+    return results.map((row) => ({
+      place: {
+        iri: row[VARIABLES.place.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        name: row[VARIABLES.place.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        address: {
+          iri: row[VARIABLES.place.address.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+          street: row[VARIABLES.place.address.street]?.value,
+        },
+      },
+    }));
+  }
 }
