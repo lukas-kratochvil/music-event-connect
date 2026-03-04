@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
-import { ns } from "../rdf/ontology";
 import type { SparqlBuilderType } from "./util";
 
 const { namedNode, variable } = DataFactory;
@@ -47,20 +46,5 @@ export class SPARQLUpdateBuilderService {
     const query = this.builder.DELETE`${deleteSourceIRI} ${p} ${o}`.INSERT`${insertQuads}`
       .WHERE`${deleteSourceIRI} ${p} ${o}`;
     return graphIRI ? this.builder.WITH(namedNode(graphIRI), query) : query;
-  }
-
-  /**
-   * Creates SPARQL INSERT query that creates `sameAs` links in the Links graph.
-   */
-  insertLinks(sourceIRI: NamedNode, targetIRI: string, linksGraphIRI: string) {
-    const target = namedNode(targetIRI);
-    const linksGraph = namedNode(linksGraphIRI);
-    const sameAs = namedNode(ns.schema.sameAs);
-    return this.builder.INSERT.DATA`
-      GRAPH ${linksGraph} {
-        ${sourceIRI} ${sameAs} ${target} .
-        ${target} ${sameAs} ${sourceIRI} .
-      }
-    `;
   }
 }

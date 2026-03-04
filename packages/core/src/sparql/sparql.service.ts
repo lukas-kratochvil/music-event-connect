@@ -1,9 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { NamedNode, Quad } from "n3";
+import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
+import { ns } from "../rdf/ontology";
 import { SPARQL_QUERY_BUILDER_VARIABLES, SPARQLQueryBuilderService } from "./sparql-query-builder.service";
 import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
+
+const { namedNode, triple } = DataFactory;
 
 /**
  * SPARQL service realizes communication with RDF triple store.
@@ -36,9 +39,16 @@ export class SPARQLService {
     return constructQuery.execute(this.sparqlClient);
   }
 
-  insertLinks(sourceIRI: NamedNode, targetIRI: string, linksGraphIRI: string) {
-    const insertQuery = this.updateBuilder.insertLinks(sourceIRI, targetIRI, linksGraphIRI);
-    return insertQuery.execute(this.sparqlClient);
+  insertLinks(links: [NamedNode, string][], linksGraphIRI: string) {
+    const sameAs = namedNode(ns.schema.sameAs);
+    const quads = links
+      .map(([source, targetIRI]) => {
+        const target = namedNode(targetIRI);
+        return [triple(source, sameAs, target), triple(target, sameAs, source)];
+      })
+      .flat();
+    const insertQuery = this.updateBuilder.insert(quads, linksGraphIRI);
+    return insertQuery?.execute(this.sparqlClient);
   }
 
   async getLinkedResources(sourceIRI: NamedNode, linksGraphIRI: string) {

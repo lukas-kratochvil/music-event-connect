@@ -29,18 +29,14 @@ export class LinksMapper {
   ]);
 
   private get getMusicEventQueryMap() {
-    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getEventsByDate>([
+    return new Map([
       ...MUSIC_EVENT_GRAPHS.map(
         (eventGraph) =>
-          [
-            eventGraph,
-            (startDate: Date, eventGraphIRI: string) => this.sparqlService.getEventsByDate(startDate, eventGraphIRI),
-          ] as const
+          [eventGraph, (startDate: Date) => this.sparqlService.getEventsByDate(startDate, eventGraph)] as const
       ),
       [
         ALL_GRAPHS_MAP.musicBrainz,
-        (startDate: Date, eventGraphIRI: string) =>
-          this.sparqlService.getMusicBrainzEventsByDate(startDate, eventGraphIRI),
+        (startDate: Date) => this.sparqlService.getMusicBrainzEventsByDate(startDate, ALL_GRAPHS_MAP.musicBrainz),
       ] as const,
     ]);
   }
@@ -50,52 +46,56 @@ export class LinksMapper {
     const eventName = event.name.toLowerCase().trim();
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
 
-    const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getEventCandidates = this.getMusicEventQueryMap.get(targetGraphIRI);
-      if (!getEventCandidates) {
-        return;
-      }
-      const candidates = await getEventCandidates(event.startDate, targetGraphIRI);
-      const bestCandidate = candidates
-        .map((candidate) => {
-          const candidateName = candidate.name.toLowerCase().trim();
-          return {
-            score: stringSimilarity(eventName, candidateName),
-            candidate,
-          };
-        })
-        .toSorted((a, b) => a.score - b.score)
-        .pop();
+    const linkIRIs = (
+      await Promise.all(
+        missingGraphs.map(async (targetGraphIRI) => {
+          const getEventCandidates = this.getMusicEventQueryMap.get(targetGraphIRI);
+          if (!getEventCandidates) {
+            return null;
+          }
+          const candidates = await getEventCandidates(event.startDate);
+          const bestCandidate = candidates
+            .map((candidate) => {
+              const candidateName = candidate.name.toLowerCase().trim();
+              return {
+                score: stringSimilarity(eventName, candidateName),
+                candidate,
+              };
+            })
+            .toSorted((a, b) => a.score - b.score)
+            .pop();
 
-      if (bestCandidate && bestCandidate.score >= MIN_SIMILARITY_SCORE) {
-        await this.sparqlService.insertLinks(eventIRI, bestCandidate.candidate.iri, ALL_GRAPHS_MAP.links);
-        this.#logger.log(
-          `Link created between events: ${eventIRI.value} (${sourceGraph}) <--> ${bestCandidate.candidate.iri} (${targetGraphIRI})`
-        );
-      }
-    });
+          if (bestCandidate && bestCandidate.score >= MIN_SIMILARITY_SCORE) {
+            this.#logger.log(
+              `Link queued: ${eventIRI.value} (${sourceGraph}) <--> ${bestCandidate.candidate.iri} (${targetGraphIRI})`
+            );
+            return bestCandidate.candidate.iri;
+          }
+
+          return null;
+        })
+      )
+    )
+      .filter((link) => link !== null)
+      .map((iri) => [eventIRI, iri] as const) satisfies [NamedNode<string>, string][];
+
+    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
 
     await Promise.all([
-      ...graphTasks,
       ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
       ...event.venues.map((venue) => this.createEntityLinks(venue, sourceGraph)),
     ]);
   }
 
   private get getArtistQueryMap() {
-    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getArtistsByName>([
+    return new Map([
       ...MUSIC_EVENT_GRAPHS.map(
         (eventGraph) =>
-          [
-            eventGraph,
-            (artistName: string, eventGraphIRI: string) =>
-              this.sparqlService.getArtistsByName(artistName, eventGraphIRI),
-          ] as const
+          [eventGraph, (artistName: string) => this.sparqlService.getArtistsByName(artistName, eventGraph)] as const
       ),
       [
         ALL_GRAPHS_MAP.musicBrainz,
-        (artistName: string, eventGraphIRI: string) =>
-          this.sparqlService.getMusicBrainzArtistsByName(artistName, eventGraphIRI),
+        (artistName: string) => this.sparqlService.getMusicBrainzArtistsByName(artistName, ALL_GRAPHS_MAP.musicBrainz),
       ] as const,
     ]);
   }
@@ -104,38 +104,42 @@ export class LinksMapper {
     const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
 
-    const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getArtistCandidates = this.getArtistQueryMap.get(targetGraphIRI);
-      if (!getArtistCandidates) {
-        return;
-      }
-      const candidates = await getArtistCandidates(artist.name, targetGraphIRI);
-      const candidateTasks = candidates.map(async (candidate) => {
-        await this.sparqlService.insertLinks(artistIRI, candidate.iri, ALL_GRAPHS_MAP.links);
-        this.#logger.log(
-          `Link created between artists: ${artistIRI.value} (${sourceGraph}) <--> ${candidate.iri} (${targetGraphIRI})`
-        );
-      });
-      await Promise.all(candidateTasks);
-    });
+    const linkIRIs = (
+      await Promise.all(
+        missingGraphs.map(async (targetGraphIRI) => {
+          const getArtistCandidates = this.getArtistQueryMap.get(targetGraphIRI);
+          if (!getArtistCandidates) {
+            return null;
+          }
+          const candidates = await getArtistCandidates(artist.name);
+          candidates.forEach(({ iri }) =>
+            this.#logger.log(`Link queued: ${artistIRI.value} (${sourceGraph}) <--> ${iri} (${targetGraphIRI})`)
+          );
+          return candidates;
+        })
+      )
+    )
+      .filter((task) => task !== null)
+      .flat()
+      .map(({ iri }) => [artistIRI, iri] as const) satisfies [NamedNode<string>, string][];
 
-    await Promise.all(graphTasks);
+    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
   }
 
   private get getVenueQueryMap() {
-    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getPlacesByCoords>([
+    return new Map([
       ...MUSIC_EVENT_GRAPHS.map(
         (eventGraph) =>
           [
             eventGraph,
-            (latitude: number, longitude: number, eventGraphIRI: string) =>
-              this.sparqlService.getPlacesByCoords(latitude, longitude, eventGraphIRI),
+            (latitude: number, longitude: number) =>
+              this.sparqlService.getPlacesByCoords(latitude, longitude, eventGraph),
           ] as const
       ),
       [
         ALL_GRAPHS_MAP.musicBrainz,
-        (latitude: number, longitude: number, eventGraphIRI: string) =>
-          this.sparqlService.getMusicBrainzPlacesByCoords(latitude, longitude, eventGraphIRI),
+        (latitude: number, longitude: number) =>
+          this.sparqlService.getMusicBrainzPlacesByCoords(latitude, longitude, ALL_GRAPHS_MAP.musicBrainz),
       ] as const,
     ]);
   }
@@ -145,38 +149,40 @@ export class LinksMapper {
     const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
 
-    const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getVenuesCandidates = this.getVenueQueryMap.get(targetGraphIRI);
-      if (!getVenuesCandidates) {
-        return;
-      }
-      const candidates = await getVenuesCandidates(venue.latitude, venue.longitude, targetGraphIRI);
+    const linkIRIs = (
+      await Promise.all(
+        missingGraphs.map(async (targetGraphIRI) => {
+          const getVenueCandidates = this.getVenueQueryMap.get(targetGraphIRI);
+          if (!getVenueCandidates) {
+            return null;
+          }
+          const iris: [NamedNode<string>, string][] = [];
+          const candidates = await getVenueCandidates(venue.latitude, venue.longitude);
 
-      for (const { place } of candidates) {
-        if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.name, place.name)) {
-          await this.sparqlService.insertLinks(venueIRI, place.iri, ALL_GRAPHS_MAP.links);
-          this.#logger.log(
-            `Link created between venues: ${venueIRI.value} (${sourceGraph}) <--> ${place.iri} (${targetGraphIRI})`
+          for (const { place } of candidates) {
+            if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.name, place.name)) {
+              iris.push([venueIRI, place.iri]);
+              if (place.address) {
+                iris.push([addressIRI, place.address.iri]);
+              }
+            } else if (venue.address.street && place.address?.street) {
+              if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.address.street, place.address.street)) {
+                iris.push([addressIRI, place.address.iri]);
+              }
+            }
+          }
+
+          iris.forEach(([source, target]) =>
+            this.#logger.log(`Link queued: ${source.value} (${sourceGraph}) <--> ${target} (${targetGraphIRI})`)
           );
+          return iris;
+        })
+      )
+    )
+      .filter((link) => link !== null)
+      .flat();
 
-          if (place.address) {
-            await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
-            this.#logger.log(
-              `Link created between addresses: ${addressIRI.value} (${sourceGraph}) <--> ${place.address.iri} (${targetGraphIRI})`
-            );
-          }
-        } else if (venue.address.street && place.address?.street) {
-          if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.address.street, place.address.street)) {
-            await this.sparqlService.insertLinks(addressIRI, place.address.iri, ALL_GRAPHS_MAP.links);
-            this.#logger.log(
-              `Link created between addresses: ${addressIRI.value} (${sourceGraph}) <--> ${place.address.iri} (${targetGraphIRI})`
-            );
-          }
-        }
-      }
-    });
-
-    await Promise.all(graphTasks);
+    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
   }
 
   async createEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
