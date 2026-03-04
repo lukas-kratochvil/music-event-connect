@@ -28,17 +28,30 @@ export class LinksMapper {
     [VenueEntity.name, (venue, graph) => this.#handleVenue(venue, graph)],
   ]);
 
+  private get getMusicEventQueryMap() {
+    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getEventsByDate>([
+      ...MUSIC_EVENT_GRAPHS.map(
+        (eventGraph) =>
+          [
+            eventGraph,
+            (startDate: Date, eventGraphIRI: string) => this.sparqlService.getEventsByDate(startDate, eventGraphIRI),
+          ] as const
+      ),
+      [
+        ALL_GRAPHS_MAP.musicBrainz,
+        (startDate: Date, eventGraphIRI: string) =>
+          this.sparqlService.getMusicBrainzEventsByDate(startDate, eventGraphIRI),
+      ] as const,
+    ]);
+  }
+
   async #handleMusicEvent(event: MusicEventEntity, sourceGraph: MusicEventGraph) {
     const eventIRI = RdfEntitySerializerService.createEntityIRI(event);
     const eventName = event.name.toLowerCase().trim();
-    const GET_EVENTS_FN_MAP = new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getEventsByDate>([
-      ...MUSIC_EVENT_GRAPHS.map((eventGraph) => [eventGraph, this.sparqlService.getEventsByDate] as const),
-      [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzEventsByDate],
-    ]);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getEventCandidates = GET_EVENTS_FN_MAP.get(targetGraphIRI);
+      const getEventCandidates = this.getMusicEventQueryMap.get(targetGraphIRI);
       if (!getEventCandidates) {
         return;
       }
@@ -69,16 +82,30 @@ export class LinksMapper {
     ]);
   }
 
+  private get getArtistQueryMap() {
+    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getArtistsByName>([
+      ...MUSIC_EVENT_GRAPHS.map(
+        (eventGraph) =>
+          [
+            eventGraph,
+            (artistName: string, eventGraphIRI: string) =>
+              this.sparqlService.getArtistsByName(artistName, eventGraphIRI),
+          ] as const
+      ),
+      [
+        ALL_GRAPHS_MAP.musicBrainz,
+        (artistName: string, eventGraphIRI: string) =>
+          this.sparqlService.getMusicBrainzArtistsByName(artistName, eventGraphIRI),
+      ] as const,
+    ]);
+  }
+
   async #handleArtist(artist: ArtistEntity, sourceGraph: MusicEventGraph) {
     const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
-    const GET_ARTISTS_FN_MAP = new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getArtistsByName>([
-      ...MUSIC_EVENT_GRAPHS.map((eventGraph) => [eventGraph, this.sparqlService.getArtistsByName] as const),
-      [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzArtistsByName],
-    ]);
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getArtistCandidates = GET_ARTISTS_FN_MAP.get(targetGraphIRI);
+      const getArtistCandidates = this.getArtistQueryMap.get(targetGraphIRI);
       if (!getArtistCandidates) {
         return;
       }
@@ -95,17 +122,31 @@ export class LinksMapper {
     await Promise.all(graphTasks);
   }
 
+  private get getVenueQueryMap() {
+    return new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getPlacesByCoords>([
+      ...MUSIC_EVENT_GRAPHS.map(
+        (eventGraph) =>
+          [
+            eventGraph,
+            (latitude: number, longitude: number, eventGraphIRI: string) =>
+              this.sparqlService.getPlacesByCoords(latitude, longitude, eventGraphIRI),
+          ] as const
+      ),
+      [
+        ALL_GRAPHS_MAP.musicBrainz,
+        (latitude: number, longitude: number, eventGraphIRI: string) =>
+          this.sparqlService.getMusicBrainzPlacesByCoords(latitude, longitude, eventGraphIRI),
+      ] as const,
+    ]);
+  }
+
   async #handleVenue(venue: VenueEntity, sourceGraph: MusicEventGraph) {
     const venueIRI = RdfEntitySerializerService.createEntityIRI(venue);
     const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
-    const GET_VENUES_FN_MAP = new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getPlacesByCoords>([
-      ...MUSIC_EVENT_GRAPHS.map((eventGraph) => [eventGraph, this.sparqlService.getPlacesByCoords] as const),
-      [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzPlacesByCoords],
-    ]);
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const getVenuesCandidates = GET_VENUES_FN_MAP.get(targetGraphIRI);
+      const getVenuesCandidates = this.getVenueQueryMap.get(targetGraphIRI);
       if (!getVenuesCandidates) {
         return;
       }
