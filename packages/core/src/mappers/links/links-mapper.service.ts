@@ -4,7 +4,7 @@ import { stringSimilarity } from "string-similarity-js";
 import { AbstractEntity, ArtistEntity, MusicEventEntity, VenueEntity } from "../../entities";
 import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
 import { SPARQLService } from "../../sparql/sparql.service";
-import { ALL_GRAPHS_MAP, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
+import { ALL_GRAPHS_MAP, LINKED_GRAPHS, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
 
 const MIN_SIMILARITY_SCORE = 0.9;
 
@@ -18,7 +18,7 @@ export class LinksMapper {
   async #getEntityMissingLinkGraphs(iri: NamedNode, sourceGraph: MusicEventGraph) {
     const linkedResources = await this.sparqlService.getLinkedResources(iri, ALL_GRAPHS_MAP.links);
     const connectedGraphIRIs = linkedResources.map((link) => link.graph);
-    return MUSIC_EVENT_GRAPHS.filter((graphIRI) => !connectedGraphIRIs.includes(graphIRI) && graphIRI !== sourceGraph);
+    return LINKED_GRAPHS.filter((graphIRI) => !connectedGraphIRIs.includes(graphIRI) && graphIRI !== sourceGraph);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,11 +30,18 @@ export class LinksMapper {
 
   async #handleMusicEvent(event: MusicEventEntity, sourceGraph: MusicEventGraph) {
     const eventIRI = RdfEntitySerializerService.createEntityIRI(event);
+    const eventName = event.name.toLowerCase().trim();
+    const GET_EVENTS_FN_MAP = new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getEventsByDate>([
+      ...MUSIC_EVENT_GRAPHS.map((eventGraph) => [eventGraph, this.sparqlService.getEventsByDate] as const),
+      [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzEventsByDate],
+    ]);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
-
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const candidates = await this.sparqlService.getEventsByDate(event.startDate, targetGraphIRI);
-      const eventName = event.name.toLowerCase().trim();
+      const getEventCandidates = GET_EVENTS_FN_MAP.get(targetGraphIRI);
+      if (!getEventCandidates) {
+        return;
+      }
+      const candidates = await getEventCandidates(event.startDate, targetGraphIRI);
       const bestCandidate = candidates
         .map((candidate) => {
           const candidateName = candidate.name.toLowerCase().trim();
@@ -65,6 +72,9 @@ export class LinksMapper {
     const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
 
+    // TODO: link artist with MusicBrainz artist by the `rdfs:label` or `skos:altLabel`
+    // TODO: link genres with MusicBrainz genres by the `rdfs:label`
+
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
       const candidates = await this.sparqlService.getArtistsByName(artist.name, targetGraphIRI);
       const candidateTasks = candidates.map(async (candidate) => {
@@ -83,6 +93,8 @@ export class LinksMapper {
     const venueIRI = RdfEntitySerializerService.createEntityIRI(venue);
     const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
+
+    // TODO: link places with MusicBrainz places by the `rdfs:label` or `wdt:P625` coordinates or `wdt:P6375` address
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
       const candidates = await this.sparqlService.getPlacesByCoords(venue.latitude, venue.longitude, targetGraphIRI);

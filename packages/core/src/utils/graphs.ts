@@ -23,4 +23,6 @@ export const MUSIC_EVENT_GRAPHS = [
   ALL_GRAPHS_MAP.events.ticketportal,
 ] as const;
 
+export const LINKED_GRAPHS = [...MUSIC_EVENT_GRAPHS, ALL_GRAPHS_MAP.musicBrainz] as const;
+
 export type MusicEventGraph = (typeof MUSIC_EVENT_GRAPHS)[number];

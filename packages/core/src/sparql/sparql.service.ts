@@ -61,6 +61,16 @@ export class SPARQLService {
     }));
   }
 
+  async getMusicBrainzEventsByDate(startDate: Date, musicBrainzGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectMusicBrainzEventsByDate(startDate, musicBrainzGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate;
+    return results.map((row) => ({
+      iri: row[VARIABLES.event.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+      name: row[VARIABLES.event.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
+  }
+
   async getArtistsByName(artistName: string, eventGraphIRI: string) {
     const selectQuery = this.queryBuilder.selectArtistEntitiesByName(artistName, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);

@@ -1,15 +1,18 @@
 import type { StrictOmit } from "@music-event-connect/shared";
 import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
-import { foaf, rdf, schema, xsd } from "rdf-namespaces";
+import { foaf, rdf, rdfs, schema, xsd } from "rdf-namespaces";
 
 /**
- * RDF prefixes used in the project.
+ * RDF prefixes used in this project.
  */
 export const prefixes = {
   foaf: "https://xmlns.com/foaf/spec/",
+  mb: "https://linkedmusic.ca/graphs/musicbrainz/",
   mec: "http://music-event-connect.cz/entity/",
   rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#",
   schema: "http://schema.org/",
+  wdt: "http://www.wikidata.org/prop/direct/",
   xsd: "http://www.w3.org/2001/XMLSchema#",
 } as const;
 
@@ -74,14 +77,21 @@ const schemaItemAvailabilityEnum: SchemaItemAvailabilityEnum = {
 type SchemaSubset = SchemaTypes & SchemaProperties & SchemaItemAvailabilityEnum;
 
 /**
- * RDF namespaces used in the project.
+ * RDF namespaces used in this project.
  */
 export const ns = {
   foaf: foaf as FoafSubset,
+  mb: {
+    Event: `${prefixes.mb}Event`,
+  } as const,
   rdf,
+  rdfs,
   schema: {
     ...schemaItemAvailabilityEnum,
     ...schema,
   } as SchemaSubset,
+  wdt: {
+    startTime: `${prefixes.wdt}P580`,
+  } as const,
   xsd,
 } satisfies Record<keyof StrictOmit<typeof prefixes, "mec">, object>;

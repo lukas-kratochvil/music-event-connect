@@ -37,12 +37,13 @@ docker exec -i <VIRTUOSO_CONTAINER> isql <ISQL_PORT> dba <DBA_PASSWORD> exec="DB
 This user will be used by backend apps to access and query the triple store.
 
 1. In the **Virtuoso Conductor** (Web UI), create a new application user (**System Admin** -> **User Accounts**) with the `SQL/ODBC and WebDAV` user type and the `SPARQL_UPDATE` role.
-2. Allow RDF graph-level permissions (read, write, sponge) for all the Events graphs and the Links graph in the **Virtuoso ISQL interface**:
+2. Allow RDF graph-level permissions (read, write, sponge) for all the Events graphs, Links graph and MusicBrainz graph in the **Virtuoso ISQL interface**:
 ```sql
 DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/events/goout', '<USER_NAME>', 7);
 DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/events/ticketmaster', '<USER_NAME>', 7);
 DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/events/ticketportal', '<USER_NAME>', 7);
 DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/links', '<USER_NAME>', 7);
+DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/musicbrainz', '<USER_NAME>', 7);
 ```
 
 To delete user permissions use:

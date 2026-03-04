@@ -120,6 +120,26 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
+   * Selects all the Event entities for the given start date in the MusicBrainz graph.
+   */
+  selectMusicBrainzEventsByDate(startDate: Date, musicBrainzGraphIRI: string) {
+    const sourceGraph = namedNode(musicBrainzGraphIRI);
+    const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
+    const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
+    const eventStartDate = variable("eventStartDate");
+    const eventStartDatePrefix = startDate.toISOString().split("T").at(0);
+
+    return this.builder.SELECT.DISTINCT`${eventIRI} ${eventName}`.WHERE`
+        GRAPH ${sourceGraph} {
+          ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Event)} ;
+                      ${namedNode(ns.rdfs.label)} ${eventName} ;
+                      ${namedNode(ns.wdt.startTime)} ${eventStartDate} .
+          FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
+        }
+      `;
+  }
+
+  /**
    * Selects all the Artist entities by the given name (case insensitive) in the Event graph.
    */
   selectArtistEntitiesByName(artistName: string, eventGraphIRI: string) {
