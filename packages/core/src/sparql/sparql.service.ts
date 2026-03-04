@@ -80,6 +80,15 @@ export class SPARQLService {
     }));
   }
 
+  async getMusicBrainzArtistsByName(artistName: string, eventGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectMusicBrainzArtistEntitiesByName(artistName, eventGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
+    return results.map((row) => ({
+      iri: row[VARIABLES.artist.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
+  }
+
   async getPlacesByCoords(latitude: number, longitude: number, eventGraphIRI: string) {
     const selectQuery = this.queryBuilder.selectPlaceEntitiesByCoords(latitude, longitude, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);

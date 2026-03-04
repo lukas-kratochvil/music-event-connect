@@ -1,6 +1,6 @@
 import type { StrictOmit } from "@music-event-connect/shared";
 import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
-import { foaf, rdf, rdfs, schema, xsd } from "rdf-namespaces";
+import { foaf, rdf, rdfs, schema, skos, xsd } from "rdf-namespaces";
 
 /**
  * RDF prefixes used in this project.
@@ -12,6 +12,7 @@ export const prefixes = {
   rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
   rdfs: "http://www.w3.org/2000/01/rdf-schema#",
   schema: "http://schema.org/",
+  skos: "http://www.w3.org/2004/02/skos/core#",
   wdt: "http://www.wikidata.org/prop/direct/",
   xsd: "http://www.w3.org/2001/XMLSchema#",
 } as const;
@@ -82,6 +83,7 @@ type SchemaSubset = SchemaTypes & SchemaProperties & SchemaItemAvailabilityEnum;
 export const ns = {
   foaf: foaf as FoafSubset,
   mb: {
+    Artist: `${prefixes.mb}Artist`,
     Event: `${prefixes.mb}Event`,
   } as const,
   rdf,
@@ -90,6 +92,7 @@ export const ns = {
     ...schemaItemAvailabilityEnum,
     ...schema,
   } as SchemaSubset,
+  skos,
   wdt: {
     startTime: `${prefixes.wdt}P580`,
   } as const,

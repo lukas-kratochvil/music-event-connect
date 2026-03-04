@@ -36,6 +36,7 @@ export class LinksMapper {
       [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzEventsByDate],
     ]);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
+
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
       const getEventCandidates = GET_EVENTS_FN_MAP.get(targetGraphIRI);
       if (!getEventCandidates) {
@@ -71,12 +72,17 @@ export class LinksMapper {
   async #handleArtist(artist: ArtistEntity, sourceGraph: MusicEventGraph) {
     const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
-
-    // TODO: link artist with MusicBrainz artist by the `rdfs:label` or `skos:altLabel`
-    // TODO: link genres with MusicBrainz genres by the `rdfs:label`
+    const GET_ARTISTS_FN_MAP = new Map<(typeof LINKED_GRAPHS)[number], typeof this.sparqlService.getArtistsByName>([
+      ...MUSIC_EVENT_GRAPHS.map((eventGraph) => [eventGraph, this.sparqlService.getArtistsByName] as const),
+      [ALL_GRAPHS_MAP.musicBrainz, this.sparqlService.getMusicBrainzArtistsByName],
+    ]);
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const candidates = await this.sparqlService.getArtistsByName(artist.name, targetGraphIRI);
+      const getArtistCandidates = GET_ARTISTS_FN_MAP.get(targetGraphIRI);
+      if (!getArtistCandidates) {
+        return;
+      }
+      const candidates = await getArtistCandidates(artist.name, targetGraphIRI);
       const candidateTasks = candidates.map(async (candidate) => {
         await this.sparqlService.insertLinks(artistIRI, candidate.iri, ALL_GRAPHS_MAP.links);
         this.#logger.log(

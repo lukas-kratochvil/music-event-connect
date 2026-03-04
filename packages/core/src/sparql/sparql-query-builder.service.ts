@@ -156,6 +156,23 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
+   * Selects all the Artist entities by the given name (case insensitive) in the MusicBrainz graph.
+   */
+  selectMusicBrainzArtistEntitiesByName(artistName: string, musicBrainzGraphIRI: string) {
+    const sourceGraph = namedNode(musicBrainzGraphIRI);
+    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
+    const name = variable("name");
+    return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
+      GRAPH ${sourceGraph} {
+        ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
+                      ${namedNode(ns.rdfs.label)}|${namedNode(ns.skos.altLabel)} ${name} .
+
+        FILTER(LCASE(${name}) = LCASE(${literal(artistName)}))
+      }
+    `;
+  }
+
+  /**
    * Selects all the Venue entities close enough to the given coordinates in the Event graph.
    *
    * @param toleranceInDegrees default tolerance is set to ~222 meters
