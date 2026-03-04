@@ -162,13 +162,14 @@ export class GooutService implements ICronJobService {
     );
     const artists = (
       await Promise.all(
-        artistsDivs.map(async (artistDiv) =>
-          this.#getArtist(
-            page.browser(),
-            await artistDiv.$eval("::-p-xpath(./*[1])", (elem) => (elem as HTMLAnchorElement).href),
-            availableGenres
-          )
-        )
+        artistsDivs.map(async (artistDiv) => {
+          try {
+            const artistUrl = await artistDiv.$eval("::-p-xpath(./a[1])", (elem) => (elem as HTMLAnchorElement).href);
+            return this.#getArtist(page.browser(), artistUrl, availableGenres);
+          } catch {
+            return null;
+          }
+        })
       )
     ).filter((artist) => artist !== null);
 
