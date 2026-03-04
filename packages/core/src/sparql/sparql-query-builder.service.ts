@@ -158,7 +158,7 @@ export class SPARQLQueryBuilderService {
   /**
    * Selects all the Artist entities by the given name (case insensitive) in the MusicBrainz graph.
    */
-  selectMusicBrainzArtistEntitiesByName(artistName: string, musicBrainzGraphIRI: string) {
+  selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
     const name = variable("name");
@@ -179,17 +179,17 @@ export class SPARQLQueryBuilderService {
    */
   selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
     const sourceGraph = namedNode(eventGraphIRI);
-    const venueIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
-    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
+    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
+    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
     const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.iri);
     const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.street);
     const latVar = variable("latitude");
     const lonVar = variable("longitude");
 
-    return this.builder.SELECT.DISTINCT`${venueIRI} ${name} ${addressIRI} ${addressStreet}`.WHERE`
+    return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName} ${addressIRI} ${addressStreet}`.WHERE`
       GRAPH ${sourceGraph} {
-        ${venueIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
-                    ${namedNode(ns.schema.name)} ${name} ;
+        ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
+                    ${namedNode(ns.schema.name)} ${placeName} ;
                     ${namedNode(ns.schema.latitude)} ${latVar} ;
                     ${namedNode(ns.schema.longitude)} ${lonVar} ;
                     ${namedNode(ns.schema.address)} ${addressIRI} .
@@ -201,6 +201,33 @@ export class SPARQLQueryBuilderService {
           ABS(${latVar} - ${latitude}) <= ${toleranceInDegrees} &&
           ABS(${lonVar} - ${longitude}) <= ${toleranceInDegrees}
         )
+      }
+    `;
+  }
+
+  /**
+   * Selects all the Venue entities close enough to the given coordinates in the MusicBrainz graph.
+   *
+   * @param radiusInKm default radius is set to 222 meters
+   */
+  selectMusicBrainzPlacesByCoords(
+    latitude: number,
+    longitude: number,
+    musicBrainzGraphIRI: string,
+    radiusInKm = 0.222
+  ) {
+    const sourceGraph = namedNode(musicBrainzGraphIRI);
+    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
+    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
+    const coords = variable("coordinates");
+
+    return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName}`.WHERE`
+      GRAPH ${sourceGraph} {
+        ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Place)} ;
+                    ${namedNode(ns.rdfs.label)} ${placeName} ;
+                    ${namedNode(ns.wdt.coordinateLocation)} ${coords} .
+
+        FILTER (bif:st_intersects(${coords}, bif:st_point(${longitude}, ${latitude}), ${radiusInKm}))
       }
     `;
   }

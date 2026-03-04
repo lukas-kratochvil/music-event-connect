@@ -80,8 +80,8 @@ export class SPARQLService {
     }));
   }
 
-  async getMusicBrainzArtistsByName(artistName: string, eventGraphIRI: string) {
-    const selectQuery = this.queryBuilder.selectMusicBrainzArtistEntitiesByName(artistName, eventGraphIRI);
+  async getMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectMusicBrainzArtistsByName(artistName, musicBrainzGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
     return results.map((row) => ({
@@ -97,10 +97,25 @@ export class SPARQLService {
       place: {
         iri: row[VARIABLES.place.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
         name: row[VARIABLES.place.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-        address: {
-          iri: row[VARIABLES.place.address.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-          street: row[VARIABLES.place.address.street]?.value,
-        },
+        address: row[VARIABLES.place.address.iri]?.value
+          ? {
+              iri: row[VARIABLES.place.address.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+              street: row[VARIABLES.place.address.street]?.value,
+            }
+          : undefined,
+      },
+    }));
+  }
+
+  async getMusicBrainzPlacesByCoords(latitude: number, longitude: number, musicBrainzGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectMusicBrainzPlacesByCoords(latitude, longitude, musicBrainzGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
+    return results.map((row) => ({
+      place: {
+        iri: row[VARIABLES.place.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        name: row[VARIABLES.place.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        address: undefined,
       },
     }));
   }

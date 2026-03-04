@@ -85,6 +85,7 @@ export const ns = {
   mb: {
     Artist: `${prefixes.mb}Artist`,
     Event: `${prefixes.mb}Event`,
+    Place: `${prefixes.mb}Place`,
   } as const,
   rdf,
   rdfs,
@@ -94,7 +95,9 @@ export const ns = {
   } as SchemaSubset,
   skos,
   wdt: {
+    coordinateLocation: `${prefixes.wdt}P625`,
     startTime: `${prefixes.wdt}P580`,
+    streetAddress: `${prefixes.wdt}P6375`,
   } as const,
   xsd,
 } satisfies Record<keyof StrictOmit<typeof prefixes, "mec">, object>;
