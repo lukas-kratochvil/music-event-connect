@@ -4,7 +4,7 @@ import { stringSimilarity } from "string-similarity-js";
 import { AbstractEntity, ArtistEntity, MusicEventEntity, VenueEntity } from "../../entities";
 import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
 import { SPARQLService } from "../../sparql/sparql.service";
-import { ALL_GRAPHS_MAP, LINKED_GRAPHS, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
+import { GRAPHS_MAP, LINKED_GRAPHS, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
 
 const MIN_SIMILARITY_SCORE = 0.9;
 
@@ -16,7 +16,7 @@ export class LinksMapper {
   readonly #logger = new Logger(LinksMapper.name);
 
   async #getEntityMissingLinkGraphs(iri: NamedNode, sourceGraph: MusicEventGraph) {
-    const linkedResources = await this.sparqlService.getLinkedResources(iri, ALL_GRAPHS_MAP.links);
+    const linkedResources = await this.sparqlService.getLinkedResources(iri, GRAPHS_MAP.links);
     const connectedGraphIRIs = linkedResources.map((link) => link.graph);
     return LINKED_GRAPHS.filter((graphIRI) => !connectedGraphIRIs.includes(graphIRI) && graphIRI !== sourceGraph);
   }
@@ -34,8 +34,8 @@ export class LinksMapper {
         [eventGraph, (startDate: Date) => this.sparqlService.getEventsByDate(startDate, eventGraph)] as const
     ),
     [
-      ALL_GRAPHS_MAP.musicBrainz,
-      (startDate: Date) => this.sparqlService.getMusicBrainzEventsByDate(startDate, ALL_GRAPHS_MAP.musicBrainz),
+      GRAPHS_MAP.musicBrainz,
+      (startDate: Date) => this.sparqlService.getMusicBrainzEventsByDate(startDate, GRAPHS_MAP.musicBrainz),
     ] as const,
   ]);
 
@@ -77,7 +77,7 @@ export class LinksMapper {
       .filter((link) => link !== null)
       .map((iri) => [eventIRI, iri] as const) satisfies [NamedNode<string>, string][];
 
-    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
+    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
 
     await Promise.all([
       ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
@@ -91,8 +91,8 @@ export class LinksMapper {
         [eventGraph, (artistName: string) => this.sparqlService.getArtistsByName(artistName, eventGraph)] as const
     ),
     [
-      ALL_GRAPHS_MAP.musicBrainz,
-      (artistName: string) => this.sparqlService.getMusicBrainzArtistsByName(artistName, ALL_GRAPHS_MAP.musicBrainz),
+      GRAPHS_MAP.musicBrainz,
+      (artistName: string) => this.sparqlService.getMusicBrainzArtistsByName(artistName, GRAPHS_MAP.musicBrainz),
     ] as const,
   ]);
 
@@ -119,7 +119,7 @@ export class LinksMapper {
       .flat()
       .map(({ iri }) => [artistIRI, iri] as const) satisfies [NamedNode<string>, string][];
 
-    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
+    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
   }
 
   #venueQueryMap = new Map([
@@ -132,9 +132,9 @@ export class LinksMapper {
         ] as const
     ),
     [
-      ALL_GRAPHS_MAP.musicBrainz,
+      GRAPHS_MAP.musicBrainz,
       (latitude: number, longitude: number) =>
-        this.sparqlService.getMusicBrainzPlacesByCoords(latitude, longitude, ALL_GRAPHS_MAP.musicBrainz),
+        this.sparqlService.getMusicBrainzPlacesByCoords(latitude, longitude, GRAPHS_MAP.musicBrainz),
     ] as const,
   ]);
 
@@ -176,7 +176,7 @@ export class LinksMapper {
       .filter((link) => link !== null)
       .flat();
 
-    await this.sparqlService.insertLinks(linkIRIs, ALL_GRAPHS_MAP.links);
+    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
   }
 
   async createEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
