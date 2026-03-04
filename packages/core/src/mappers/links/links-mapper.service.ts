@@ -33,7 +33,7 @@ export class LinksMapper {
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
 
     const graphTasks = missingGraphs.map(async (targetGraphIRI) => {
-      const candidates = await this.sparqlService.getMusicEventsByDate(event.startDate, targetGraphIRI);
+      const candidates = await this.sparqlService.getEventsByDate(event.startDate, targetGraphIRI);
       const eventName = event.name.toLowerCase().trim();
       const bestCandidate = candidates
         .map((candidate) => {
@@ -56,8 +56,8 @@ export class LinksMapper {
 
     await Promise.all([
       ...graphTasks,
-      ...event.artists.map((artist) => this.createLinks(artist, sourceGraph)),
-      ...event.venues.map((venue) => this.createLinks(venue, sourceGraph)),
+      ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
+      ...event.venues.map((venue) => this.createEntityLinks(venue, sourceGraph)),
     ]);
   }
 
@@ -114,7 +114,7 @@ export class LinksMapper {
   }
 
   // TODO: match MusicBrainz entities
-  async createLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
+  async createEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
     const handler = this.#handlers.get(entity.constructor.name);
     if (handler) {
       await handler(entity, sourceGraph);

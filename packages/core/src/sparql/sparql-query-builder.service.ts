@@ -75,7 +75,7 @@ export class SPARQLQueryBuilderService {
   /**
    * Selects all the linked resources to the given resource.
    */
-  selectLinks(resourceIRI: NamedNode, linksGraphIRI: string) {
+  selectLinks(sourceIRI: NamedNode, linksGraphIRI: string) {
     const linksGraph = namedNode(linksGraphIRI);
     const linkedResourceIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.iri);
     const linkedResourceGraph = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.graph);
@@ -83,11 +83,11 @@ export class SPARQLQueryBuilderService {
     return this.builder.SELECT.DISTINCT`${linkedResourceIRI} ${linkedResourceGraph}`.WHERE`
       GRAPH ${linksGraph} {
         {
-          ${resourceIRI} ${namedNode(ns.schema.sameAs)} ${linkedResourceIRI} .
+          ${sourceIRI} ${namedNode(ns.schema.sameAs)} ${linkedResourceIRI} .
         }
         UNION
         {
-          ${linkedResourceIRI} ${namedNode(ns.schema.sameAs)} ${resourceIRI} .
+          ${linkedResourceIRI} ${namedNode(ns.schema.sameAs)} ${sourceIRI} .
         }
       }
 
@@ -100,9 +100,9 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
-   * Selects all the events for the given start date.
+   * Selects all the Event entities for the given start date in the Event graph.
    */
-  selectEventsByDate(startDate: Date, eventGraphIRI: string) {
+  selectEventEntitiesByDate(startDate: Date, eventGraphIRI: string) {
     const sourceGraph = namedNode(eventGraphIRI);
     const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
     const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
@@ -120,9 +120,9 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
-   * Selects all the artists by the given name (case insensitive).
+   * Selects all the Artist entities by the given name (case insensitive) in the Event graph.
    */
-  selectArtistsByName(artistName: string, eventGraphIRI: string) {
+  selectArtistEntitiesByName(artistName: string, eventGraphIRI: string) {
     const sourceGraph = namedNode(eventGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
     const name = variable("name");
@@ -136,11 +136,11 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
-   * Selects all the venues close enough to the given coordinates.
+   * Selects all the Venue entities close enough to the given coordinates in the Event graph.
    *
    * @param toleranceInDegrees default tolerance is set to ~222 meters
    */
-  selectPlacesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
+  selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
     const sourceGraph = namedNode(eventGraphIRI);
     const venueIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
     const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);

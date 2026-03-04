@@ -32,7 +32,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   async create(entity: TEntity, graphIri: MusicEventGraph) {
     const quads = this.serializer.serialize(entity);
     const insertResult = await this.sparqlService.insert(quads, graphIri);
-    await this.linksMapper.createLinks(entity, graphIri);
+    await this.linksMapper.createEntityLinks(entity, graphIri);
     return insertResult;
   }
 
@@ -40,7 +40,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
     const deleteSourceIRI = RdfEntitySerializerService.createEntityIRI(deleteEntity);
     const insertQuads = this.serializer.serialize(insertEntity);
     const updateResult = await this.sparqlService.update(deleteSourceIRI, insertQuads, graphIri);
-    await this.linksMapper.createLinks(insertEntity, graphIri);
+    await this.linksMapper.createEntityLinks(insertEntity, graphIri);
     return updateResult;
   }
 

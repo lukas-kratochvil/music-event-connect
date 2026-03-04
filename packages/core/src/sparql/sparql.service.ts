@@ -41,8 +41,8 @@ export class SPARQLService {
     return insertQuery.execute(this.sparqlClient);
   }
 
-  async getLinkedResources(resourceIRI: NamedNode, linksGraphIRI: string) {
-    const selectQuery = this.queryBuilder.selectLinks(resourceIRI, linksGraphIRI);
+  async getLinkedResources(sourceIRI: NamedNode, linksGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectLinks(sourceIRI, linksGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectLinks;
     return results.map((row) => ({
@@ -51,8 +51,8 @@ export class SPARQLService {
     }));
   }
 
-  async getMusicEventsByDate(startDate: Date, eventGraphIRI: string) {
-    const selectQuery = this.queryBuilder.selectEventsByDate(startDate, eventGraphIRI);
+  async getEventsByDate(startDate: Date, eventGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectEventEntitiesByDate(startDate, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate;
     return results.map((row) => ({
@@ -62,7 +62,7 @@ export class SPARQLService {
   }
 
   async getArtistsByName(artistName: string, eventGraphIRI: string) {
-    const selectQuery = this.queryBuilder.selectArtistsByName(artistName, eventGraphIRI);
+    const selectQuery = this.queryBuilder.selectArtistEntitiesByName(artistName, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
     return results.map((row) => ({
@@ -71,7 +71,7 @@ export class SPARQLService {
   }
 
   async getPlacesByCoords(latitude: number, longitude: number, eventGraphIRI: string) {
-    const selectQuery = this.queryBuilder.selectPlacesByCoords(latitude, longitude, eventGraphIRI);
+    const selectQuery = this.queryBuilder.selectPlaceEntitiesByCoords(latitude, longitude, eventGraphIRI);
     const results = await selectQuery.execute(this.sparqlClient);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
     return results.map((row) => ({
