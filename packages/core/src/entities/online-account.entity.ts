@@ -4,13 +4,22 @@ import { Expose, Transform } from "class-transformer";
 import { IsString, IsUrl } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
+import { createEntityId, isEntityId } from "../utils/entity-id";
 import { AbstractEntity } from "./abstract.entity";
+import type { EntityClassTransformOptions } from "./context";
 
 @RDFClass(ns.foaf.OnlineAccount)
 export class OnlineAccountEntity extends AbstractEntity implements IOnlineAccount {
+  // Disable class-validator ESLint rules, because `id` validators are applied in the AbstractEntity.
+  // eslint-disable-next-line @darraghor/nestjs-typed/all-properties-are-whitelisted, @darraghor/nestjs-typed/all-properties-have-explicit-defined
   @Expose()
-  @Transform(({ value, obj }) => (value ? value : hash("sha256", obj["url"], "hex")))
-  @IsString()
+  @Transform(({ value, obj, options }) => {
+    if (typeof value === "string" && isEntityId(value)) {
+      return value;
+    }
+    const origin = (options as EntityClassTransformOptions).context.origin;
+    return createEntityId(origin, hash("sha256", obj["url"], "hex"));
+  })
   override id: string;
 
   @Expose()

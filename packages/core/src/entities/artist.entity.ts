@@ -4,14 +4,23 @@ import { Expose, Transform, Type } from "class-transformer";
 import { IsArray, ArrayUnique, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
+import { createEntityId, isEntityId } from "../utils/entity-id";
 import { AbstractEntity } from "./abstract.entity";
+import type { EntityClassTransformOptions } from "./context";
 import { OnlineAccountEntity } from "./online-account.entity";
 
 @RDFClass(ns.schema.MusicGroup)
 export class ArtistEntity extends AbstractEntity implements IArtist {
+  // Disable class-validator ESLint rules, because `id` validators are applied in the AbstractEntity.
+  // eslint-disable-next-line @darraghor/nestjs-typed/all-properties-are-whitelisted, @darraghor/nestjs-typed/all-properties-have-explicit-defined
   @Expose()
-  @Transform(({ value, obj }) => (value ? value : hash("sha256", obj["name"], "hex")))
-  @IsString()
+  @Transform(({ value, obj, options }) => {
+    if (typeof value === "string" && isEntityId(value)) {
+      return value;
+    }
+    const origin = (options as EntityClassTransformOptions).context.origin;
+    return createEntityId(origin, hash("sha256", obj["name"], "hex"));
+  })
   override id: string;
 
   @Expose()

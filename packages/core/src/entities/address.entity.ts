@@ -4,19 +4,23 @@ import { Expose, Transform } from "class-transformer";
 import { IsISO31661Alpha2, IsOptional, IsString } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
+import { createEntityId, isEntityId } from "../utils/entity-id";
 import { AbstractEntity } from "./abstract.entity";
+import type { EntityClassTransformOptions } from "./context";
 
 @RDFClass(ns.schema.PostalAddress)
 export class AddressEntity extends AbstractEntity implements IAddress {
+  // Disable class-validator ESLint rules, because `id` validators are applied in the AbstractEntity.
+  // eslint-disable-next-line @darraghor/nestjs-typed/all-properties-are-whitelisted, @darraghor/nestjs-typed/all-properties-have-explicit-defined
   @Expose()
-  @Transform(({ value, obj }) => {
-    if (value) {
+  @Transform(({ value, obj, options }) => {
+    if (typeof value === "string" && isEntityId(value)) {
       return value;
     }
+    const origin = (options as EntityClassTransformOptions).context.origin;
     const uniqueStr = `${obj["country"]}-${obj["locality"]}-${obj["street"] ?? ""}`;
-    return hash("sha256", uniqueStr, "hex");
+    return createEntityId(origin, hash("sha256", uniqueStr, "hex"));
   })
-  @IsString()
   override id: string;
 
   @Expose()

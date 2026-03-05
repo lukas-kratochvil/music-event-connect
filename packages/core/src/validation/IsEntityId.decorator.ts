@@ -1,9 +1,9 @@
 import { registerDecorator, type ValidationArguments, type ValidationOptions } from "class-validator";
-import { MUSIC_EVENT_ID_DELIM, VALID_MUSIC_EVENT_ID_PREFIXES } from "../utils/music-event";
+import { ENTITY_ID_DELIM, VALID_ENTITY_ID_PREFIXES } from "../utils/entity-id";
 
-export const isMusicEventId = (validationOptions?: ValidationOptions) => (object: object, propertyName: string) => {
+export const IsEntityId = (validationOptions?: ValidationOptions) => (object: object, propertyName: string) => {
   registerDecorator({
-    name: "isMusicEventId",
+    name: "IsEntityId",
     target: object.constructor,
     propertyName: propertyName,
     options: validationOptions,
@@ -13,7 +13,7 @@ export const isMusicEventId = (validationOptions?: ValidationOptions) => (object
           return false;
         }
 
-        const parts = value.split(MUSIC_EVENT_ID_DELIM);
+        const parts = value.split(ENTITY_ID_DELIM);
 
         // don't check the exact equality of 2 parts, because the origin id can possibly contain the same delimiter that is used for separation of the origin's prefix and id
         if (parts.length < 2) {
@@ -21,10 +21,10 @@ export const isMusicEventId = (validationOptions?: ValidationOptions) => (object
         }
 
         const originPrefix = parts.at(0);
-        const originId = parts.slice(1).join(MUSIC_EVENT_ID_DELIM);
+        const originId = parts.slice(1).join(ENTITY_ID_DELIM);
         return (
           originPrefix !== undefined
-          && VALID_MUSIC_EVENT_ID_PREFIXES.some((validIdPrefix) => validIdPrefix === originPrefix)
+          && VALID_ENTITY_ID_PREFIXES.some((validIdPrefix) => validIdPrefix === originPrefix)
           && originId.length > 0
         );
       },

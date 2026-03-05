@@ -1,11 +1,5 @@
-import {
-  areEntitiesSame,
-  createMusicEventId,
-  GRAPHS_MAP,
-  plainToEntity,
-  validateEntity,
-} from "@music-event-connect/core";
-import { MusicEventEntity } from "@music-event-connect/core/entities";
+import { areEntitiesSame, GRAPHS_MAP, plainToEntity, validateEntity } from "@music-event-connect/core";
+import { MusicEventEntity, type EntityClassTransformOptions } from "@music-event-connect/core/entities";
 import { MusicEventMapper } from "@music-event-connect/core/mappers";
 import {
   MusicEventsQueue,
@@ -52,12 +46,10 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
     try {
       // 1) Transform to MusicEventEntity
       const event = job.data.event;
-      const eventId = createMusicEventId(job.name, event.id);
       const venuesWithCoords = await this.#getEventVenuesWithCoordinates(event.venues);
       // IDs will be assigned by the transformation
       const eventWithIds = {
         ...event,
-        id: eventId,
         artists: event.artists.map((artist) => {
           const [homepages, onlineAccounts] = artist.webSites.reduce<[string[], string[]]>(
             (acc, link) => {
@@ -98,7 +90,12 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
           },
         })),
       } satisfies MusicEventEntity;
-      const musicEvent = plainToEntity(MusicEventEntity, eventWithIds, { excludeExtraneousValues: true });
+      const musicEvent = plainToEntity(MusicEventEntity, eventWithIds, {
+        excludeExtraneousValues: true,
+        context: {
+          origin: job.name,
+        },
+      } as EntityClassTransformOptions);
 
       // 2) Validate MusicEventEntity
       const validationErrors = await validateEntity(musicEvent);

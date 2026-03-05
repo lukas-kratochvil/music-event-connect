@@ -1,5 +1,5 @@
 import type { IMusicEvent } from "@music-event-connect/shared/interfaces";
-import { Expose, Type } from "class-transformer";
+import { Expose, Transform, Type } from "class-transformer";
 import {
   Allow,
   ArrayNotEmpty,
@@ -12,17 +12,26 @@ import {
 } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
-import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate, isMusicEventId } from "../validation";
+import { createEntityId, isEntityId } from "../utils/entity-id";
+import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate } from "../validation";
 import { AbstractEntity } from "./abstract.entity";
 import { ArtistEntity } from "./artist.entity";
+import type { EntityClassTransformOptions } from "./context";
 import { TicketEntity } from "./ticket.entity";
 import { VenueEntity } from "./venue.entity";
 
 @RDFClass(ns.schema.MusicEvent)
 export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
+  // Disable class-validator ESLint rules, because `id` validators are applied in the AbstractEntity.
+  // eslint-disable-next-line @darraghor/nestjs-typed/all-properties-are-whitelisted, @darraghor/nestjs-typed/all-properties-have-explicit-defined
   @Expose()
-  @Allow() // only to satisfy "@darraghor/nestjs-typed/all-properties-are-whitelisted" rule, because it does not recognize custom validators implemented with class-validator as class-validator's decorators
-  @isMusicEventId()
+  @Transform(({ value, options }) => {
+    if (typeof value === "string" && isEntityId(value)) {
+      return value;
+    }
+    const origin = (options as EntityClassTransformOptions).context.origin;
+    return createEntityId(origin, value);
+  })
   override id: string;
 
   @Expose()
