@@ -1,22 +1,14 @@
 import type { MusicEventsQueueNameType } from "../queue/queue";
 
-type MusicEventIdPrefix = "go" | "tm" | "tp";
+export const VALID_MUSIC_EVENT_ID_PREFIXES = ["go", "tm", "tp"] as const;
+
+type MusicEventIdPrefix = (typeof VALID_MUSIC_EVENT_ID_PREFIXES)[number];
 
 const MUSIC_EVENT_ID_MAPPER = {
   goout: "go",
   ticketmaster: "tm",
   ticketportal: "tp",
 } as const satisfies Record<MusicEventsQueueNameType, MusicEventIdPrefix>;
-
-type ReverseMap<T extends Record<PropertyKey, PropertyKey>> = {
-  readonly [K in keyof T as T[K]]: K;
-};
-
-export const REVERSED_MUSIC_EVENT_ID_MAPPER = Object.fromEntries(
-  Object.entries(MUSIC_EVENT_ID_MAPPER).map(([key, value]) => [value, key])
-) as ReverseMap<typeof MUSIC_EVENT_ID_MAPPER>;
-
-export const VALID_MUSIC_EVENT_ID_PREFIXES = Object.values(MUSIC_EVENT_ID_MAPPER);
 
 export const MUSIC_EVENT_ID_DELIM = "-";
 
