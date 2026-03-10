@@ -32,9 +32,7 @@
     "esModuleInterop": true, // enables better compatibility between CommonJS and ES modules, also enables `"allowSyntheticDefaultImports": true`
     "isolatedModules": true, // ensures that each file can be independently transpiled without relying on information from other files (different transpilers from `tsc` like `swc`, `esbuild` etc. don't have enough context to correctly transpile everything)
     "allowJs": true, // allows using JS files inside the project
-    "checkJs": true, // works in tandem with 'allowJs' option - type-checks JS files
+    "checkJs": true // works in tandem with 'allowJs' option - type-checks JS files
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

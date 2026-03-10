@@ -20,9 +20,5 @@
   },
   "sourceMaps": true, // go to the original TypeScript definition from the generated JS file
   "minify": false,
-  "exclude": [
-    "test",
-    "^.+\\.spec\\.(j|t)s$",
-    "^.+\\.test\\.(j|t)s$"
-  ]
+  "exclude": ["test", "^.+\\.spec\\.(j|t)s$", "^.+\\.test\\.(j|t)s$"]
 }

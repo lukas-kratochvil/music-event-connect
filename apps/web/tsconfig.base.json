@@ -5,7 +5,6 @@
     "target": "es2024",
     "moduleResolution": "bundler",
     "module": "ESNext",
-    "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     /* Strictness */
@@ -21,6 +20,7 @@
     "noUnusedParameters": true,
     /* Other options */
     "skipLibCheck": true, // compiler won't throw compile-time errors on third-party libraries code (But!! It also skips checking our custom `.d.ts` files)
+    "moduleDetection": "force", // every `.ts` file in a repo is treated as a module instead of as a script (`.d.ts` files are always set to `auto`)
     "removeComments": true
   }
 }

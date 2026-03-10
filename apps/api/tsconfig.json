@@ -8,9 +8,7 @@
     "moduleResolution": "node16",
     "sourceMap": true, // go to the original TypeScript definition from the generated JS file
     /* If code doesn't run in the DOM */
-    "lib": [
-      "ES2024",
-    ],
+    "lib": ["ES2024"],
     /* For NestJS app */
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -34,9 +32,7 @@
     "checkJs": true, // works in tandem with 'allowJs' option - type-checks JS files
     "resolveJsonModule": true, // allows importing JSON files as modules
     "moduleDetection": "force", // every `.ts` file in a repo is treated as a module instead of as a script (`.d.ts` files are always set to `auto`)
-    "removeComments": true,
+    "removeComments": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
