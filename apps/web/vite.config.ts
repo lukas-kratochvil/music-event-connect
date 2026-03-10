@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const port = process.env?.["PORT"] ? +process.env?.["PORT"] : undefined;
+const port = process.env["PORT"] ? +process.env["PORT"] : undefined;
 
 const reactCompilerConfig = {};
 
