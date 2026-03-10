@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# Build outputs
+build
+dist
+*.tsbuildinfo
+
+# NPM packages
+package.json
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Turbo
+.turbo

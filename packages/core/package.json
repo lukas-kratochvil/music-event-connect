@@ -5,8 +5,8 @@
   "scripts": {
     "prebuild": "rm -rf dist *.tsbuildinfo",
     "build": "tsc --project tsconfig.build.json",
-    "lint": "eslint --fix \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.{js,ts}\"",
+    "lint": "eslint . --fix",
+    "format": "prettier . --write",
     "tidy": "pnpm format && pnpm lint"
   },
   "main": "./dist/index.js",

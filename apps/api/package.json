@@ -9,8 +9,8 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint --fix \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.{js,ts}\"",
+    "lint": "eslint . --fix",
+    "format": "prettier . --write",
     "tidy": "pnpm format && pnpm lint"
   },
   "dependencies": {
