@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { ObjectSchema } from "joi";
+import type { ObjectSchema } from "joi";
 import { load as loadYaml } from "js-yaml";
 
 export const ALLOWED_NODE_ENVS = ["development", "production"] as const;

@@ -7,5 +7,5 @@ export interface SPARQLModuleOptions {
   password: string;
 }
 
-export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN }
-  = new ConfigurableModuleBuilder<SPARQLModuleOptions>().build();
+export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN } =
+  new ConfigurableModuleBuilder<SPARQLModuleOptions>().build();

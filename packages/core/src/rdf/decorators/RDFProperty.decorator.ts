@@ -65,8 +65,8 @@ export const RDFProperty = <TFieldType extends string = string>(
     Reflect.defineMetadata(RDF_METADATA_KEYS.property, metadataValue, target.constructor, propertyKey);
 
     // register this property key in the RDF class property set
-    const classProperties: Set<string | symbol>
-      = Reflect.getMetadata(RDF_METADATA_KEYS.classProperties, target.constructor) ?? new Set();
+    const classProperties: Set<string | symbol> =
+      Reflect.getMetadata(RDF_METADATA_KEYS.classProperties, target.constructor) ?? new Set();
     classProperties.add(propertyKey);
     Reflect.defineMetadata(RDF_METADATA_KEYS.classProperties, classProperties, target.constructor);
   };

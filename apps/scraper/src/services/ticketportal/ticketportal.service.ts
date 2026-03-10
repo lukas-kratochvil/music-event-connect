@@ -45,8 +45,8 @@ export class TicketportalService implements ICronJobService {
 
     this.#baseUrl = ticketportalConfig.url;
     // Running as root without --no-sandbox is not supported. See https://crbug.com/638180.
-    this.#puppeteerArgs
-      = config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
+    this.#puppeteerArgs =
+      config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
   }
 
   getRunDate(): Date {

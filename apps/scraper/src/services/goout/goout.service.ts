@@ -52,8 +52,8 @@ export class GooutService implements ICronJobService {
 
     this.#baseUrl = gooutConfig.url;
     // Running as root without --no-sandbox is not supported. See https://crbug.com/638180.
-    this.#puppeteerArgs
-      = config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
+    this.#puppeteerArgs =
+      config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
   }
 
   getRunDate(): Date {
@@ -221,8 +221,8 @@ export class GooutService implements ICronJobService {
 
     const getVenueSelector = (valueNameEn: string, valueNameCs: string) =>
       `::-p-xpath(//section[contains(@class, 'py-1')]//div[contains(@class, 'info-item')]/div/span[text()='${valueNameEn}' or text()='${valueNameCs}']/parent::div/parent::div/div[2])` as const;
-    const venueName
-      = eventItem.linkedData?.location.name
+    const venueName =
+      eventItem.linkedData?.location.name
       ?? (await page.$eval(getVenueSelector("Venue", "Místo"), (elem) => (elem as HTMLAnchorElement).innerText.trim()));
     const [venueAddress, venueCity] = eventItem.linkedData?.location.address
       ? [eventItem.linkedData.location.address.streetAddress, eventItem.linkedData.location.address.addressLocality]
@@ -234,8 +234,8 @@ export class GooutService implements ICronJobService {
       throw new Error("Missing venue city.");
     }
 
-    const [isOnSale, ticketsUrl]
-      = eventItem.linkedData?.offers?.at(0) && eventItem.linkedData.offers[0]?.url
+    const [isOnSale, ticketsUrl] =
+      eventItem.linkedData?.offers?.at(0) && eventItem.linkedData.offers[0]?.url
         ? [eventItem.linkedData.offers[0]?.availability === "InStock", eventItem.linkedData.offers[0]?.url]
         : await page.$eval(".ticket-button", (elem) => {
             const anchor = elem as HTMLAnchorElement;

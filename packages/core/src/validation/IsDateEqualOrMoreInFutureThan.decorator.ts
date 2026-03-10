@@ -1,7 +1,7 @@
 import { registerDecorator, type ValidationArguments, type ValidationOptions } from "class-validator";
 
-export const IsDateEqualOrMoreInFutureThan
-  = <T extends object>(comparedProperty: keyof T, validationOptions?: ValidationOptions) =>
+export const IsDateEqualOrMoreInFutureThan =
+  <T extends object>(comparedProperty: keyof T, validationOptions?: ValidationOptions) =>
   (object: object, propertyName: string) => {
     registerDecorator({
       name: "IsDateEqualOrMoreInFutureThan",

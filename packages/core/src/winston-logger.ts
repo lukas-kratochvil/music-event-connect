@@ -1,4 +1,4 @@
-import { LoggerService } from "@nestjs/common";
+import type { LoggerService } from "@nestjs/common";
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from "nest-winston";
 import * as winston from "winston";
 
