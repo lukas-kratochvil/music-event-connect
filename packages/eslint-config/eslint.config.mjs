@@ -1,3 +1,3 @@
-import baseJsConfig from "./src/eslint/base-js.mjs"
+import createFromJsConfig from "./src/eslint/base-js.mjs";
 
-export default baseJsConfig
+export default createFromJsConfig();
