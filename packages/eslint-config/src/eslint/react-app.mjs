@@ -44,7 +44,7 @@ export default createFromTsConfig(
         ecmaFeatures: {
           jsx: true,
         },
-        project: "tsconfig.eslint.json",
+        project: ["tsconfig.app.json", "tsconfig.node.json"],
       },
       globals: {
         ...globals.browser,

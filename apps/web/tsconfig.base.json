@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     /* Bundler mode */
+    "noEmit": true, // tsc won't emit compiled JS output because Vite builds the project
+    "target": "es2024",
     "moduleResolution": "bundler",
+    "module": "ESNext",
+    "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
-    "noEmit": true,
     /* Strictness */
     "strict": true, // enables a set of strict type checking options that catch more errors and generally promote better code quality
     "allowUnusedLabels": false, // raises compiler errors about unused labels (label ~ attempt to write an object literal)
@@ -19,6 +21,6 @@
     "noUnusedParameters": true,
     /* Other options */
     "skipLibCheck": true, // compiler won't throw compile-time errors on third-party libraries code (But!! It also skips checking our custom `.d.ts` files)
-    "removeComments": true,
+    "removeComments": true
   }
 }
