@@ -2,9 +2,14 @@ import nestJs from "@darraghor/eslint-plugin-nestjs-typed";
 import globals from "globals";
 import createFromTsConfig from "./base-ts.mjs";
 
+const scopedNestJsConfig = nestJs.configs.flatRecommended.map((config) => ({
+  ...config,
+  files: ["**/*.ts"],
+}));
+
 export default createFromTsConfig(
-  nestJs.configs.flatRecommended,
   // TypeScript language options (targeting only TypeScript files)
+  ...scopedNestJsConfig,
   {
     files: ["**/*.ts"],
     languageOptions: {
