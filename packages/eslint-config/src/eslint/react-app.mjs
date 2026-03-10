@@ -68,7 +68,7 @@ export default ts.config(
         ecmaFeatures: {
           jsx: true,
         },
-        project: "tsconfig.app.json",
+        project: "tsconfig.eslint.json",
       },
       globals: {
         ...globals.browser,

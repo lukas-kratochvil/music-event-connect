@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "target": "esnext", // support the latest ECMAScript so we are not behind the `tsconfig.app.json` that type-checks the source code (ESLint parser internally runs the TypeScript compiler)
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": [
+      "node",
+      "vite/client",
+    ]
+  },
+  "include": [
+    "src"
+  ]
+}
