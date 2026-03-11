@@ -1,9 +1,9 @@
 # Music-Event-Connect - Web
 
-The UI is created by using [shadcn](https://ui.shadcn.com/), but the shadcn CLI itself isn't present in this project because the **global** CLI is used instead.
+The UI is created by using [shadcn](https://ui.shadcn.com/).
 
-To add a component run:
+To add a component use the _shadcn CLI_:
 
 ```bash
-pnpm dlx shadcn@latest add button
+pnpm shadcn add button
 ```
