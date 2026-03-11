@@ -1,17 +1,15 @@
-import globals from "globals";
 import createFromTsConfig from "./base-ts.mjs";
+import { FILE_MATCHERS } from "./constants.js";
 
 export default createFromTsConfig(
-  // TypeScript language options (targeting only TypeScript files)
+  // ==========================================
+  // TYPESCRIPT (applies only to .ts, .tsx)
+  // ==========================================
   {
-    files: ["**/*.ts"],
+    files: FILE_MATCHERS.ts,
     languageOptions: {
-      sourceType: "commonjs",
       parserOptions: {
         project: "tsconfig.json",
-      },
-      globals: {
-        ...globals.node,
       },
     },
   }

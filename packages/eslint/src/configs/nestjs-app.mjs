@@ -5,7 +5,7 @@ import { FILE_MATCHERS } from "./constants.js";
 
 export default createFromTsConfig(
   // ==========================================
-  // TYPESCRIPT (applies only to .ts)
+  // TYPESCRIPT (applies only to .ts, .tsx)
   // ==========================================
   // using [].concat() safely handles both arrays and single objects exported by plugins
   ...[]
