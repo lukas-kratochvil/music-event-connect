@@ -1,24 +1,27 @@
 import nestJs from "@darraghor/eslint-plugin-nestjs-typed";
 import globals from "globals";
 import createFromTsConfig from "./base-ts.mjs";
-
-const scopedNestJsConfig = nestJs.configs.flatRecommended.map((config) => ({
-  ...config,
-  files: ["**/*.ts"],
-}));
+import { FILE_MATCHERS } from "./constants.js";
 
 export default createFromTsConfig(
-  // TypeScript language options (targeting only TypeScript files)
-  ...scopedNestJsConfig,
+  // ==========================================
+  // TYPESCRIPT (applies only to .ts)
+  // ==========================================
+  // using [].concat() safely handles both arrays and single objects exported by plugins
+  ...[]
+    .concat(nestJs.configs.flatRecommended)
+    .flat()
+    .map((config) => ({
+      ...config,
+      files: FILE_MATCHERS.ts,
+    })),
   {
-    files: ["**/*.ts"],
+    files: FILE_MATCHERS.ts,
     languageOptions: {
       parserOptions: {
         project: "tsconfig.json",
       },
-      globals: {
-        ...globals.node,
-      },
+      globals: { ...globals.node },
     },
     rules: {
       "@darraghor/nestjs-typed/injectable-should-be-provided": [

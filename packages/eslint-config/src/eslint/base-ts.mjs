@@ -2,18 +2,23 @@ import { createTypeScriptImportResolver } from "eslint-import-resolver-typescrip
 import { importX } from "eslint-plugin-import-x";
 import ts from "typescript-eslint";
 import createFromJsConfig from "./base-js.mjs";
+import { FILE_MATCHERS } from "./constants.js";
 
 export default (...configs) =>
   createFromJsConfig(
-    ts.configs.recommended,
-    ts.configs.stylistic,
-    // TypeScript language options (targeting only TypeScript files)
+    // ==========================================
+    // TYPESCRIPT (applies only to .ts, .tsx)
+    // ==========================================
+    // using [].concat() safely handles both arrays and single objects exported by plugins
+    ...[]
+      .concat(ts.configs.recommended, ts.configs.stylistic, importX.flatConfigs.typescript)
+      .flat()
+      .map((config) => ({
+        ...config,
+        files: FILE_MATCHERS.ts,
+      })),
     {
-      ...importX.flatConfigs.typescript,
-      files: ["**/*.{ts,tsx}"],
-    },
-    {
-      files: ["**/*.{ts,tsx}"],
+      files: FILE_MATCHERS.ts,
       languageOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
@@ -25,37 +30,27 @@ export default (...configs) =>
         ],
       },
       rules: {
-        // overrides for rules already defined globally
         "import-x/extensions": ["error", "ignorePackages", { ts: "never", tsx: "never" }],
-
-        // feature toggles
         "no-restricted-imports": "off",
         "no-shadow": "off",
         "no-unused-vars": "off",
         "no-use-before-define": "off",
-
-        // TypeScript-specific rules
         "@typescript-eslint/consistent-type-definitions": "off", // let developer decide whether to use 'type' or 'interface'
         "@typescript-eslint/consistent-type-imports": "error",
         "@typescript-eslint/no-floating-promises": ["error"],
         "@typescript-eslint/no-namespace": "off",
-        "@typescript-eslint/no-restricted-imports": [
-          "error",
-          {
-            patterns: [
-              {
-                regex: "^@mui/(?!x-date-pickers)[^/]+$",
-                allowTypeImports: true,
-                message: "In development, MUI barrel imports can cause significantly slower startup and rebuild times.",
-              },
-            ],
-          },
-        ],
+        "@typescript-eslint/no-restricted-imports": ["error"],
         "@typescript-eslint/no-shadow": "error",
-        "@typescript-eslint/no-unused-vars": ["warn", { args: "all", argsIgnorePattern: "^_" }],
+        "@typescript-eslint/no-unused-vars": [
+          "warn",
+          { args: "all", argsIgnorePattern: "^_", ignoreRestSiblings: true },
+        ],
         "@typescript-eslint/no-use-before-define": "error",
       },
     },
-    // Other configs
+
+    // ==========================================
+    // OTHER CONFIGS
+    // ==========================================
     ...configs
   );

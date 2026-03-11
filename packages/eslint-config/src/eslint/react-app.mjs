@@ -4,27 +4,46 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactHooksAddons from "eslint-plugin-react-hooks-addons";
 import globals from "globals";
 import createFromTsConfig from "./base-ts.mjs";
+import { FILE_MATCHERS } from "./constants.js";
 
 export default createFromTsConfig(
-  jsxA11y.flatConfigs.recommended,
-  react.configs.flat.recommended,
-  react.configs.flat["jsx-runtime"],
-  reactHooks.configs.flat["recommended"],
-  reactHooksAddons.configs.recommended,
-  // Global React settings & hook rules (applies to all files)
+  // ==========================================
+  // GLOBAL (applies to ALL files)
+  // ==========================================
   {
     settings: {
       react: { version: "detect" },
     },
-    rules: {
-      "react-hooks/exhaustive-deps": "warn",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks-addons/no-unused-deps": "warn",
-    },
   },
-  // React-specific rules (targeting only files with markup (.jsx, .tsx))
+
+  // ==========================================
+  // TYPESCRIPT (applies only to .ts, .tsx)
+  // ==========================================
+  // using [].concat() safely handles both arrays and single objects exported by plugins
+  ...[]
+    .concat(
+      jsxA11y.flatConfigs.recommended,
+      react.configs.flat.recommended,
+      react.configs.flat["jsx-runtime"],
+      reactHooks.configs.flat.recommended,
+      reactHooksAddons.configs.recommended
+    )
+    .flat()
+    .map((config) => ({
+      ...config,
+      files: FILE_MATCHERS.ts,
+    })),
   {
-    files: ["**/*.{jsx,tsx}"],
+    files: FILE_MATCHERS.ts,
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        project: ["tsconfig.app.json", "tsconfig.node.json"],
+      },
+      globals: { ...globals.browser },
+    },
     rules: {
       "react/function-component-definition": [2, { namedComponents: "arrow-function" }],
       "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
@@ -34,21 +53,9 @@ export default createFromTsConfig(
       "react/jsx-props-no-spreading": "off",
       "react/no-array-index-key": "warn",
       "react/require-default-props": "off",
-    },
-  },
-  // TypeScript language options (targeting only TypeScript files)
-  {
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        project: ["tsconfig.app.json", "tsconfig.node.json"],
-      },
-      globals: {
-        ...globals.browser,
-      },
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks-addons/no-unused-deps": "warn",
     },
   }
 );
