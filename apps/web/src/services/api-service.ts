@@ -1,29 +1,35 @@
 // TODO: fetch data from the API
-export const fetchEventList = async () => [
+export const fetchEvents = async () => [
   {
-    name: "Event",
+    id: "tm-1",
+    name: "P/\\ST + Hentai Corporation + SEBE",
     ticketUrl: "1",
-    startDate: new Date(),
-    endDate: new Date(),
-    artists: ["Artist 1", "Artist 2", "Artist 3"],
+    isSoldOut: true,
+    startDate: new Date("2026-03-11T19:00:00Z"),
+    endDate: new Date("2026-03-11T22:00:00Z"),
+    artists: ["P/\\ST", "Hentai Corporation", "SEBE"],
     venues: [
       {
-        name: "Fuchs2",
+        name: "Lucerna Music Bar",
         city: "Prague",
       },
     ],
+    images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/137/1376340-383.jpg"],
   },
   {
-    name: "Event + support: XX",
-    ticketUrl: "2",
-    startDate: new Date(),
+    id: "go-32",
+    name: "Vinyla Night: Gufrau + post-hudba + matyášovi kamarádi + Miss Petty + Rivermoans + teige + další",
+    ticketUrl: "https://goout.net/cs/listky/vinyla-night-gufrau+post-hudba+matyasovi-kamaradi+miss-petty+/rvhjb/",
+    isSoldOut: false,
+    startDate: new Date("2026-03-13T19:00:00Z"),
     endDate: undefined,
-    artists: ["Artist 10", "Artist 20"],
+    artists: ["post-hudba", "Gufrau", "matyášovi kamarádi", "teige", "Rivermoans", "Miss Petty"],
     venues: [
       {
-        name: "Bike Jesus",
+        name: "ARCHA+",
         city: "Prague",
       },
     ],
+    images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/133/1332707-383.jpg"],
   },
 ];
