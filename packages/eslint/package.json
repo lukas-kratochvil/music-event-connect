@@ -1,5 +1,5 @@
 {
-  "name": "@music-event-connect/eslint-config",
+  "name": "@music-event-connect/eslint",
   "private": true,
   "type": "module",
   "scripts": {

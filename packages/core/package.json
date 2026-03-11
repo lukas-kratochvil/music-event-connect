@@ -37,7 +37,7 @@
     }
   },
   "devDependencies": {
-    "@music-event-connect/eslint-config": "workspace:*",
+    "@music-event-connect/eslint": "workspace:*",
     "@rdfjs/types": "^2.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/n3": "^1.26.1",

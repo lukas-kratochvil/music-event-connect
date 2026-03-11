@@ -1,3 +1,3 @@
-import { reactConfig } from "@music-event-connect/eslint-config";
+import { reactConfig } from "@music-event-connect/eslint";
 
 export default reactConfig;

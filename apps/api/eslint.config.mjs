@@ -1,3 +1,3 @@
-import { nestJsConfig } from "@music-event-connect/eslint-config";
+import { nestJsConfig } from "@music-event-connect/eslint";
 
 export default nestJsConfig;

@@ -27,7 +27,7 @@
     }
   },
   "devDependencies": {
-    "@music-event-connect/eslint-config": "workspace:*",
+    "@music-event-connect/eslint": "workspace:*",
     "typescript": "^5.8.3"
   }
 }
