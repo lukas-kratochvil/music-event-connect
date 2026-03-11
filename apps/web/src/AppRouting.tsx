@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { Route, Routes } from "react-router";
 import { Layout } from "./layouts/Layout";
-import { RoutingPath } from "./routing-paths";
+import { RoutingPath } from "./utils/routing-paths";
 
 const MainPage = lazy(() => import("./pages/MainPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
