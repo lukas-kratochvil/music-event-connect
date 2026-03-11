@@ -6,7 +6,13 @@
     "lib": ["DOM", "DOM.Iterable", "ES2024"],
     "types": ["vite/client"],
     /* For React app */
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    /* Custom paths mapping */
+    "baseUrl": ".",
+    "paths": {
+      // shadcn/ui package relies on the root "@" path
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "src" // include every source file (like test files etc.) in the compilation (type-checking) because Vite builds the project

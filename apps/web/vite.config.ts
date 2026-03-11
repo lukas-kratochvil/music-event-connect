@@ -1,3 +1,5 @@
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -13,7 +15,15 @@ export default defineConfig({
         plugins: [["babel-plugin-react-compiler", reactCompilerConfig]],
       },
     }),
+    tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      // shadcn CLI relies on the root "@" path being present in the `resolve.alias`
+      // usage of the `vite-tsconfig-paths` package instead of this alias will cause an error
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   // 'server' setup is only for a local development
   server: {
     host: true, // it's a must for Docker container port mapping to work

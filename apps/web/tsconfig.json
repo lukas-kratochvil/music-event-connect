@@ -7,5 +7,13 @@
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    /* Custom paths mapping - duplicated from tsconfig.app.json because shadcn CLI looks specifically inside the tsconfig.json and doesn't follow "references" */
+    "baseUrl": ".",
+    "paths": {
+      // shadcn/ui package relies on the root "@" path
+      "@/*": ["./src/*"]
+    }
+  }
 }
