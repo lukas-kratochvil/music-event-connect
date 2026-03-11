@@ -1,11 +1,21 @@
 # Music-Event-Connect
 
+## Table of contents
+- [Initial setup](#initial-setup)
+  - [Apps](#apps)
+  - [Virtuoso triple store](#virtuoso-triple-store)
+- [Local development](#local-development)
+
 ## Initial setup
 
-### Scraper
-Ticket services (like GoOut, Ticketmaster, Ticketportal) are used based on the config file. If an available service is not defined in the config (is commented etc.) it won't be instantiated in the scraper app.
+### Apps
+More in app-specific READMEs:
+- [Scraper](./apps/scraper/README.md)
+- [Handler](./apps/handler/README.md)
+- [API](./apps/api/README.md)
+- [Web](./apps/web/README.md)
 
-### Virtuoso
+### Virtuoso triple store
 #### Import data from MusicBrainz and OpenStreetMap
 Firstly, adjust the values of the env variables `VIRT_Parameters_NumberOfBuffers` and `VIRT_Parameters_MaxDirtyBuffers` in the `docker-compose.yml`. Set `VIRT_Parameters_MaxDirtyBuffers` to a max of 50 % of total buffers (value `VIRT_Parameters_NumberOfBuffers`) and a max of 1 GB. Then restart the `virtuoso` service. After successful import, change these env vars back to one of the recommended settings listed in the `virtuoso.ini` and restart `virtuoso`.
 
@@ -49,4 +59,10 @@ DB.DBA.RDF_GRAPH_USER_PERMS_SET('http://music-event-connect.cz/musicbrainz', '<U
 To delete user permissions use:
 ```sql
 DB.DBA.RDF_GRAPH_USER_PERMS_DEL('<GRAPH_IRI>', '<USER_NAME>');
+```
+
+#### Clearing graphs
+In the **Virtuoso ISQL interface** run:
+```sql
+SPARQL CLEAR GRAPH <GRAPH_IRI>
 ```
