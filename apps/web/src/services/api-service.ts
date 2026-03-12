@@ -34,4 +34,5 @@ const events = [
   },
 ] as const;
 
-export const fetchEvents = async () => [...events, ...events, ...events];
+// TODO: filter events by artist names
+export const fetchEvents = async (_artistNames?: string[]) => [...events, ...events, ...events];
