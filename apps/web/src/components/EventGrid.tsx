@@ -1,9 +1,25 @@
-import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "../services/api-service";
 import EventCard from "./EventCard";
 
 const EventGrid = () => {
-  const events = use(fetchEvents());
+  const {
+    data: events,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+  });
+
+  if (isLoading) {
+    return <div>Events are loading...</div>;
+  }
+
+  if (isError || !events) {
+    return <div>Something went wrong while loading events.</div>;
+  }
+
   return (
     <>
       <div className="mb-8">
@@ -13,7 +29,7 @@ const EventGrid = () => {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {events.map((event) => (
           <EventCard
-            key={event.ticketUrl}
+            key={event.id}
             event={event}
           />
         ))}

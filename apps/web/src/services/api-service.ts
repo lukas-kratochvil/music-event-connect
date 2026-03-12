@@ -1,5 +1,5 @@
 // TODO: fetch data from the API
-export const fetchEvents = async () => [
+const events = [
   {
     id: "tm-1",
     name: "P/\\ST + Hentai Corporation + SEBE",
@@ -32,4 +32,6 @@ export const fetchEvents = async () => [
     ],
     images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/133/1332707-383.jpg"],
   },
-];
+] as const;
+
+export const fetchEvents = async () => [...events, ...events, ...events];

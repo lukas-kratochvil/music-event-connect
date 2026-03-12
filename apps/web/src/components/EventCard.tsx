@@ -23,10 +23,7 @@ type EventCardProps = {
 const EventCard = ({ event }: EventCardProps) => {
   const eventDate = getEventDate(event);
   return (
-    <Card
-      key={event.id}
-      className="flex flex-col overflow-hidden transition-all hover:shadow-md"
-    >
+    <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
       <div className="aspect-video w-full overflow-hidden">
         <img
           src={event.images.at(0)}
@@ -52,7 +49,7 @@ const EventCard = ({ event }: EventCardProps) => {
               key={name}
               className="text-muted-foreground"
             >
-              {name}, {city}
+              {name} ({city})
             </span>
           ))}
         </div>
