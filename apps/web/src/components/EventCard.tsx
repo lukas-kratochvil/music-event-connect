@@ -37,7 +37,7 @@ const EventCard = ({ event }: EventCardProps) => {
         <CardDescription className="text-primary font-medium">{eventDate}</CardDescription>
       </CardHeader>
 
-      <CardContent className="flex-grow space-y-2 text-sm">
+      <CardContent className="grow space-y-2 text-sm">
         <div>
           <span className="font-semibold text-foreground">Performers: </span>
           <span className="text-muted-foreground">{event.artists.join(", ")}</span>

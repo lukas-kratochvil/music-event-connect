@@ -1,10 +1,12 @@
-import EventGrid from "../components/EventGrid";
 import EventMap from "../components/EventMap";
+import EventsGrid from "../components/EventsGrid";
 
 const MainPage = () => (
   <>
-    <EventGrid />
-    <EventMap />
+    <div className="flex flex-col gap-16">
+      <EventsGrid />
+      <EventMap />
+    </div>
   </>
 );
 
