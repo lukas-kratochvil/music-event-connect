@@ -27,10 +27,16 @@ export const Map = ({ coords }: MapProps) => {
         center={bounds ? undefined : center}
         zoom={bounds ? undefined : 13}
         bounds={bounds}
-        boundsOptions={{ padding: [50, 50] }}
+        boundsOptions={{
+          padding: [50, 50],
+        }}
         scrollWheelZoom={false}
-        // size must be specified to display the map in the UI
-        style={{ width: "100%", height: "400px", zIndex: 0 }}
+        style={{
+          // size must be specified to display the map in the UI
+          width: "100%",
+          height: "400px",
+          zIndex: 0,
+        }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
