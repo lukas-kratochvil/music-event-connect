@@ -1,9 +1,9 @@
 import { lazy } from "react";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { Layout } from "./layouts/Layout";
 import { RoutingPath } from "./utils/routing-paths";
 
-const MainPage = lazy(() => import("./pages/MainPage"));
+const EventsPage = lazy(() => import("./pages/EventsPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -12,11 +12,20 @@ const AppRouting = () => (
     <Routes>
       <Route element={<Layout />}>
         <Route
-          path={RoutingPath.MAIN}
-          element={<MainPage />}
+          path="/"
+          element={
+            <Navigate
+              to={RoutingPath.EVENTS}
+              replace
+            />
+          }
         />
         <Route
-          path={`${RoutingPath.EVENT_DETAIL}/:id`}
+          path={RoutingPath.EVENTS}
+          element={<EventsPage />}
+        />
+        <Route
+          path={`${RoutingPath.EVENTS}/:id` as const}
           element={<EventDetailPage />}
         />
         <Route

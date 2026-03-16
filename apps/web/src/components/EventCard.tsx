@@ -22,6 +22,8 @@ type EventCardProps = {
 
 const EventCard = ({ event }: EventCardProps) => {
   const eventDate = getEventDate(event);
+  // TODO: show multiple offers or choose only one that is available?
+  const offer = event.offers[0]!;
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
       <div className="aspect-video w-full overflow-hidden">
@@ -56,7 +58,7 @@ const EventCard = ({ event }: EventCardProps) => {
       </CardContent>
 
       <CardFooter>
-        {event.isSoldOut ? (
+        {offer.availability === "SoldOut" ? (
           <Button
             className="w-full"
             disabled
@@ -69,7 +71,7 @@ const EventCard = ({ event }: EventCardProps) => {
             className="w-full"
           >
             <a
-              href={event.ticketUrl}
+              href={offer.url}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -1,6 +1,5 @@
 export const RoutingPath = {
-  MAIN: "/",
-  EVENT_DETAIL: "/event",
+  EVENTS: "/events",
 } as const;
 
 export type RoutingPath = (typeof RoutingPath)[keyof typeof RoutingPath];

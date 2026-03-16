@@ -12,7 +12,7 @@ const PersonalizedEvents = () => {
     isLoading,
     isError,
   } = useQuery({
-    // TODO: modify queryKey
+    // TODO: modify queryKey to reflect the filter
     queryKey: ["events", { artistNames: artistNames }],
     queryFn: () => fetchEvents(artistNames),
   });

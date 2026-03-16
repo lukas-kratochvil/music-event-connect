@@ -6,11 +6,11 @@ const spotifyAccount = {
   id: "1",
 };
 
-const MainPage = () => (
+const EventsPage = () => (
   <div className="flex flex-col gap-16">
     {spotifyAccount.id && <PersonalizedEvents />}
     <EventsGrid />
   </div>
 );
 
-export default MainPage;
+export default EventsPage;
