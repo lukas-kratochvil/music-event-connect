@@ -16,7 +16,7 @@ const AppRouting = () => (
           element={<MainPage />}
         />
         <Route
-          path={RoutingPath.EVENT_DETAIL}
+          path={`${RoutingPath.EVENT_DETAIL}/:id`}
           element={<EventDetailPage />}
         />
         <Route
