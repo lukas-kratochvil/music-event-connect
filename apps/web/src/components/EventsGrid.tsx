@@ -21,7 +21,7 @@ const EventsGrid = () => {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <div className="mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
         <p className="text-muted-foreground mt-2">Discover and book tickets for the best live music near you.</p>

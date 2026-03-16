@@ -1,45 +1,43 @@
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
+import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { fetchEvents } from "@/services/api-service";
-
-const DATE_FORMAT = "d.M.y H:mm";
-
-const getEventDate = (event: { startDate: Date; endDate?: Date }) => {
-  if (!event.endDate) {
-    return format(event.startDate, DATE_FORMAT);
-  }
-  if (isSameDay(event.endDate, event.startDate)) {
-    return format(event.startDate, DATE_FORMAT) + " - " + format(event.endDate, "H:mm");
-  }
-  const dateStartFormat = event.startDate.getFullYear() === event.endDate.getFullYear() ? "d.M. H:mm" : DATE_FORMAT;
-  return format(event.startDate, dateStartFormat) + " - " + format(event.endDate, DATE_FORMAT);
-};
+import { RoutingPath } from "@/utils/routing-paths";
 
 type EventCardProps = {
   event: Awaited<ReturnType<typeof fetchEvents>>[number];
 };
 
 const EventCard = ({ event }: EventCardProps) => {
-  const eventDate = getEventDate(event);
   // TODO: show multiple offers or choose only one that is available?
   const offer = event.offers[0]!;
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
-      <div className="aspect-video w-full overflow-hidden">
-        <img
-          src={event.images.at(0)}
-          alt={event.name}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
-        />
-      </div>
+      <Link to={RoutingPath.EVENTS + "/" + event.id}>
+        <div className="aspect-video w-full overflow-hidden">
+          <img
+            className="h-full w-full object-cover transition-transform hover:scale-105"
+            src={event.images.at(0)}
+            alt={event.name}
+          />
+        </div>
+      </Link>
 
       <CardHeader>
-        <CardTitle className="line-clamp-1">{event.name}</CardTitle>
-        <CardDescription className="text-primary font-medium">{eventDate}</CardDescription>
+        <Link
+          className="hover:text-blue-400"
+          to={RoutingPath.EVENTS + "/" + event.id}
+        >
+          <CardTitle className="line-clamp-1">{event.name}</CardTitle>
+        </Link>
       </CardHeader>
 
       <CardContent className="grow space-y-2 text-sm">
+        <div>
+          <span className="font-semibold text-foreground">Date: </span>
+          <span className="text-muted-foreground">{format(event.startDate, "dd.MM.y HH:mm")}</span>
+        </div>
         <div>
           <span className="font-semibold text-foreground">Performers: </span>
           <span className="text-muted-foreground">{event.artists.join(", ")}</span>
