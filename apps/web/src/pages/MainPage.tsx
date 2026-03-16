@@ -1,5 +1,4 @@
 import PersonalizedEvents from "@/components/PersonalizedEvents";
-import EventMap from "../components/EventMap";
 import EventsGrid from "../components/EventsGrid";
 
 // TODO: delete
@@ -8,13 +7,10 @@ const spotifyAccount = {
 };
 
 const MainPage = () => (
-  <>
-    <div className="flex flex-col gap-16">
-      {spotifyAccount.id && <PersonalizedEvents />}
-      <EventsGrid />
-      <EventMap />
-    </div>
-  </>
+  <div className="flex flex-col gap-16">
+    {spotifyAccount.id && <PersonalizedEvents />}
+    <EventsGrid />
+  </div>
 );
 
 export default MainPage;
