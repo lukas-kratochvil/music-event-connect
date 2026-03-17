@@ -13,7 +13,7 @@ import {
 type UserProfileProps = {
   user: {
     username: string;
-    photoUrl: string;
+    photoUrl: string | undefined;
   };
 };
 

@@ -19,7 +19,11 @@ const OidcCallbackPage = () => {
     return <Navigate to={RoutingPath.EVENTS} />;
   }
 
-  return data ? <Navigate to={RoutingPath.EVENTS} /> : <SuspensePage />;
+  if (data) {
+    return data.returnPath ? <Navigate to={data.returnPath} /> : <Navigate to={RoutingPath.EVENTS} />;
+  }
+
+  return <SuspensePage />;
 };
 
 export default OidcCallbackPage;

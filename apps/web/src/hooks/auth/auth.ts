@@ -6,10 +6,14 @@ type User = {
   profileImageUrl: string | undefined;
 };
 
+type LogInCallback = {
+  returnPath: string | undefined;
+};
+
 export type Auth = {
   user: User | null;
   logIn: () => Promise<void>;
-  logInCallback: () => Promise<boolean>;
+  logInCallback: () => Promise<LogInCallback>;
   logOut: () => void;
 };
 

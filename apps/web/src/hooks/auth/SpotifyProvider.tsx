@@ -18,11 +18,12 @@ const useSpotifyProvider = (): Auth => {
     }
   }, [user]);
 
-  const logIn = async () => {
+  const logIn: Auth["logIn"] = async () => {
+    window.sessionStorage.setItem(SessionStorageKeys.USER_RETURN_PATH_AFTER_LOGIN, window.location.pathname);
     await spotifySDK.authenticate();
   };
 
-  const logInCallback = async () => {
+  const logInCallback: Auth["logInCallback"] = async () => {
     const res = await spotifySDK.authenticate();
 
     if (!res.authenticated) {
@@ -35,10 +36,14 @@ const useSpotifyProvider = (): Auth => {
       accessToken: res.accessToken.access_token,
       profileImageUrl: profile.images.at(0)?.url,
     });
-    return true;
+    const returnPath = window.sessionStorage.getItem(SessionStorageKeys.USER_RETURN_PATH_AFTER_LOGIN);
+    window.sessionStorage.removeItem(SessionStorageKeys.USER_RETURN_PATH_AFTER_LOGIN);
+    return {
+      returnPath: returnPath ?? undefined,
+    };
   };
 
-  const logOut = () => {
+  const logOut: Auth["logOut"] = () => {
     spotifySDK.logOut();
     setUser(null);
   };
