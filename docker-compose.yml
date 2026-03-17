@@ -86,6 +86,7 @@ services:
       target: development
     command: pnpm start:dev
     volumes:
+      - ./configs/config-web.json:/app/apps/web/public/config.json:ro
       - ./logs/web:/app/apps/web/logs:rw
       - ./apps/web/public:/app/apps/web/public:ro
       - ./apps/web/src:/app/apps/web/src:ro

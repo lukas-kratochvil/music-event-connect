@@ -1,0 +1,14 @@
+{
+  "musicEventConnect": {
+    "apiUrl": ""
+  },
+  "oidc": {
+    "spotify": {
+      "clientId": "",
+      "redirectUri": "",
+      "scopes": [
+        ""
+      ]
+    }
+  }
+}
