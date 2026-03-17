@@ -1,16 +1,15 @@
+import EventsGrid from "@/components/EventsGrid";
 import PersonalizedEvents from "@/components/PersonalizedEvents";
-import EventsGrid from "../components/EventsGrid";
+import { useAuth } from "@/hooks/auth/auth";
 
-// TODO: delete
-const spotifyAccount = {
-  id: "1",
+const EventsPage = () => {
+  const { user } = useAuth();
+  return (
+    <div className="flex flex-col gap-16">
+      {user && <PersonalizedEvents />}
+      <EventsGrid />
+    </div>
+  );
 };
-
-const EventsPage = () => (
-  <div className="flex flex-col gap-16">
-    {spotifyAccount.id && <PersonalizedEvents />}
-    <EventsGrid />
-  </div>
-);
 
 export default EventsPage;
