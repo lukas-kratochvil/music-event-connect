@@ -8,7 +8,7 @@ const EventsGrid = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["events"],
+    queryKey: ["events"] as const,
     queryFn: () => fetchEvents(),
   });
 

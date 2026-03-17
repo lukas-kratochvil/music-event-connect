@@ -17,7 +17,7 @@ const EventDetailPage = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["events", id],
+    queryKey: ["events", id] as const,
     queryFn: () => {
       if (!id) {
         throw new Error("Event ID not provided!");

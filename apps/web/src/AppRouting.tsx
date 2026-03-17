@@ -6,6 +6,7 @@ import { RoutingPath } from "./utils/routing-paths";
 const EventsPage = lazy(() => import("./pages/EventsPage"));
 const EventDetailPage = lazy(() => import("./pages/EventDetailPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const OidcCallbackPage = lazy(() => import("./pages/OidcCallbackPage"));
 
 const AppRouting = () => (
   <BrowserRouter>
@@ -19,6 +20,10 @@ const AppRouting = () => (
               replace
             />
           }
+        />
+        <Route
+          path={RoutingPath.OIDC_LOGIN}
+          element={<OidcCallbackPage />}
         />
         <Route
           path={RoutingPath.EVENTS}
