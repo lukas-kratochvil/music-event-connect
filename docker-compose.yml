@@ -74,7 +74,24 @@ services:
   #     - ./logs/api:/app/apps/api/logs:rw
   #   environment:
   #     - NODE_ENV=development
-  #     - PORT=3030
+  #     - PORT=3060
   #   depends_on:
   #     - virtuoso
   #   restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      target: development
+    command: pnpm start:dev
+    volumes:
+      - ./logs/web:/app/apps/web/logs:rw
+      - ./apps/web/public:/app/apps/web/public:ro
+      - ./apps/web/src:/app/apps/web/src:ro
+    ports:
+      - '3030:3030'
+    environment:
+      - NODE_ENV=development
+      - PORT=3030
+    restart: unless-stopped
