@@ -1,6 +1,6 @@
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/auth/auth";
-import { AvatarImage, AvatarFallback, Avatar } from "./ui/avatar";
+import { AvatarImage, AvatarFallback, Avatar } from "../ui/avatar";
 import {
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
   DropdownMenu,
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 
 type UserProfileProps = {
   user: {

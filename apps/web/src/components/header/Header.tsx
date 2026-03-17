@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/auth/auth";
+import { Button } from "../ui/button";
 import { UserProfile } from "./UserProfile";
-import { Button } from "./ui/button";
 
 const Header = () => {
   const { logIn, user } = useAuth();

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { MapPin, Calendar, Clock, Globe, ExternalLink, Ticket } from "lucide-react";
 import { useParams } from "react-router";
-import { Map } from "@/components/Map";
+import { Map } from "@/components/map/Map";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

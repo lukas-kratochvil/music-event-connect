@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "../services/api-service";
-import EventCard from "./EventCard";
+import EventCard from "./card/EventCard";
 
 const EventsGrid = () => {
   const {

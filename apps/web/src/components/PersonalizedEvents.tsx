@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { fetchEvents } from "../services/api-service";
-import EventCard from "./EventCard";
+import EventCard from "./card/EventCard";
 
 // TODO: delete
 const artistNames = ["post-hudba, P/\\ST"];
