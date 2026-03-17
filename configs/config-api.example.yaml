@@ -1,5 +1,7 @@
-# Web app URL
-webUrl:
+# CORS
+cors:
+  # array of CORS allowed origins
+  allowedOrigins:
 
 # Rate limiting
 throttler:

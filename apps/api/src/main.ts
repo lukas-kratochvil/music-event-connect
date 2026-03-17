@@ -30,8 +30,8 @@ async function bootstrap() {
   );
 
   // CORS
-  const webUrl = config.get("webUrl", { infer: true });
-  app.enableCors({ origin: webUrl });
+  const cors = config.get("cors", { infer: true });
+  app.enableCors({ origin: cors.allowedOrigins });
 
   // Starting the app
   const port = config.get("port", { infer: true });
