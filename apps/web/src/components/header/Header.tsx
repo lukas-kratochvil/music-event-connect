@@ -1,9 +1,9 @@
 import { useAuth } from "@/hooks/auth/auth";
-import { Button } from "../ui/button";
+import { SpotifyLoginButton } from "./SpotifyLoginButton";
 import { UserProfile } from "./UserProfile";
 
 const Header = () => {
-  const { logIn, user } = useAuth();
+  const { user } = useAuth();
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center px-4">
@@ -12,7 +12,7 @@ const Header = () => {
           {user ? (
             <UserProfile user={{ username: user.username, photoUrl: user.profileImageUrl }} />
           ) : (
-            <Button onClick={logIn}>Log in to Spotify</Button>
+            <SpotifyLoginButton />
           )}
         </nav>
       </div>
