@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { fetchEvents } from "../services/api-service";
 import EventCard from "./card/EventCard";
-import { Label } from "./ui/label";
 
 const EventsGrid = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -51,7 +52,34 @@ const EventsGrid = () => {
         </Button>
       </div>
 
-      {/* Filter block */}
+      {/* Active filters */}
+      {startDate?.from && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="text-sm text-muted-foreground">Active filters:</span>
+          <Badge
+            variant="secondary"
+            className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
+          >
+            <span>
+              Start date: {format(startDate.from, "dd.MM.y")}
+              {startDate.to && !isSameDay(startDate.from, startDate.to) ? ` - ${format(startDate.to, "dd.MM.y")}` : ""}
+            </span>
+            <Button
+              title="Remove filter"
+              variant="destructive"
+              className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
+              onClick={() => {
+                setStartDate(undefined);
+                setTempStartDate(undefined);
+              }}
+            >
+              <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+            </Button>
+          </Badge>
+        </div>
+      )}
+
+      {/* Filter inputs */}
       <div
         className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out ${
           isFilterOpen ? "grid-rows-[1fr] opacity-100 mb-6" : "grid-rows-[0fr] opacity-0 mb-0"
@@ -73,7 +101,7 @@ const EventsGrid = () => {
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {tempStartDate?.from ? (
-                          tempStartDate.to ? (
+                          tempStartDate.to && !isSameDay(tempStartDate.from, tempStartDate.to) ? (
                             <>
                               {format(tempStartDate.from, "dd.MM.y")} - {format(tempStartDate.to, "dd.MM.y")}
                             </>
