@@ -14,7 +14,6 @@ const EventsGrid = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [startDate, setStartDate] = useState<DateRange>();
   const [tempStartDate, setTempStartDate] = useState<DateRange>();
-  const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
 
   const {
     data: events,
@@ -25,22 +24,13 @@ const EventsGrid = () => {
     queryFn: () => fetchEvents({ startDate }),
   });
 
-  if (isLoading) {
-    return <div>Events are loading...</div>;
-  }
+  const handleApplyFilters = () => {
+    setStartDate(tempStartDate);
+  };
 
-  if (isError || !events) {
-    return <div>Something went wrong while loading events.</div>;
-  }
-
-  const handleStartDateCalendarOpenChange = (isOpen: boolean) => {
-    setIsStartDateCalendarOpen(isOpen);
-
-    if (isOpen) {
-      setTempStartDate(startDate);
-    } else {
-      setStartDate(tempStartDate);
-    }
+  const handleClearFilters = () => {
+    setStartDate(undefined);
+    setTempStartDate(undefined);
   };
 
   return (
@@ -69,60 +59,65 @@ const EventsGrid = () => {
       >
         <div className="overflow-hidden">
           <div className="flex flex-wrap items-center gap-4 p-5 border rounded-xl bg-card shadow-sm">
-            {/* Start date range picker */}
-            <div className="flex flex-col gap-1.5 w-full sm:w-auto">
-              <Label htmlFor="start-date-picker">Start date</Label>
-              <div className="flex items-center gap-2">
-                <Popover
-                  open={isStartDateCalendarOpen}
-                  onOpenChange={handleStartDateCalendarOpenChange}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="start-date-picker"
-                      variant={"outline"}
-                      className={"w-full sm:w-75 justify-start text-left font-normal"}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {tempStartDate?.from ? (
-                        tempStartDate.to ? (
-                          <>
-                            {format(tempStartDate.from, "dd.MM.y")} - {format(tempStartDate.to, "dd.MM.y")}
-                          </>
+            <div className="flex flex-col gap-6">
+              {/* Start date range picker */}
+              <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                <Label htmlFor="start-date-picker">Start date</Label>
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="start-date-picker"
+                        variant={"outline"}
+                        className={"w-full sm:w-75 justify-start text-left font-normal"}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {tempStartDate?.from ? (
+                          tempStartDate.to ? (
+                            <>
+                              {format(tempStartDate.from, "dd.MM.y")} - {format(tempStartDate.to, "dd.MM.y")}
+                            </>
+                          ) : (
+                            format(tempStartDate.from, "dd.MM.y")
+                          )
                         ) : (
-                          format(tempStartDate.from, "dd.MM.y")
-                        )
-                      ) : (
-                        <span className="text-muted-foreground">Pick a date range</span>
-                      )}
+                          <span className="text-muted-foreground">Pick a date range</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="range"
+                        defaultMonth={tempStartDate?.from}
+                        selected={tempStartDate}
+                        onSelect={setTempStartDate}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {tempStartDate?.from && (
+                    <Button
+                      title="Clear start date"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => setTempStartDate(undefined)}
+                    >
+                      <X className="h-4 w-4" />
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-auto p-0"
-                    align="start"
-                  >
-                    <Calendar
-                      mode="range"
-                      defaultMonth={tempStartDate?.from}
-                      selected={tempStartDate}
-                      onSelect={setTempStartDate}
-                      numberOfMonths={2}
-                    />
-                  </PopoverContent>
-                </Popover>
-                {startDate?.from && (
-                  <Button
-                    title="Clear start date"
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => {
-                      setStartDate(undefined);
-                      setTempStartDate(undefined);
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleApplyFilters}>Apply filters</Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleClearFilters}
+                >
+                  Clear filters
+                </Button>
               </div>
             </div>
           </div>
@@ -130,22 +125,32 @@ const EventsGrid = () => {
       </div>
 
       {/* Events grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {events.length > 0 ? (
-          events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-            />
-          ))
-        ) : (
-          <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
-            No events found for the selected dates.
-          </div>
-        )}
-      </div>
+      {isLoading ? (
+        <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+          Events are loading...
+        </div>
+      ) : isError || !events ? (
+        <div className="py-12 text-center text-destructive border-2 border-dashed rounded-xl border-destructive/50">
+          Something went wrong while loading events.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {events.length > 0 ? (
+            events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+              No events found for the selected dates.
+            </div>
+          )}
+        </div>
+      )}
+      {/* TODO: implement Pagination: https://ui.shadcn.com/docs/components/radix/pagination */}
     </div>
-    // TODO: implement Pagination: https://ui.shadcn.com/docs/components/radix/pagination
   );
 };
 

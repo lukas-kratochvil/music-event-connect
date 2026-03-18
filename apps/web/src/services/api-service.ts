@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
 // TODO: fetch data from the API
@@ -8,7 +9,7 @@ type EventsFilters = {
 };
 
 // TODO: fetch events, filter events by artist names, add pagination?
-export const fetchEvents = async (_filters: EventsFilters) => {
+export const fetchEvents = async (filters?: EventsFilters) => {
   const events = [
     {
       id: "tm-1",
@@ -40,7 +41,7 @@ export const fetchEvents = async (_filters: EventsFilters) => {
           availability: "InStock",
         },
       ],
-      startDate: new Date("2026-03-13T19:00:00Z"),
+      startDate: new Date("2026-04-13T19:00:00Z"),
       endDate: undefined,
       artists: ["post-hudba", "Gufrau", "matyášovi kamarádi", "teige", "Rivermoans", "Miss Petty"],
       venues: [
@@ -52,7 +53,33 @@ export const fetchEvents = async (_filters: EventsFilters) => {
       images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/133/1332707-383.jpg"],
     },
   ] as const;
-  return [...events, ...events, ...events];
+  return [...events, ...events, ...events]
+    .map((event, i) => ({
+      ...event,
+      id: event.id + i,
+    }))
+    .filter((event) => {
+      if (!filters) {
+        return true;
+      }
+      const startDate = {
+        from: filters.startDate?.from ? startOfDay(filters.startDate.from) : undefined,
+        to: filters.startDate?.to ? endOfDay(filters.startDate.to) : undefined,
+      };
+      if (!startDate) {
+        return true;
+      }
+
+      if (startDate.from && !startDate.to) {
+        return startDate.from <= event.startDate;
+      }
+
+      if (startDate.from && startDate.to) {
+        return startDate.from <= event.startDate && event.startDate <= startDate.to;
+      }
+
+      return true;
+    });
 };
 
 // TODO: fetch event detail

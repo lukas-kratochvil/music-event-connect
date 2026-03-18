@@ -23,44 +23,49 @@ const PersonalizedEvents = () => {
     queryFn: () => fetchEvents({ artistNames, startDate }),
   });
 
-  if (isLoading) {
-    return <div>Personalized events are loading...</div>;
-  }
-
-  if (isError || !events) {
-    return <div>Something went wrong while loading personalized events.</div>;
-  }
-
   return (
     <div className="flex flex-col gap-2">
+      {/* Personalized events header */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold tracking-tight">Personalized Events</h2>
         <p className="text-muted-foreground mt-2">Events of your favorite artists in the upcoming month.</p>
       </div>
-      <div className="px-12 w-full">
-        <Carousel
-          opts={{
-            align: "start",
-            dragFree: true, // for touch devices
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-4">
-            {events.map((event) => (
-              <CarouselItem
-                key={event.id}
-                className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 flex"
-              >
-                <div className="w-full h-full">
-                  <EventCard event={event} />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
+
+      {/* Events */}
+      {isLoading ? (
+        <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+          Personalized events are loading...
+        </div>
+      ) : isError || !events ? (
+        <div className="py-12 text-center text-destructive border-2 border-dashed rounded-xl border-destructive/50">
+          Something went wrong while loading personalized events.
+        </div>
+      ) : (
+        <div className="px-12 w-full">
+          <Carousel
+            opts={{
+              align: "start",
+              dragFree: true, // for touch devices
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-4">
+              {events.map((event) => (
+                <CarouselItem
+                  key={event.id}
+                  className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 flex"
+                >
+                  <div className="w-full h-full">
+                    <EventCard event={event} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
+      )}
     </div>
   );
 };
