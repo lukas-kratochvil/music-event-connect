@@ -13,6 +13,7 @@ tripleStore:
   endpointUrl:
   # full SPARQL update endpoint URL
   updateUrl:
+  # authorization
   user:
   password:
 

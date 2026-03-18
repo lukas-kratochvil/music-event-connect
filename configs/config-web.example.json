@@ -4,7 +4,7 @@
   },
   "oidc": {
     "spotify": {
-      "clientId": "",
+      "clientId": "Register this app here: https://developer.spotify.com/",
       "redirectUri": "",
       "scopes": [
         ""
