@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { addMonths, startOfDay } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { fetchEvents } from "../services/api-service";
 import EventCard from "./card/EventCard";
@@ -7,14 +9,18 @@ import EventCard from "./card/EventCard";
 const artistNames = ["post-hudba, P/\\ST"];
 
 const PersonalizedEvents = () => {
+  const startDateFrom = startOfDay(new Date());
+  const startDate = {
+    from: startDateFrom,
+    to: addMonths(startDateFrom, 1),
+  } as const satisfies DateRange;
   const {
     data: events,
     isLoading,
     isError,
   } = useQuery({
-    // TODO: modify queryKey to reflect the filter
-    queryKey: ["events", { artistNames: artistNames }] as const,
-    queryFn: () => fetchEvents(artistNames),
+    queryKey: ["events", { artistNames, startDate }] as const,
+    queryFn: () => fetchEvents({ artistNames, startDate }),
   });
 
   if (isLoading) {
