@@ -24,6 +24,16 @@ services:
       # When there is 2 GB of RAM free
       - VIRT_Parameters_NumberOfBuffers=170000
       - VIRT_Parameters_MaxDirtyBuffers=130000
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'nc -z localhost 1111 || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
   redis:
@@ -43,8 +53,10 @@ services:
       - NODE_ENV=development
       - PORT=3040
     depends_on:
-      - virtuoso
-      - redis
+      virtuoso:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   scraper:
