@@ -1,7 +1,14 @@
+import type { DateRange } from "react-day-picker";
+
 // TODO: fetch data from the API
 
+type EventsFilters = {
+  artistNames?: string[];
+  startDate?: DateRange;
+};
+
 // TODO: fetch events, filter events by artist names, add pagination?
-export const fetchEvents = async (_artistNames?: string[]) => {
+export const fetchEvents = async (_filters: EventsFilters) => {
   const events = [
     {
       id: "tm-1",

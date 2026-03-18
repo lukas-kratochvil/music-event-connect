@@ -10,6 +10,6 @@ const Spinner = ({ className, ...props }: React.ComponentProps<"svg">) => {
       {...props}
     />
   );
-}
+};
 
 export { Spinner };
