@@ -142,6 +142,7 @@ const EventsGrid = () => {
                         selected={tempStartDate}
                         onSelect={onStartDatePickerSelect}
                         numberOfMonths={2}
+                        disabled={{ before: new Date() }}
                       />
                     </PopoverContent>
                   </Popover>
