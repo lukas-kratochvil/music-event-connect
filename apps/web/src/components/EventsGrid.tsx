@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
 import { fetchEvents } from "../services/api-service";
 import EventCard from "./card/EventCard";
 
@@ -154,7 +155,8 @@ const EventsGrid = () => {
 
       {/* Events grid */}
       {isLoading ? (
-        <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+        <div className="flex flex-col items-center justify-center text-muted-foreground py-12 border-2 border-dashed rounded-xl">
+          <Spinner className="h-10 w-10" />
           Events are loading...
         </div>
       ) : isError || !events ? (

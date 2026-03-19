@@ -2,13 +2,39 @@ import { useQuery } from "@tanstack/react-query";
 import { addMonths, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { fetchEvents } from "../services/api-service";
+import { Spinner } from "@/components/ui/spinner";
+import { fetchEvents } from "@/services/api-service";
+import { spotifySDK } from "@/services/spotify-sdk";
 import EventCard from "./card/EventCard";
 
-// TODO: delete
-const artistNames = ["post-hudba, P/\\ST"];
-
 const PersonalizedEvents = () => {
+  const { data: artistNames, isLoading: artistNamesAreLoading } = useQuery({
+    queryKey: ["spotify", "currentUser", "followedArtists"] as const,
+    queryFn: async () => {
+      const artists: Awaited<ReturnType<typeof spotifySDK.currentUser.followedArtists>>["artists"]["items"] = [];
+      let afterCursor: string | undefined = undefined;
+      let hasNextPage = true;
+
+      while (hasNextPage) {
+        const response = await spotifySDK.currentUser.followedArtists(afterCursor, 50);
+        artists.push(...response.artists.items);
+
+        if (response.artists.next) {
+          const nextUrl = new URL(response.artists.next);
+          afterCursor = nextUrl.searchParams.get("after") ?? undefined;
+          if (!afterCursor) {
+            hasNextPage = false;
+          }
+        } else {
+          hasNextPage = false;
+        }
+      }
+
+      return artists;
+    },
+    staleTime: 1000 * 60 * 60, // cache for 1 hour, because followed artists don't change often
+    select: (data) => data.map((artist) => artist.name),
+  });
   const startDateFrom = startOfDay(new Date());
   const startDate = {
     from: startDateFrom,
@@ -21,6 +47,7 @@ const PersonalizedEvents = () => {
   } = useQuery({
     queryKey: ["events", { artistNames, startDate }] as const,
     queryFn: () => fetchEvents({ artistNames, startDate }),
+    enabled: !!artistNames,
   });
 
   return (
@@ -32,8 +59,9 @@ const PersonalizedEvents = () => {
       </div>
 
       {/* Events */}
-      {isLoading ? (
-        <div className="py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+      {isLoading || artistNamesAreLoading ? (
+        <div className="flex flex-col items-center justify-center text-muted-foreground py-12 border-2 border-dashed rounded-xl">
+          <Spinner className="h-10 w-10" />
           Personalized events are loading...
         </div>
       ) : isError || !events ? (
