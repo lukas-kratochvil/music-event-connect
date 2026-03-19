@@ -9,6 +9,7 @@ const spotifyScopeSchema = string()
 const configSchema = object({
   musicEventConnect: object({
     apiUrl: import.meta.env.DEV ? string().trim().required() : string().trim().url().required(),
+    sparqlEndpoint: import.meta.env.DEV ? string().trim().required() : string().trim().url().required(),
   }).required(),
   oidc: object({
     spotify: object({
