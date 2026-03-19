@@ -143,21 +143,23 @@ const Calendar = ({
       }}
       components={{
         Root: (rootProps) => {
+          const { rootRef, className: rootClassName, ...restRootProps } = rootProps;
           return (
             <div
               data-slot="calendar"
-              ref={rootProps.rootRef}
-              className={cn(rootProps.className)}
-              {...rootProps}
+              ref={rootRef}
+              className={cn(rootClassName)}
+              {...restRootProps}
             />
           );
         },
         Chevron: (chevronProps) => {
+          const { className: chevronClassName, ...restChevronProps } = chevronProps;
           if (chevronProps.orientation === "left") {
             return (
               <ChevronLeftIcon
-                className={cn("size-4", chevronProps.className)}
-                {...chevronProps}
+                className={cn("size-4", chevronClassName)}
+                {...restChevronProps}
               />
             );
           }
@@ -165,16 +167,16 @@ const Calendar = ({
           if (chevronProps.orientation === "right") {
             return (
               <ChevronRightIcon
-                className={cn("size-4", chevronProps.className)}
-                {...chevronProps}
+                className={cn("size-4", chevronClassName)}
+                {...restChevronProps}
               />
             );
           }
 
           return (
             <ChevronDownIcon
-              className={cn("size-4", chevronProps.className)}
-              {...chevronProps}
+              className={cn("size-4", chevronClassName)}
+              {...restChevronProps}
             />
           );
         },
