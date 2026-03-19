@@ -1,4 +1,4 @@
-import { endOfDay, startOfDay } from "date-fns";
+import { compareAsc, endOfDay, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
 // TODO: fetch data from the API
@@ -71,11 +71,11 @@ export const fetchEvents = async (filters?: EventsFilters) => {
       }
 
       if (startDate.from && !startDate.to) {
-        return startDate.from <= event.startDate;
+        return compareAsc(startDate.from, event.startDate) <= 0;
       }
 
       if (startDate.from && startDate.to) {
-        return startDate.from <= event.startDate && event.startDate <= startDate.to;
+        return compareAsc(startDate.from, event.startDate) <= 0 && compareAsc(event.startDate, startDate.to) <= 0;
       }
 
       return true;

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { format, isSameDay } from "date-fns";
+import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -25,6 +25,24 @@ const EventsGrid = () => {
     queryKey: ["events", { startDate }] as const,
     queryFn: () => fetchEvents({ startDate }),
   });
+
+  const onStartDatePickerSelect = (selectedDate: DateRange | undefined) => {
+    if (!selectedDate) {
+      setTempStartDate(undefined);
+      return;
+    }
+
+    if (selectedDate.from) {
+      if (!selectedDate.to || isSameDay(selectedDate.to, selectedDate.from)) {
+        setTempStartDate({ from: startOfDay(selectedDate.from) });
+      } else {
+        setTempStartDate({ from: startOfDay(selectedDate.from), to: endOfDay(selectedDate.to) });
+      }
+      return;
+    }
+
+    setTempStartDate(undefined);
+  };
 
   const handleApplyFilters = () => {
     setStartDate(tempStartDate);
@@ -122,7 +140,7 @@ const EventsGrid = () => {
                         mode="range"
                         defaultMonth={tempStartDate?.from}
                         selected={tempStartDate}
-                        onSelect={setTempStartDate}
+                        onSelect={onStartDatePickerSelect}
                         numberOfMonths={2}
                       />
                     </PopoverContent>
