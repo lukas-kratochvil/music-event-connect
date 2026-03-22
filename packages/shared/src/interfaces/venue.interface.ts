@@ -22,10 +22,10 @@ export interface IVenue {
   /**
    * The latitude of a location.
    */
-  latitude: number | undefined;
+  latitude: number;
 
   /**
    * The longitude of a location.
    */
-  longitude: number | undefined;
+  longitude: number;
 }
