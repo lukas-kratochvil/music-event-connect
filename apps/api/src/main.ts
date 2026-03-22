@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import type { ConfigSchema } from "./config/schema";
@@ -38,6 +39,16 @@ async function bootstrap() {
 
   // API
   app.setGlobalPrefix("api/v1");
+
+  // Swagger OpenAPI
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle("Music Event Connect")
+    .setDescription("The Music Event Connect API groups and provides music events from multiple data resources.")
+    .setVersion("1.0")
+    .addTag("events")
+    .build();
+  const swaggerDoc = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup("api", app, swaggerDoc);
 
   // Starting the app
   const port = config.get("port", { infer: true });

@@ -1,14 +1,23 @@
 import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
-import { EventSearchDTO } from "./dto/event-search.dto";
-import { EventsService, type EventsFilters } from "./events.service";
+import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
+import { EventsSearchDTO } from "./dto/event-search.dto";
+import { EventsService } from "./events.service";
+import type { EventsFilters } from "./types/search.filter";
 
+@ApiTags("events")
 @Controller("events")
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  @ApiBody({ type: EventsSearchDTO, required: false, description: "Filtering of events." })
+  @ApiOkResponse({ isArray: true, description: "Found events that satisfy specified filters." })
   @Post("search")
   @HttpCode(200)
-  async searchEvents(@Body() body: EventSearchDTO) {
+  async searchEvents(@Body() body?: EventsSearchDTO) {
+    if (!body) {
+      return this.eventsService.findAll();
+    }
+
     const { artistNames, startFrom, startTo } = body;
     const startDateRange: EventsFilters["startDateRange"] =
       startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
@@ -18,6 +27,9 @@ export class EventsController {
     });
   }
 
+  @ApiParam({ name: "id", required: true, description: "Event identifier." })
+  @ApiOkResponse({ description: "Found event." })
+  @ApiNotFoundResponse({ description: "Required event was not found." })
   @Get(":id")
   async findOne(@Param("id") id: string) {
     return this.eventsService.findOne(id);

@@ -1,14 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-
-export type DateRange = {
-  from: Date | undefined;
-  to: Date | undefined;
-};
-
-export type EventsFilters = {
-  artistNames?: string[];
-  startDateRange?: DateRange;
-};
+import type { EventsFilters } from "./types/search.filter";
 
 @Injectable()
 export class EventsService {
