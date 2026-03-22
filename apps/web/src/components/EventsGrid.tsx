@@ -59,7 +59,7 @@ const EventsGrid = () => {
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
-          <p className="text-muted-foreground mt-2">Discover and book tickets for the best live music near you.</p>
+          <p className="text-muted-foreground mt-2">Discover and book tickets for live music near you.</p>
         </div>
         <Button
           variant="outline"
