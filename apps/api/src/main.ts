@@ -16,6 +16,10 @@ async function bootstrap() {
   const logger = createWinstonLogger("API");
   app.useLogger(logger);
 
+  // CORS
+  const cors = config.get("cors", { infer: true });
+  app.enableCors({ origin: cors.allowedOrigins });
+
   // Protection from some well-known web vulnerabilities by setting HTTP headers appropriately
   app.use(helmet());
 
@@ -29,9 +33,11 @@ async function bootstrap() {
     })
   );
 
-  // CORS
-  const cors = config.get("cors", { infer: true });
-  app.enableCors({ origin: cors.allowedOrigins });
+  // HTTP query string parser
+  app.set("query parser", "extended");
+
+  // API
+  app.setGlobalPrefix("api/v1");
 
   // Starting the app
   const port = config.get("port", { infer: true });
