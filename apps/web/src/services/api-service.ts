@@ -22,11 +22,13 @@ export const fetchEvents = async (filters?: EventsFilters) => {
       ],
       startDate: new Date("2026-03-11T19:00:00Z"),
       endDate: new Date("2026-03-11T22:00:00Z"),
-      artists: ["P/\\ST", "Hentai Corporation", "SEBE"],
+      artists: [{ name: "P/\\ST" }, { name: "Hentai Corporation" }, { name: "SEBE" }],
       venues: [
         {
           name: "Lucerna Music Bar",
-          city: "Prague",
+          address: {
+            locality: "Prague",
+          },
         },
       ],
       images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/137/1376340-383.jpg"],
@@ -34,7 +36,6 @@ export const fetchEvents = async (filters?: EventsFilters) => {
     {
       id: "go-32",
       name: "Vinyla Night: Gufrau + post-hudba + matyášovi kamarádi + Miss Petty + Rivermoans + teige + další",
-      ticketUrl: "https://goout.net/cs/listky/vinyla-night-gufrau+post-hudba+matyasovi-kamaradi+miss-petty+/rvhjb/",
       offers: [
         {
           url: "https://goout.net/cs/listky/vinyla-night-gufrau+post-hudba+matyasovi-kamaradi+miss-petty+/rvhjb/",
@@ -43,11 +44,20 @@ export const fetchEvents = async (filters?: EventsFilters) => {
       ],
       startDate: new Date("2026-04-13T19:00:00Z"),
       endDate: undefined,
-      artists: ["post-hudba", "Gufrau", "matyášovi kamarádi", "teige", "Rivermoans", "Miss Petty"],
+      artists: [
+        { name: "post-hudba" },
+        { name: "Gufrau" },
+        { name: "matyášovi kamarádi" },
+        { name: "teige" },
+        { name: "Rivermoans" },
+        { name: "Miss Petty" },
+      ],
       venues: [
         {
           name: "ARCHA+",
-          city: "Prague",
+          address: {
+            locality: "Prague",
+          },
         },
       ],
       images: ["https://goout.net/cdn-cgi/image/format=auto,width=383/i/133/1332707-383.jpg"],
@@ -105,9 +115,9 @@ export const fetchEventDetail = async (_id: string) => {
         latitude: 50.0906,
         longitude: 14.4258,
         address: {
-          streetAddress: "Dlouhá 33",
-          addressLocality: "Prague",
-          addressCountry: "Czechia",
+          street: "Dlouhá 33",
+          locality: "Prague",
+          country: "CZ",
         },
       },
       {
@@ -115,9 +125,9 @@ export const fetchEventDetail = async (_id: string) => {
         latitude: 50.081325,
         longitude: 14.425436,
         address: {
-          streetAddress: "Vodičkova 36",
-          addressLocality: "Prague",
-          addressCountry: "Czechia",
+          street: "Vodičkova 36",
+          locality: "Prague",
+          country: "CZ",
         },
       },
       {
@@ -125,9 +135,9 @@ export const fetchEventDetail = async (_id: string) => {
         latitude: 50.0906,
         longitude: 14.4258,
         address: {
-          streetAddress: "Dlouhá 33",
-          addressLocality: "Prague",
-          addressCountry: "Czechia",
+          street: "Dlouhá 33",
+          locality: "Prague",
+          country: "Czechia",
         },
       },
       {
@@ -135,9 +145,9 @@ export const fetchEventDetail = async (_id: string) => {
         latitude: 50.081325,
         longitude: 14.425436,
         address: {
-          streetAddress: "Vodičkova 36",
-          addressLocality: "Prague",
-          addressCountry: "Czechia",
+          street: "Vodičkova 36",
+          locality: "Prague",
+          country: "Czechia",
         },
       },
     ],

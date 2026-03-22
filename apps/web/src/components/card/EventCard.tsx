@@ -44,12 +44,12 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
         <div>
           <span className="font-semibold text-foreground">Location: </span>
-          {event.venues.map(({ name, city }) => (
+          {event.venues.map(({ name, address: { locality } }) => (
             <span
               key={name}
               className="text-muted-foreground"
             >
-              {name} ({city})
+              {name} ({locality})
             </span>
           ))}
         </div>

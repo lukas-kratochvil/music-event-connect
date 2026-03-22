@@ -38,7 +38,7 @@ const EventDetailPage = () => {
     ...event.images.map((img) => ({ type: "Event", imgUrl: img }) as const),
     ...event.artists.flatMap((artist) => artist.images.map((img) => ({ type: "Artist", imgUrl: img }) as const)),
   ];
-  const venueHeader = event.venues.map((v) => v.name + " (" + v.address.addressLocality + ")").join(", ");
+  const venueHeader = event.venues.map((v) => v.name + " (" + v.address.locality + ")").join(", ");
   const venueCoords = event.venues.map((loc) => ({
     text: loc.name,
     position: [loc.latitude, loc.longitude] as [number, number],
@@ -199,7 +199,7 @@ const EventDetailPage = () => {
                           {venue.name}
                         </h3>
                         <p className="text-muted-foreground">
-                          {venue.address.streetAddress}, {venue.address.addressLocality}, {venue.address.addressCountry}
+                          {venue.address.street}, {venue.address.locality}, {venue.address.country}
                         </p>
                       </div>
                     </div>
