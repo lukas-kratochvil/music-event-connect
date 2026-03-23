@@ -231,21 +231,21 @@ export class TicketportalService implements ICronJobService {
 
         const startDateTime = new TZDateMini(startDateStr, CZ_TIMEZONE);
 
-        let doorsDatetime: Date | undefined;
+        let doorDatetime: Date | undefined;
         try {
-          const doorsTimeStr = await ticket.$eval(
+          const doorTimeStr = await ticket.$eval(
             "::-p-xpath(.//div[contains(@class, 'ticket-info')]/div[@class='detail']/div[@itemprop='name']/div[contains(@class, 'popiska')])",
             (elem) => (elem as HTMLDivElement).innerText.match(/\b(?:doors|vstup)\s+(\d{1,2}:\d{2})/i)?.at(1)
           );
 
-          if (doorsTimeStr) {
+          if (doorTimeStr) {
             const datePart = format(startDateTime, "yyyy-MM-dd");
-            const [hours, minutes] = doorsTimeStr.split(":").map(Number);
-            const doorsDateTimeStr = `${datePart}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
-            doorsDatetime = new TZDateMini(doorsDateTimeStr, CZ_TIMEZONE);
+            const [hours, minutes] = doorTimeStr.split(":").map(Number);
+            const doorDateTimeStr = `${datePart}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
+            doorDatetime = new TZDateMini(doorDateTimeStr, CZ_TIMEZONE);
           }
         } catch {
-          /* doors time not found */
+          /* door time not found */
         }
 
         const venueBlock = await ticket.$(
@@ -304,7 +304,7 @@ export class TicketportalService implements ICronJobService {
           id,
           name: eventName,
           url: musicEventUrl,
-          doorTime: doorsDatetime,
+          doorTime: doorDatetime,
           startDate: startDateTime,
           endDate: undefined,
           artists,

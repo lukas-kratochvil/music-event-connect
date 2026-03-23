@@ -173,18 +173,18 @@ export class GooutService implements ICronJobService {
       )
     ).filter((artist) => artist !== null);
 
-    let doorsDatetime: Date | undefined;
+    let doorDatetime: Date | undefined;
     try {
-      const doorsDatetimeStr = await page.$eval(
+      const doorDatetimeStr = await page.$eval(
         "::-p-xpath(//section[contains(@class, 'py-1')]//div[contains(@class, 'info-item')]/div/span[text()='Doors' or text()='Vstup']/parent::div/parent::div/div[2]/time)",
         (elem) => elem.getAttribute("datetime")?.trim()
       );
 
-      if (doorsDatetimeStr) {
-        doorsDatetime = new Date(doorsDatetimeStr);
+      if (doorDatetimeStr) {
+        doorDatetime = new Date(doorDatetimeStr);
       }
     } catch {
-      /* doors not found */
+      /* door time not found */
     }
     const [datetime1, datetime2] = eventItem.linkedData?.startDate
       ? [eventItem.linkedData.startDate, eventItem.linkedData.endDate]
@@ -246,7 +246,7 @@ export class GooutService implements ICronJobService {
         id: extractIdFromUrl(eventItem.url),
         name: eventName,
         url: eventItem.url,
-        doorTime: doorsDatetime,
+        doorTime: doorDatetime,
         startDate: startDatetime,
         endDate: endDatetime,
         artists,
