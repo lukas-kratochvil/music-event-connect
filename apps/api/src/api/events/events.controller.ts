@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
 import { EventsSearchDTO } from "./dto/event-search.dto";
 import { EventsService } from "./events.service";
-import type { EventsFilters } from "./types/search.filter";
+import type { EventsFilters } from "./interfaces/search.interface";
 
 @ApiTags("events")
 @Controller("events")

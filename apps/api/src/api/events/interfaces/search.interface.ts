@@ -3,7 +3,7 @@ type DateRange = {
   to: Date | undefined;
 };
 
-export type EventsFilters = {
+export interface EventsFilters {
   artistNames?: string[];
   startDateRange?: DateRange;
-};
+}

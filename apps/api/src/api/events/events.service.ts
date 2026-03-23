@@ -1,6 +1,6 @@
 import type { MusicEventMapper } from "@music-event-connect/core/mappers";
 import { Injectable, Logger } from "@nestjs/common";
-import type { EventsFilters } from "./types/search.filter";
+import type { EventsFilters } from "./interfaces/search.interface";
 
 @Injectable()
 export class EventsService {
