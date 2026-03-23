@@ -34,6 +34,11 @@
       "types": "./dist/queue/index.d.ts",
       "require": "./dist/queue/index.js",
       "default": "./dist/queue/index.js"
+    },
+    "./validation": {
+      "types": "./dist/validation/index.d.ts",
+      "require": "./dist/validation/index.js",
+      "default": "./dist/validation/index.js"
     }
   },
   "devDependencies": {
