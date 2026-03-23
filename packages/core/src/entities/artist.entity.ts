@@ -32,6 +32,7 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   @Transform(({ value }) => (value as string[]).map((str) => str.toLowerCase()))
   @IsArray()
   @ArrayUnique<string>()
+  @IsString({ each: true })
   @RDFProperty(ns.schema.genre, { kind: "language", language: "en" })
   genres: string[];
 
