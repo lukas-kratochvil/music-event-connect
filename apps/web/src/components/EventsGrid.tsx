@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { fetchEvents } from "../services/api-service";
+import { searchEvents } from "../services/mec/calls";
 import EventCard from "./card/EventCard";
 
 const EventsGrid = () => {
@@ -23,7 +23,7 @@ const EventsGrid = () => {
     isError,
   } = useQuery({
     queryKey: ["events", { startDate }] as const,
-    queryFn: () => fetchEvents({ startDate }),
+    queryFn: () => searchEvents({ startDate }),
   });
 
   const onStartDatePickerSelect = (selectedDate: DateRange | undefined) => {
@@ -99,6 +99,7 @@ const EventsGrid = () => {
       )}
 
       {/* Filter inputs */}
+      {/* TODO: should be implemented as a form? */}
       <div
         className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out ${
           isFilterOpen ? "grid-rows-[1fr] opacity-100 mb-6" : "grid-rows-[0fr] opacity-0 mb-0"

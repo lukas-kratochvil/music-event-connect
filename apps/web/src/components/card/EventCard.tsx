@@ -2,11 +2,11 @@ import { format } from "date-fns";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import type { fetchEvents } from "@/services/api-service";
+import type { searchEvents } from "@/services/mec/calls";
 import { RoutingPath } from "@/utils/routing-paths";
 
 type EventCardProps = {
-  event: Awaited<ReturnType<typeof fetchEvents>>[number];
+  event: Awaited<ReturnType<typeof searchEvents>>[number];
 };
 
 const EventCard = ({ event }: EventCardProps) => {
@@ -40,7 +40,7 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
         <div>
           <span className="font-semibold text-foreground">Performers: </span>
-          <span className="text-muted-foreground">{event.artists.join(", ")}</span>
+          <span className="text-muted-foreground">{event.artists.map((artist) => artist.name).join(", ")}</span>
         </div>
         <div>
           <span className="font-semibold text-foreground">Location: </span>

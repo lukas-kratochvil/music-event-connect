@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Separator } from "@/components/ui/separator";
-import { fetchEventDetail } from "@/services/api-service";
+import { fetchEventDetail } from "@/services/mec/calls";
 
 const EventDetailPage = () => {
   const { id } = useParams();
@@ -38,10 +38,10 @@ const EventDetailPage = () => {
     ...event.images.map((img) => ({ type: "Event", imgUrl: img }) as const),
     ...event.artists.flatMap((artist) => artist.images.map((img) => ({ type: "Artist", imgUrl: img }) as const)),
   ];
-  const venueHeader = event.venues.map((v) => v.name + " (" + v.address.locality + ")").join(", ");
-  const venueCoords = event.venues.map((loc) => ({
-    text: loc.name,
-    position: [loc.latitude, loc.longitude] as [number, number],
+  const venueHeader = event.venues.map((venue) => venue.name + " (" + venue.address.locality + ")").join(", ");
+  const venueCoords = event.venues.map((venue) => ({
+    text: venue.name,
+    position: [venue.latitude, venue.longitude] as [number, number],
   }));
   const availableOffers = event.offers.filter((offer) => offer.availability === "InStock");
 
@@ -159,14 +159,14 @@ const EventDetailPage = () => {
                       )}
                       {artist.accounts.map((account) => (
                         <a
-                          key={account.accountName}
+                          key={account.name}
                           href={account.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 hover:text-primary transition-colors"
                         >
                           <ExternalLink className="h-4 w-4" />
-                          <span>{account.accountName}</span>
+                          <span>{account.name}</span>
                         </a>
                       ))}
                     </div>
@@ -199,7 +199,10 @@ const EventDetailPage = () => {
                           {venue.name}
                         </h3>
                         <p className="text-muted-foreground">
-                          {venue.address.street}, {venue.address.locality}, {venue.address.country}
+                          {`${venue.address.street ? venue.address.street + ", " : ""}`
+                            + venue.address.locality
+                            + ", "
+                            + venue.address.country}
                         </p>
                       </div>
                     </div>
