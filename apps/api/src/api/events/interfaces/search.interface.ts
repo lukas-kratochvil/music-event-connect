@@ -1,9 +1,14 @@
+type SearchEventsPagination = {
+  offset: number;
+  limit: number;
+};
+
 type DateRange = {
   from: Date | undefined;
   to: Date | undefined;
 };
 
-export interface EventsFilters {
+interface SearchEventsFilters {
   artistNames?: string[];
   startDateRange?: DateRange;
 }
@@ -15,7 +20,13 @@ export const SortType = {
 
 export type SortType = (typeof SortType)[keyof typeof SortType];
 
-export interface EventsSorter {
+interface SearchEventsSorter {
   propertyName: string;
   type: SortType;
+}
+
+export interface SearchEventsOptions {
+  pagination: SearchEventsPagination;
+  filters?: SearchEventsFilters;
+  sorters?: SearchEventsSorter[];
 }

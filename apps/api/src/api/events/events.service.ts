@@ -1,6 +1,6 @@
 import type { MusicEventMapper } from "@music-event-connect/core/mappers";
 import { Injectable, Logger } from "@nestjs/common";
-import type { EventsFilters, EventsSorter } from "./interfaces/search.interface";
+import type { SearchEventsOptions } from "./interfaces/search.interface";
 
 @Injectable()
 export class EventsService {
@@ -8,7 +8,11 @@ export class EventsService {
 
   constructor(private readonly musicEventMapper: MusicEventMapper) {}
 
-  async findAll(options?: { filters?: EventsFilters; sorters?: EventsSorter[] }) {
+  async findAll(options?: SearchEventsOptions) {
+    if (!options) {
+      // apply default pagination (limit = 20 and offset = 0)
+      return events;
+    }
     this.#logger.log(filters);
     return [];
   }

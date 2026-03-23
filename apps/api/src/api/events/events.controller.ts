@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
 import { EventsSearchDTO } from "./dto/event-search.dto";
 import { EventsService } from "./events.service";
-import type { EventsFilters } from "./interfaces/search.interface";
+import type { SearchEventsOptions } from "./interfaces/search.interface";
 
 @ApiTags("events")
 @Controller("events")
@@ -18,12 +18,12 @@ export class EventsController {
       return this.eventsService.findAll();
     }
 
-    const { filters, sorters } = body;
-    let searchFilters: EventsFilters | undefined = undefined;
+    const { pagination, filters, sorters } = body;
+    let searchFilters: SearchEventsOptions["filters"] = undefined;
 
     if (filters) {
       const { artistNames, startFrom, startTo } = filters;
-      const startDateRange: EventsFilters["startDateRange"] =
+      const startDateRange: NonNullable<SearchEventsOptions["filters"]>["startDateRange"] =
         startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
       searchFilters = {
         artistNames,
@@ -32,6 +32,7 @@ export class EventsController {
     }
 
     return this.eventsService.findAll({
+      pagination,
       filters: searchFilters,
       sorters,
     });
