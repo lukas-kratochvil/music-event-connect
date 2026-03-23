@@ -1,6 +1,6 @@
 import type { MusicEventMapper } from "@music-event-connect/core/mappers";
 import { Injectable, Logger } from "@nestjs/common";
-import type { EventsFilters } from "./interfaces/search.interface";
+import type { EventsFilters, EventsSorter } from "./interfaces/search.interface";
 
 @Injectable()
 export class EventsService {
@@ -8,7 +8,7 @@ export class EventsService {
 
   constructor(private readonly musicEventMapper: MusicEventMapper) {}
 
-  async findAll(filters?: EventsFilters) {
+  async findAll(options?: { filters?: EventsFilters; sorters?: EventsSorter[] }) {
     this.#logger.log(filters);
     return [];
   }

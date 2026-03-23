@@ -18,12 +18,22 @@ export class EventsController {
       return this.eventsService.findAll();
     }
 
-    const { artistNames, startFrom, startTo } = body;
-    const startDateRange: EventsFilters["startDateRange"] =
-      startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
+    const { filters, sorters } = body;
+    let searchFilters: EventsFilters | undefined = undefined;
+
+    if (filters) {
+      const { artistNames, startFrom, startTo } = filters;
+      const startDateRange: EventsFilters["startDateRange"] =
+        startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
+      searchFilters = {
+        artistNames,
+        startDateRange,
+      };
+    }
+
     return this.eventsService.findAll({
-      artistNames,
-      startDateRange,
+      filters: searchFilters,
+      sorters,
     });
   }
 
