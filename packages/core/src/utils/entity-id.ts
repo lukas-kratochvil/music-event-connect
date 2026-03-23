@@ -22,10 +22,3 @@ export const createEntityId = (origin: keyof typeof ENTITY_ID_MAPPER, id: string
 
 export const isEntityId = (val: string): val is ReturnType<typeof createEntityId> =>
   VALID_ENTITY_ID_PREFIXES.some((prefix) => val.startsWith(prefix + ENTITY_ID_DELIM));
-
-/**
- * Gets entity id prefix.
- * @param id entity id created by the `createEntityId()`
- */
-export const getEntityIdPrefix = (id: string) =>
-  isEntityId(id) ? (id.split(ENTITY_ID_DELIM)[0]! as EntityIdPrefix) : undefined;
