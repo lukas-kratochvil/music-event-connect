@@ -1,7 +1,7 @@
 import { hash } from "crypto";
 import { ItemAvailability, type ITicket } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
-import { IsIn, IsUrl } from "class-validator";
+import { IsEnum, IsUrl } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { createEntityId, isEntityId } from "../utils/entity-id";
@@ -27,9 +27,8 @@ export class TicketEntity extends AbstractEntity implements ITicket {
   @RDFProperty(ns.schema.url, { kind: "url" })
   url: string;
 
-  // eslint-disable-next-line @darraghor/nestjs-typed/validated-non-primitive-property-needs-type-decorator
   @Expose()
-  @IsIn(Object.values(ItemAvailability))
+  @IsEnum(ItemAvailability)
   @RDFProperty<ItemAvailability>(ns.schema.availability, {
     kind: "enum",
     map: {
