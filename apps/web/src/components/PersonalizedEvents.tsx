@@ -4,7 +4,7 @@ import type { DateRange } from "react-day-picker";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
 import { searchEvents } from "@/services/mec/calls";
-import { spotifySDK } from "@/services/spotify-sdk";
+import { spotifySDK } from "@/services/spotify/spotify-sdk";
 import EventCard from "./card/EventCard";
 
 const PersonalizedEvents = () => {

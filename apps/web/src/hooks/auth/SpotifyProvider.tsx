@@ -1,5 +1,5 @@
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { spotifySDK } from "@/services/spotify-sdk";
+import { spotifySDK } from "@/services/spotify/spotify-sdk";
 import { SessionStorageKeys } from "@/utils/storage-keys";
 import { AuthContext, type Auth } from "./auth";
 
