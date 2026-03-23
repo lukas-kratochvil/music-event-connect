@@ -9,3 +9,13 @@ throttler:
   ttl:
   # max. amount of requests client can make in given TTL
   limit:
+
+# Triple store
+tripleStore:
+  # full SPARQL read endpoint URL
+  endpointUrl:
+  # full SPARQL update endpoint URL
+  updateUrl:
+  # authorization
+  user:
+  password:

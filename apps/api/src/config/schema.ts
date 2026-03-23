@@ -11,6 +11,12 @@ export type ConfigSchema = {
     ttl: number;
     limit: number;
   };
+  tripleStore: {
+    endpointUrl: string;
+    updateUrl: string;
+    user: string;
+    password: string;
+  };
 };
 
 export const configSchema = Joi.object<ConfigSchema, true>({
@@ -32,4 +38,10 @@ export const configSchema = Joi.object<ConfigSchema, true>({
     ttl: Joi.number().integer().min(0).required(),
     limit: Joi.number().integer().min(0).required(),
   }).required(),
+  tripleStore: Joi.object<ConfigSchema["tripleStore"], true>({
+    endpointUrl: Joi.string().trim().uri().required(),
+    updateUrl: Joi.string().trim().uri().required(),
+    user: Joi.string().trim().required(),
+    password: Joi.string().trim().required(),
+  }),
 });
