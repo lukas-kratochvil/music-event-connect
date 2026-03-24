@@ -352,6 +352,10 @@ export class TicketportalService implements ICronJobService {
       }
 
       this.#logger.log("Loaded initial page: " + this.#baseUrl);
+      await page
+        .locator("::-p-xpath(//div[@id='navbar-filter-homepage']//div[@id='menu2']//a[contains(text(), 'Hudba')])")
+        .click();
+      this.#logger.log("Applied music event filter");
 
       // SETUP
       // 1) deny cookies

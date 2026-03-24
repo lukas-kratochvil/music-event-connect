@@ -18,5 +18,5 @@ goout:
 
 # Ticketportal
 ticketportal:
-  # base URL of the Ticketportal music page
+  # base URL of the Ticketportal
   url:
