@@ -36,20 +36,20 @@ const EventCard = ({ event }: EventCardProps) => {
       <CardContent className="grow space-y-2 text-sm">
         <div>
           <span className="font-semibold text-foreground">Date: </span>
-          <span className="text-muted-foreground">{format(event.startDate, "dd.MM.y HH:mm")}</span>
+          <span className="text-muted-foreground">{format(event.startDate, "dd.MM.y H:mm")}</span>
         </div>
         <div>
-          <span className="font-semibold text-foreground">Performers: </span>
+          <span className="font-semibold text-foreground">Artists: </span>
           <span className="text-muted-foreground">{event.artists.map((artist) => artist.name).join(", ")}</span>
         </div>
         <div>
-          <span className="font-semibold text-foreground">Location: </span>
-          {event.venues.map(({ name, address: { locality } }) => (
+          <span className="font-semibold text-foreground">Venue: </span>
+          {event.venues.map(({ name, address: { locality, country } }) => (
             <span
               key={name}
               className="text-muted-foreground"
             >
-              {name} ({locality})
+              {name} ({locality}, {country})
             </span>
           ))}
         </div>

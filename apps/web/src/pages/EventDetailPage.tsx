@@ -103,18 +103,27 @@ const EventDetailPage = () => {
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span className="font-semibold">Date:</span>
-                <span>{format(event.startDate, "EEEE, d. M. y")}</span>
+                <span>{format(event.startDate, "EEEE, dd.MM.y")}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Doors Open:</span>
-                <span>{event.doorTime ? format(event.doorTime, "HH:mm") : "TBA"}</span>
-              </div>
+              {event.doorTime && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <span className="font-semibold">Doors:</span>
+                  <span>{format(event.doorTime, "H:mm")}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
                 <span className="font-semibold">Starts:</span>
-                <span>{format(event.startDate, "HH:mm")}</span>
+                <span>{format(event.startDate, "H:mm")}</span>
               </div>
+              {event.endDate && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <span className="font-semibold">Ends:</span>
+                  <span>{format(event.endDate, "dd.MM.y (H:mm)")}</span>
+                </div>
+              )}
             </div>
           </section>
 
