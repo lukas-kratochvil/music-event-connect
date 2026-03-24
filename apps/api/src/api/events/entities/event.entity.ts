@@ -1,0 +1,89 @@
+import { ItemAvailability } from "@music-event-connect/shared/interfaces";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+
+class EventAccount {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  url: string;
+}
+
+class EventArtist {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ type: "string", isArray: true })
+  genres: string[];
+
+  @ApiPropertyOptional({ type: "string" })
+  url: string | undefined;
+
+  @ApiProperty({ type: () => EventAccount, isArray: true })
+  accounts: EventAccount[];
+
+  @ApiProperty({ type: "string", isArray: true })
+  images: string[];
+}
+
+class EventAddress {
+  @ApiPropertyOptional({ type: "string" })
+  street: string | undefined;
+
+  @ApiProperty()
+  locality: string;
+
+  @ApiProperty()
+  country: string;
+}
+
+class EventVenue {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ type: "number" })
+  latitude: number;
+
+  @ApiProperty({ type: "number" })
+  longitude: number;
+
+  @ApiProperty({ type: () => EventAddress })
+  address: EventAddress;
+}
+
+class EventOffer {
+  @ApiProperty()
+  url: string;
+
+  @ApiProperty({ enum: ItemAvailability })
+  availability: ItemAvailability;
+}
+
+export class Event {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional({ type: Date })
+  doorTime: Date | undefined;
+
+  @ApiProperty({ type: Date })
+  startDate: Date;
+
+  @ApiPropertyOptional({ type: Date })
+  endDate: Date | undefined;
+
+  @ApiProperty({ type: "string", isArray: true })
+  images: string[];
+
+  @ApiProperty({ type: () => EventArtist, isArray: true })
+  artists: EventArtist[];
+
+  @ApiProperty({ type: () => EventVenue, isArray: true })
+  venues: EventVenue[];
+
+  @ApiProperty({ type: () => EventOffer, isArray: true })
+  offers: EventOffer[];
+}

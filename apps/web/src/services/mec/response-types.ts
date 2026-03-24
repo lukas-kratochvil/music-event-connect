@@ -1,3 +1,24 @@
+export type MusicEventSearchDTO = {
+  id: string;
+  name: string;
+  startDate: Date;
+  images: string[];
+  artists: {
+    name: string;
+  }[];
+  venues: {
+    name: string;
+    address: {
+      locality: string;
+      country: string;
+    };
+  }[];
+  offers: {
+    url: string;
+    availability: "InStock" | "SoldOut";
+  }[];
+};
+
 export type MusicEventDTO = {
   id: string;
   name: string;

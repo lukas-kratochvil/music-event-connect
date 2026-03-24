@@ -1,6 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
 import { EventsSearchDTO } from "./dto/event-search.dto";
+import { EventSearch } from "./entities/event-search.entity";
+import { Event } from "./entities/event.entity";
 import { EventsService } from "./events.service";
 import type { SearchEventsOptions } from "./interfaces/search.interface";
 
@@ -9,11 +11,15 @@ import type { SearchEventsOptions } from "./interfaces/search.interface";
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @ApiBody({ type: EventsSearchDTO, required: false, description: "Filtering of events." })
-  @ApiOkResponse({ isArray: true, description: "Found events that satisfy specified filters." })
+  @ApiBody({ type: () => EventsSearchDTO, required: false, description: "Filtering of events." })
+  @ApiOkResponse({
+    type: () => EventSearch,
+    isArray: true,
+    description: "Found events that satisfy specified filters.",
+  })
   @Post("search")
   @HttpCode(200)
-  async searchEvents(@Body() body?: EventsSearchDTO) {
+  async searchEvents(@Body() body?: EventsSearchDTO): Promise<EventSearch[]> {
     if (!body) {
       return this.eventsService.findAll();
     }
@@ -39,10 +45,10 @@ export class EventsController {
   }
 
   @ApiParam({ name: "id", required: true, description: "Event identifier." })
-  @ApiOkResponse({ description: "Found event." })
+  @ApiOkResponse({ type: () => Event, description: "Found event." })
   @ApiNotFoundResponse({ description: "Required event was not found." })
   @Get(":id")
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param("id") id: string): Promise<Event> {
     return this.eventsService.findOne(id);
   }
 }

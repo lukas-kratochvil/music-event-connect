@@ -1,6 +1,6 @@
 import type { DateRange } from "react-day-picker";
 import { mecApi } from "./mec-api";
-import type { MusicEventDTO } from "./response-types";
+import type { MusicEventDTO, MusicEventSearchDTO } from "./response-types";
 
 type EventsFilters = {
   artistNames?: string[];
@@ -8,7 +8,7 @@ type EventsFilters = {
 };
 
 export const searchEvents = async (filters?: EventsFilters) => {
-  const response = await mecApi.post<MusicEventDTO[]>("events/search", {
+  const response = await mecApi.post<MusicEventSearchDTO[]>("events/search", {
     filters,
     sorters: [
       {
