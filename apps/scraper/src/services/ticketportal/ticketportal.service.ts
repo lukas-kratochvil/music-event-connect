@@ -340,6 +340,7 @@ export class TicketportalService implements ICronJobService {
         "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       ],
     });
+    this.#logger.log("Browser launched");
 
     try {
       this.#isInProcess = true;
@@ -349,6 +350,8 @@ export class TicketportalService implements ICronJobService {
       if (!(await page.goto(this.#baseUrl, { waitUntil: "networkidle2" }))) {
         throw new Error(`No response from the base url: ${this.#baseUrl}.`);
       }
+
+      this.#logger.log("Loaded initial page: " + this.#baseUrl);
 
       // SETUP
       // 1) deny cookies
