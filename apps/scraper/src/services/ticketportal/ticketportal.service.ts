@@ -359,8 +359,8 @@ export class TicketportalService implements ICronJobService {
 
       // SETUP
       // 1) deny cookies
-      await page.locator("button#didomi-notice-learn-more-button").click();
-      await page.locator("button#btn-toggle-disagree").click();
+      // await page.locator("button#didomi-notice-learn-more-button").click();
+      // await page.locator("button#btn-toggle-disagree").click();
 
       // GET MUSIC EVENTS
       const genreNames = await page.$$eval(
