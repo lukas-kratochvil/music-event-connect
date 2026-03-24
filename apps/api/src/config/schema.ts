@@ -13,7 +13,6 @@ export type ConfigSchema = {
   };
   tripleStore: {
     endpointUrl: string;
-    updateUrl: string;
     user: string;
     password: string;
   };
@@ -40,7 +39,6 @@ export const configSchema = Joi.object<ConfigSchema, true>({
   }).required(),
   tripleStore: Joi.object<ConfigSchema["tripleStore"], true>({
     endpointUrl: Joi.string().trim().uri().required(),
-    updateUrl: Joi.string().trim().uri().required(),
     user: Joi.string().trim().required(),
     password: Joi.string().trim().required(),
   }),

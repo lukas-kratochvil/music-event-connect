@@ -14,8 +14,6 @@ throttler:
 tripleStore:
   # full SPARQL read endpoint URL
   endpointUrl:
-  # full SPARQL update endpoint URL
-  updateUrl:
   # authorization
   user:
   password:

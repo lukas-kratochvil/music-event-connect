@@ -28,7 +28,7 @@ export class LinksMapper {
     [VenueEntity.name, (venue, graph) => this.#handleVenue(venue, graph)],
   ]);
 
-  #eventQueryMap = new Map([
+  readonly #eventQueryMap = new Map([
     ...MUSIC_EVENT_GRAPHS.map(
       (eventGraph) =>
         [eventGraph, (startDate: Date) => this.sparqlService.getEventsByDate(startDate, eventGraph)] as const
@@ -85,7 +85,7 @@ export class LinksMapper {
     ]);
   }
 
-  #artistQueryMap = new Map([
+  readonly #artistQueryMap = new Map([
     ...MUSIC_EVENT_GRAPHS.map(
       (eventGraph) =>
         [eventGraph, (artistName: string) => this.sparqlService.getArtistsByName(artistName, eventGraph)] as const
@@ -122,7 +122,7 @@ export class LinksMapper {
     await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
   }
 
-  #venueQueryMap = new Map([
+  readonly #venueQueryMap = new Map([
     ...MUSIC_EVENT_GRAPHS.map(
       (eventGraph) =>
         [

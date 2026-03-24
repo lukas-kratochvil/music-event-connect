@@ -13,7 +13,6 @@ import { EventsService } from "./events.service";
       useFactory: (config: ConfigService<ConfigSchema, true>) => ({
         tripleStore: {
           endpointUrl: config.get("tripleStore.endpointUrl", { infer: true }),
-          updateUrl: config.get("tripleStore.updateUrl", { infer: true }),
           user: config.get("tripleStore.user", { infer: true }),
           password: config.get("tripleStore.password", { infer: true }),
         },

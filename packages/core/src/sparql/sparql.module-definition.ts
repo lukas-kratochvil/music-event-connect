@@ -2,7 +2,7 @@ import { ConfigurableModuleBuilder } from "@nestjs/common";
 
 export interface SPARQLModuleOptions {
   endpointUrl: string;
-  updateUrl: string;
+  updateUrl?: string;
   user: string;
   password: string;
 }
