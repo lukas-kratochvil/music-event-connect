@@ -13,16 +13,9 @@ interface SearchEventsFilters {
   startDateRange?: DateRange;
 }
 
-export const SortType = {
-  asc: "asc",
-  desc: "desc",
-} as const;
-
-export type SortType = (typeof SortType)[keyof typeof SortType];
-
 interface SearchEventsSorter {
   propertyName: string;
-  type: SortType;
+  desc?: boolean;
 }
 
 export interface SearchEventsOptions {

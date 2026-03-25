@@ -4,8 +4,8 @@ import { Type } from "class-transformer";
 import {
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsDate,
-  IsEnum,
   IsInt,
   IsOptional,
   IsPositive,
@@ -13,7 +13,6 @@ import {
   Min,
   ValidateNested,
 } from "class-validator";
-import { SortType } from "../interfaces/search.interface";
 
 class Filters {
   @ApiPropertyOptional({ type: "string", isArray: true })
@@ -42,9 +41,10 @@ class Sorter {
   @IsString()
   propertyName: string;
 
-  @ApiProperty({ enum: SortType })
-  @IsEnum(SortType)
-  type: SortType;
+  @ApiPropertyOptional({ type: "boolean", description: "Ascending sort is default." })
+  @IsOptional()
+  @IsBoolean()
+  desc?: boolean;
 }
 
 class Pagination {

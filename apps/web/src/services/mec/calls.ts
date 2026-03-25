@@ -13,7 +13,6 @@ export const searchEvents = async (filters?: EventsFilters) => {
     sorters: [
       {
         propertyName: "startDate",
-        type: "asc",
       },
     ],
   });
