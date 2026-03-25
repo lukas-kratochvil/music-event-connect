@@ -159,16 +159,20 @@ export class SPARQLQueryBuilderService {
   selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
+    const name = variable("name");
     // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         {
           ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.rdfs.label)} ${literal(artistName)} .
+                        ${namedNode(ns.rdfs.label)} ${name} .
         } UNION {
           ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.skos.altLabel)} ${literal(artistName)} .
+                        ${namedNode(ns.skos.altLabel)} ${name} .
         }
+
+        # STR() strips datatypes and language tags so we safely compare raw string values
+        FILTER(STR(${name}) = ${literal(artistName)})
       }
     `;
   }
