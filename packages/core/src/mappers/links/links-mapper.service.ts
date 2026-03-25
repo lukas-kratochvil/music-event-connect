@@ -6,6 +6,8 @@ import { RdfEntitySerializerService } from "../../serialization/rdf-entity-seria
 import { SPARQLService } from "../../sparql/sparql.service";
 import { GRAPHS_MAP, LINKED_GRAPHS, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
 
+type LinkIRI = [NamedNode, string];
+
 const MIN_SIMILARITY_SCORE = 0.9;
 
 @Injectable()
@@ -43,41 +45,40 @@ export class LinksMapper {
     const eventIRI = RdfEntitySerializerService.createEntityIRI(event);
     const eventName = event.name.toLowerCase().trim();
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
-
-    const linkIRIs = (
-      await Promise.all(
-        missingGraphs.map(async (targetGraphIRI) => {
-          const getEventCandidates = this.#eventQueryMap.get(targetGraphIRI);
-          if (!getEventCandidates) {
-            return null;
-          }
-          const candidates = await getEventCandidates(event.startDate);
-          const bestCandidate = candidates
-            .map((candidate) => {
-              const candidateName = candidate.name.toLowerCase().trim();
-              return {
-                score: stringSimilarity(eventName, candidateName),
-                candidate,
-              };
-            })
-            .toSorted((a, b) => a.score - b.score)
-            .pop();
-
-          if (bestCandidate && bestCandidate.score >= MIN_SIMILARITY_SCORE) {
-            this.#logger.log(
-              `Link queued: ${eventIRI.value} (${sourceGraph}) <--> ${bestCandidate.candidate.iri} (${targetGraphIRI})`
-            );
-            return bestCandidate.candidate.iri;
-          }
-
+    const candidateLinkIRIs = await Promise.all(
+      missingGraphs.map(async (targetGraphIRI) => {
+        const getEventCandidates = this.#eventQueryMap.get(targetGraphIRI);
+        if (!getEventCandidates) {
           return null;
-        })
-      )
-    )
-      .filter((link) => link !== null)
-      .map((iri) => [eventIRI, iri] as const) satisfies [NamedNode<string>, string][];
+        }
+        const candidates = await getEventCandidates(event.startDate);
+        const bestCandidate = candidates
+          .map((candidate) => {
+            const candidateName = candidate.name.toLowerCase().trim();
+            return {
+              score: stringSimilarity(eventName, candidateName),
+              candidate,
+            };
+          })
+          .toSorted((a, b) => a.score - b.score)
+          .pop();
 
-    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+        if (bestCandidate && bestCandidate.score >= MIN_SIMILARITY_SCORE) {
+          this.#logger.log(
+            `[MusicEvent]: link queued: ${eventIRI.value} (${sourceGraph}) <--> ${bestCandidate.candidate.iri} (${targetGraphIRI})`
+          );
+          return [eventIRI, bestCandidate.candidate.iri] satisfies LinkIRI;
+        }
+
+        return null;
+      })
+    );
+
+    const linkIRIs = candidateLinkIRIs.filter((link) => link !== null);
+
+    if (linkIRIs.length > 0) {
+      await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+    }
 
     await Promise.all([
       ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
@@ -99,27 +100,26 @@ export class LinksMapper {
   async #handleArtist(artist: ArtistEntity, sourceGraph: MusicEventGraph) {
     const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
+    const candidatesLinkIRIs = await Promise.all(
+      missingGraphs.map(async (targetGraphIRI) => {
+        const getArtistCandidates = this.#artistQueryMap.get(targetGraphIRI);
+        if (!getArtistCandidates) {
+          return null;
+        }
+        const candidates = await getArtistCandidates(artist.name);
+        const iris: LinkIRI[] = candidates.map(({ iri }) => [artistIRI, iri]);
+        iris.forEach(([source, target]) =>
+          this.#logger.log(`[Artist]: link queued: ${source.value} (${sourceGraph}) <--> ${target} (${targetGraphIRI})`)
+        );
+        return iris;
+      })
+    );
 
-    const linkIRIs = (
-      await Promise.all(
-        missingGraphs.map(async (targetGraphIRI) => {
-          const getArtistCandidates = this.#artistQueryMap.get(targetGraphIRI);
-          if (!getArtistCandidates) {
-            return null;
-          }
-          const candidates = await getArtistCandidates(artist.name);
-          candidates.forEach(({ iri }) =>
-            this.#logger.log(`Link queued: ${artistIRI.value} (${sourceGraph}) <--> ${iri} (${targetGraphIRI})`)
-          );
-          return candidates;
-        })
-      )
-    )
-      .filter((task) => task !== null)
-      .flat()
-      .map(({ iri }) => [artistIRI, iri] as const) satisfies [NamedNode<string>, string][];
+    const linkIRIs = candidatesLinkIRIs.filter((link) => link !== null).flat();
 
-    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+    if (linkIRIs.length > 0) {
+      await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+    }
   }
 
   readonly #venueQueryMap = new Map([
@@ -142,41 +142,40 @@ export class LinksMapper {
     const venueIRI = RdfEntitySerializerService.createEntityIRI(venue);
     const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
+    const candidatesLinkIRIs = await Promise.all(
+      missingGraphs.map(async (targetGraphIRI) => {
+        const getVenueCandidates = this.#venueQueryMap.get(targetGraphIRI);
+        if (!getVenueCandidates) {
+          return null;
+        }
+        const iris: LinkIRI[] = [];
+        const candidates = await getVenueCandidates(venue.latitude, venue.longitude);
 
-    const linkIRIs = (
-      await Promise.all(
-        missingGraphs.map(async (targetGraphIRI) => {
-          const getVenueCandidates = this.#venueQueryMap.get(targetGraphIRI);
-          if (!getVenueCandidates) {
-            return null;
-          }
-          const iris: [NamedNode<string>, string][] = [];
-          const candidates = await getVenueCandidates(venue.latitude, venue.longitude);
-
-          for (const { place } of candidates) {
-            if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.name, place.name)) {
-              iris.push([venueIRI, place.iri]);
-              if (place.address) {
-                iris.push([addressIRI, place.address.iri]);
-              }
-            } else if (venue.address.street && place.address?.street) {
-              if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.address.street, place.address.street)) {
-                iris.push([addressIRI, place.address.iri]);
-              }
+        for (const { place } of candidates) {
+          if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.name, place.name)) {
+            iris.push([venueIRI, place.iri]);
+            if (place.address) {
+              iris.push([addressIRI, place.address.iri]);
+            }
+          } else if (venue.address.street && place.address?.street) {
+            if (MIN_SIMILARITY_SCORE <= stringSimilarity(venue.address.street, place.address.street)) {
+              iris.push([addressIRI, place.address.iri]);
             }
           }
+        }
 
-          iris.forEach(([source, target]) =>
-            this.#logger.log(`Link queued: ${source.value} (${sourceGraph}) <--> ${target} (${targetGraphIRI})`)
-          );
-          return iris;
-        })
-      )
-    )
-      .filter((link) => link !== null)
-      .flat();
+        iris.forEach(([source, target]) =>
+          this.#logger.log(`[Venue]: link queued: ${source.value} (${sourceGraph}) <--> ${target} (${targetGraphIRI})`)
+        );
+        return iris;
+      })
+    );
 
-    await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+    const linkIRIs = candidatesLinkIRIs.filter((link) => link !== null).flat();
+
+    if (linkIRIs.length > 0) {
+      await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
+    }
   }
 
   async createEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
