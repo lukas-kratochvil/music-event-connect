@@ -32,6 +32,7 @@ class Filters {
   @ApiPropertyOptional({ type: Date })
   @Type(() => Date)
   @IsOptional()
+  @IsDate()
   @IsDateMoreInFutureThan<Filters>("startFrom")
   startTo?: Date;
 }

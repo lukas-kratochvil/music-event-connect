@@ -1,10 +1,10 @@
 import type { IMusicEvent } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform, Type } from "class-transformer";
 import {
-  Allow,
   ArrayNotEmpty,
   ArrayUnique,
   IsArray,
+  IsDate,
   IsOptional,
   IsString,
   IsUrl,
@@ -70,7 +70,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
 
   @Expose()
   @Type(() => Date)
-  @Allow() // only to satisfy "@darraghor/nestjs-typed/all-properties-are-whitelisted" rule, because it does not recognize custom validators implemented with class-validator as class-validator's decorators
+  @IsDate()
   @IsFutureDate()
   @IsDateEqualOrMoreInFutureThan<MusicEventEntity>("doorTime")
   @RDFProperty(ns.schema.startDate, { kind: "datatype", datatype: ns.xsd.dateTime })
@@ -79,6 +79,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @Expose()
   @Type(() => Date)
   @IsOptional()
+  @IsDate()
   @IsFutureDate()
   @IsDateMoreInFutureThan<MusicEventEntity>("startDate")
   @RDFProperty(ns.schema.endDate, { kind: "datatype", datatype: ns.xsd.dateTime })
