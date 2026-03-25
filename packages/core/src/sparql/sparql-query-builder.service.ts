@@ -140,34 +140,35 @@ export class SPARQLQueryBuilderService {
   }
 
   /**
-   * Selects all the Artist entities by the given name (case insensitive) in the Event graph.
+   * Selects all the Artist entities by the given name in the Event graph.
    */
   selectArtistEntitiesByName(artistName: string, eventGraphIRI: string) {
     const sourceGraph = namedNode(eventGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
-    const name = variable("name");
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
-                      ${namedNode(ns.schema.name)} ${name} .
-        FILTER(LCASE(${name}) = LCASE(${literal(artistName)}))
+                      ${namedNode(ns.schema.name)} ${literal(artistName)} .
       }
     `;
   }
 
   /**
-   * Selects all the Artist entities by the given name (case insensitive) in the MusicBrainz graph.
+   * Selects all the Artist entities by the given name in the MusicBrainz graph.
    */
   selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
-    const name = variable("name");
+    // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
-        ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                      ${namedNode(ns.rdfs.label)}|${namedNode(ns.skos.altLabel)} ${name} .
-
-        FILTER(LCASE(${name}) = LCASE(${literal(artistName)}))
+        {
+          ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
+                        ${namedNode(ns.rdfs.label)} ${literal(artistName)} .
+        } UNION {
+          ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
+                        ${namedNode(ns.skos.altLabel)} ${literal(artistName)} .
+        }
       }
     `;
   }
