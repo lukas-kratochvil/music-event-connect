@@ -369,16 +369,16 @@ export class TicketportalService implements ICronJobService {
       );
 
       const multipleEventDatesChecker = new Set<string>();
+      const toggleGenreFilter = (genreName: string) =>
+        page
+          .locator(
+            `::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label[contains(text(), '${genreName}')])`
+          )
+          .click();
 
       for (const genreName of genreNames) {
-        await page.goto(this.#baseUrl);
-
         try {
-          await page
-            .locator(
-              `::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label[contains(text(), '${genreName}')])`
-            )
-            .click();
+          await toggleGenreFilter(genreName);
           const panelBlocks = await page.$$(
             "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top')) and not(contains(@class, 'donekonecna'))])"
           );
@@ -441,6 +441,7 @@ export class TicketportalService implements ICronJobService {
             this.#logger.error(String(e));
           }
         } finally {
+          await toggleGenreFilter(genreName);
           multipleEventDatesChecker.clear();
         }
       }
