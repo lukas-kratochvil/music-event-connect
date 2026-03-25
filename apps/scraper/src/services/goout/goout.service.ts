@@ -309,9 +309,10 @@ export class GooutService implements ICronJobService {
       // SETUP
       // 1) deny cookies
       try {
-        await page.locator("button#CybotCookiebotDialogBodyButtonDecline")?.click();
+        await page.locator("button#CybotCookiebotDialogBodyButtonDecline").click();
+        this.#logger.log("Denied cookies and closed the cookie dialog");
       } catch {
-        /* cookies not displayed */
+        /* cookies dialog not displayed */
       }
 
       // 2) check that first dropdown menu button has selected "Czechia" as a country
@@ -339,6 +340,7 @@ export class GooutService implements ICronJobService {
           "::-p-xpath(//span[contains(@class, 'categoryFilterItem')]/a/span[contains(@class, 'd-block') and (contains(text(), 'Concerts') or contains(text(), 'Koncerty'))])"
         )
         .click();
+      this.#logger.log("Applied music event filter");
 
       // 4) get available music genres
       const genresBtn = page.locator(
@@ -352,6 +354,7 @@ export class GooutService implements ICronJobService {
       await genresBtn.click(); // close the genres dropdown
 
       // GET MUSIC EVENTS
+      this.#logger.log("Music events scraping started");
       while (true) {
         try {
           // scroll to the "Show more" button
@@ -423,6 +426,7 @@ export class GooutService implements ICronJobService {
       await browser.close();
       this.#isInProcess = false;
       this.#setNextRunDate();
+      this.#logger.log("Music events scraping finished");
     }
   }
 

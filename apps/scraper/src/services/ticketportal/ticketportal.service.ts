@@ -364,22 +364,24 @@ export class TicketportalService implements ICronJobService {
         await page.locator("button#btn-toggle-disagree").click();
         this.#logger.log("Denied cookies and closed the cookie dialog");
       } catch {
-        // cookies dialog not found
+        /* cookies dialog not displayed */
       }
 
-      // GET MUSIC EVENTS
+      // 2) get music genre filters
       const genreNames = await page.$$eval(
         "::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label)",
         (elems) => elems.map((elem) => (elem as HTMLLabelElement).innerText.trim())
       );
-
-      const multipleEventDatesChecker = new Set<string>();
       const toggleGenreFilter = (genreName: string) =>
         page
           .locator(
             `::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label[contains(text(), '${genreName}')])`
           )
           .click();
+
+      // GET MUSIC EVENTS
+      this.#logger.log("Music events scraping started");
+      const multipleEventDatesChecker = new Set<string>();
 
       for (const genreName of genreNames) {
         try {
@@ -460,6 +462,7 @@ export class TicketportalService implements ICronJobService {
       await browser.close();
       this.#isInProcess = false;
       this.#setNextRunDate();
+      this.#logger.log("Music events scraping finished");
     }
   }
 
