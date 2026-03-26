@@ -42,6 +42,13 @@ export class LinksMapper {
   ]);
 
   async #handleMusicEvent(event: MusicEventEntity, sourceGraph: MusicEventGraph) {
+    // find links of related entities
+    const relatedEntitiesTask = Promise.all([
+      ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
+      ...event.venues.map((venue) => this.createEntityLinks(venue, sourceGraph)),
+    ]);
+
+    // find event links
     const eventIRI = RdfEntitySerializerService.createEntityIRI(event);
     const eventName = event.name.toLowerCase().trim();
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
@@ -80,10 +87,7 @@ export class LinksMapper {
       await this.sparqlService.insertLinks(linkIRIs, GRAPHS_MAP.links);
     }
 
-    await Promise.all([
-      ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
-      ...event.venues.map((venue) => this.createEntityLinks(venue, sourceGraph)),
-    ]);
+    await relatedEntitiesTask;
   }
 
   readonly #artistQueryMap = new Map([
