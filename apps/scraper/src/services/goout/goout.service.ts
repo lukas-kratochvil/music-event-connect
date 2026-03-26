@@ -9,9 +9,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Queue } from "bullmq";
 import { addDays, parse, set } from "date-fns";
-import { launch, type Browser, type Page } from "puppeteer";
+import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
+import { SharedBrowserService } from "../../puppeteer/shared-browser.service";
 import type { GoOutEvent } from "./goout.types";
 
 type EventItem = {
@@ -26,11 +27,10 @@ const extractIdFromUrl = (url: string) => new URL(url).pathname.match(matchLastP
 export class GooutService implements ICronJobService {
   readonly #logger = new Logger(GooutService.name);
   readonly #baseUrl: string;
-  readonly #puppeteerArgs: string[];
 
   #isInProcess = false;
   #runDate = new Date(Date.now());
-  readonly #scheduledHour = 2;
+  readonly #scheduledHour = 1;
 
   readonly jobName = "goout";
   readonly jobType = "timeout";
@@ -42,18 +42,14 @@ export class GooutService implements ICronJobService {
       MusicEventsQueueDataType,
       MusicEventsQueueNameType
     >,
+    private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
     const gooutConfig = config.get("goout", { infer: true });
-
     if (!gooutConfig) {
       throw new Error("Config not present!");
     }
-
     this.#baseUrl = gooutConfig.url;
-    // Running as root without --no-sandbox is not supported. See https://crbug.com/638180.
-    this.#puppeteerArgs =
-      config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
   }
 
   getRunDate(): Date {
@@ -65,11 +61,11 @@ export class GooutService implements ICronJobService {
   }
 
   async #getArtist(
-    browser: Browser,
+    browserCtx: BrowserContext,
     artistUrl: string,
     availableGenres: string[]
   ): Promise<ScrapedMusicEvent["artists"][number] | null> {
-    const artistPage = await browser.newPage();
+    const artistPage = await browserCtx.newPage();
     let name: string;
     let genres: string[];
     let webSites: string[];
@@ -105,6 +101,7 @@ export class GooutService implements ICronJobService {
 
     genres = genres
       .filter((genre) => availableGenres.includes(genre))
+      // map genre names to MusicBrainz RDF genre names
       .map((genre) => {
         const g = genre.toLocaleLowerCase();
         switch (g) {
@@ -165,7 +162,7 @@ export class GooutService implements ICronJobService {
         artistsDivs.map(async (artistDiv) => {
           try {
             const artistUrl = await artistDiv.$eval("::-p-xpath(./a[1])", (elem) => (elem as HTMLAnchorElement).href);
-            return this.#getArtist(page.browser(), artistUrl, availableGenres);
+            return this.#getArtist(page.browserContext(), artistUrl, availableGenres);
           } catch {
             return null;
           }
@@ -273,31 +270,18 @@ export class GooutService implements ICronJobService {
 
   async run() {
     this.#isInProcess = true;
-    const browser = await launch({
-      defaultViewport: {
-        height: 1000,
-        width: 1500,
-      },
-      args: [
-        ...this.#puppeteerArgs,
-        // The `--user-agent` arg tricks websites into thinking that headless Chromium is a normal Chrome browser.
-        // Headless browsers often have different user-agents that websites can detect, e.g: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.0.0 Safari/537.36".
-        // robots.txt file (https://goout.net/robots.txt) allows to crawl music events
-        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      ],
-    });
-    this.#logger.log("Browser launched");
+    const browserCtx = await this.sharedBrowser.acquireContext();
 
     try {
       // load the page already customized for Czechia
-      await browser.setCookie({
+      await browserCtx.setCookie({
         name: "countryIso",
         value: "cz",
         domain: ".goout.net",
         path: "/",
       });
 
-      const page = (await browser.pages())[0]!;
+      const page = await browserCtx.newPage();
 
       // load page and wait for a dynamic content (JS) to be loaded properly before continuing
       if (!(await page.goto(this.#baseUrl, { waitUntil: "networkidle2" }))) {
@@ -386,7 +370,7 @@ export class GooutService implements ICronJobService {
               return null;
             });
 
-          const musicEventPage = await browser.newPage();
+          const musicEventPage = await browserCtx.newPage();
 
           // extract music event data and add it to the queue
           for (const url of newUrls) {
@@ -423,7 +407,7 @@ export class GooutService implements ICronJobService {
         this.#logger.error(e);
       }
     } finally {
-      await browser.close();
+      await this.sharedBrowser.releaseContext(browserCtx);
       this.#isInProcess = false;
       this.#setNextRunDate();
       this.#logger.log("Music events scraping finished");

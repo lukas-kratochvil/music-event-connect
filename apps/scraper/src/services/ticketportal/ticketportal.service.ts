@@ -9,9 +9,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
 import { addDays, format, hoursToMilliseconds, set } from "date-fns";
-import { launch, type Browser, type Page } from "puppeteer";
+import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
+import { SharedBrowserService } from "../../puppeteer/shared-browser.service";
 
 const CZ_TIMEZONE = "Europe/Prague";
 
@@ -19,11 +20,10 @@ const CZ_TIMEZONE = "Europe/Prague";
 export class TicketportalService implements ICronJobService {
   readonly #logger = new Logger(TicketportalService.name);
   readonly #baseUrl: string;
-  readonly #puppeteerArgs: string[];
 
   #isInProcess = false;
   #runDate = new Date(Date.now() + hoursToMilliseconds(1));
-  readonly #scheduledHour = 3;
+  readonly #scheduledHour = 2;
 
   readonly jobName = "ticketportal";
   readonly jobType = "timeout";
@@ -35,18 +35,14 @@ export class TicketportalService implements ICronJobService {
       MusicEventsQueueDataType,
       MusicEventsQueueNameType
     >,
+    private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
     const ticketportalConfig = config.get("ticketportal", { infer: true });
-
     if (!ticketportalConfig) {
       throw new Error("Config not present!");
     }
-
     this.#baseUrl = ticketportalConfig.url;
-    // Running as root without --no-sandbox is not supported. See https://crbug.com/638180.
-    this.#puppeteerArgs =
-      config.get("nodeEnv", { infer: true }) === "development" ? ["--no-sandbox", "--disable-setuid-sandbox"] : [];
   }
 
   getRunDate(): Date {
@@ -64,6 +60,7 @@ export class TicketportalService implements ICronJobService {
           .split("/")
           .map((genre) => genre.trim())
           .filter((genre) => genre !== "")
+          // map genre names to MusicBrainz RDF genre names
           .map((genre) => {
             const g = genre.toLowerCase();
             switch (g) {
@@ -93,13 +90,13 @@ export class TicketportalService implements ICronJobService {
 
   async #getVenueData(
     venueUrl: string,
-    browser: Browser
+    browserCtx: BrowserContext
   ): Promise<MusicEventsQueueDataType["event"]["venues"][number]> {
     if (!venueUrl) {
       throw new Error("Venue URL is undefined!");
     }
 
-    const venuePage = await browser.newPage();
+    const venuePage = await browserCtx.newPage();
     let venue: MusicEventsQueueDataType["event"]["venues"][number];
 
     try {
@@ -260,7 +257,7 @@ export class TicketportalService implements ICronJobService {
         let venueData: MusicEventsQueueDataType["event"]["venues"][number];
 
         try {
-          venueData = await this.#getVenueData(venueUrl, page.browser());
+          venueData = await this.#getVenueData(venueUrl, page.browserContext());
         } catch {
           const venueName = await venueBlock.$eval("a.building > span", (elem) => elem.innerText.trim());
           const venueCity = await venueBlock.$eval("::-p-xpath(./div[@itemprop='address']//span)", (elem) =>
@@ -327,24 +324,11 @@ export class TicketportalService implements ICronJobService {
   }
 
   async run() {
-    const browser = await launch({
-      defaultViewport: {
-        height: 1000,
-        width: 1500,
-      },
-      args: [
-        ...this.#puppeteerArgs,
-        // The `--user-agent` arg tricks websites into thinking that headless Chromium is a normal Chrome browser.
-        // Headless browsers often have different user-agents that websites can detect, e.g: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/120.0.0.0 Safari/537.36".
-        // robots.txt file (https://www.ticketportal.cz/robots.txt) allows to crawl music events
-        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      ],
-    });
-    this.#logger.log("Browser launched");
+    const browserCtx = await this.sharedBrowser.acquireContext();
 
     try {
       this.#isInProcess = true;
-      const page = (await browser.pages())[0]!;
+      const page = await browserCtx.newPage();
 
       // load page and wait for a dynamic content (JS) to be loaded properly before continuing
       if (!(await page.goto(this.#baseUrl, { waitUntil: "networkidle2" }))) {
@@ -418,7 +402,7 @@ export class TicketportalService implements ICronJobService {
 
             // extract music event data and add it to the queue
             for (const url of newUrls) {
-              const musicEventPage = await browser.newPage();
+              const musicEventPage = await browserCtx.newPage();
 
               try {
                 const musicEvents = await this.#getMusicEvents(
@@ -459,7 +443,7 @@ export class TicketportalService implements ICronJobService {
         this.#logger.error(String(e));
       }
     } finally {
-      await browser.close();
+      await this.sharedBrowser.releaseContext(browserCtx);
       this.#isInProcess = false;
       this.#setNextRunDate();
       this.#logger.log("Music events scraping finished");
