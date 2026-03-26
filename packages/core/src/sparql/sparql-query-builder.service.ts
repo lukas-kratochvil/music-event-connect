@@ -159,20 +159,18 @@ export class SPARQLQueryBuilderService {
   selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
-    const name = variable("name");
     // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
+    // in the extracted MusicBrainz RDF data, RDFS label and SKOS altLabel are mostly XSD strings and sometimes language-tagged literals
+    // HACK: we must use `${literal(artistName)}^^<${ns.xsd.string}>` instead of `${literal(artistName, namedNode(ns.xsd.string))}`, because `literal()` strips the XSD string datatype as is the intended behavior for RDF 1.1, but Virtuoso is still using the RDF 1.0 specification: https://github.com/openlink/virtuoso-opensource/issues/728
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         {
           ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.rdfs.label)} ${name} .
+                        ${namedNode(ns.rdfs.label)} ${literal(artistName)}^^<${ns.xsd.string}> .
         } UNION {
           ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.skos.altLabel)} ${name} .
+                        ${namedNode(ns.skos.altLabel)} ${literal(artistName)}^^<${ns.xsd.string}> .
         }
-
-        # STR() strips datatypes and language tags so we safely compare raw string values
-        FILTER(STR(${name}) = ${literal(artistName)})
       }
     `;
   }
