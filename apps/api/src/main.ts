@@ -14,7 +14,7 @@ async function bootstrap() {
   const nodeEnv = config.get("nodeEnv", { infer: true });
 
   // Setup logger
-  const logger = createWinstonLogger("API");
+  const logger = createWinstonLogger("API", "info");
   app.useLogger(logger);
 
   // CORS

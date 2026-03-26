@@ -10,7 +10,7 @@ async function bootstrap() {
   const config = app.get(ConfigService<ConfigSchema, true>);
 
   // Setup logger
-  const logger = createWinstonLogger("HANDLER");
+  const logger = createWinstonLogger("HANDLER", "info");
   app.useLogger(logger);
 
   // Starting the app

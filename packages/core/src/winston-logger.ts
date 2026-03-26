@@ -7,9 +7,9 @@ const defaultFileTransportOptions: winston.transports.FileTransportOptions = {
   format: winston.format.combine(winston.format.timestamp(), winston.format.ms(), winston.format.prettyPrint()),
 };
 
-export const createWinstonLogger = (appName: string): LoggerService => {
+export const createWinstonLogger = (appName: string, level: string): LoggerService => {
   const winstonLogger = winston.createLogger({
-    level: "info",
+    level,
     transports: [
       new winston.transports.File({
         ...defaultFileTransportOptions,

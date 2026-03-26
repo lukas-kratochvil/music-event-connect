@@ -30,6 +30,7 @@ const services: Record<MusicEventServices, { module: Type; provider: Type }> = {
 })
 export class CronManagerModule {
   static register(config: Pick<ConfigSchema, MusicEventServices>): DynamicModule {
+    // run only scrapers enabled in the config
     const definedServices = (Object.keys(services) as (keyof typeof services)[]).filter(
       (serviceName) => config[serviceName] !== undefined
     );
