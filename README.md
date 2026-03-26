@@ -7,7 +7,6 @@
     - [Import data from MusicBrainz and OpenStreetMap](#import-data-from-musicbrainz-and-openstreetmap)
     - [Create users](#create-users)
     - [Clearing RDF graphs](#clearing-rdf-graphs)
-- [Local development](#local-development)
 
 ## Initial setup
 
