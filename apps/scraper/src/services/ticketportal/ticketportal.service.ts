@@ -371,27 +371,19 @@ export class TicketportalService implements ICronJobService {
         try {
           await toggleGenreFilter(genreName);
           const panelBlocks = await page.$$(
-            "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top')) and not(contains(@class, 'donekonecna'))])"
+            "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top') or contains(@class, 'donekonecna'))])"
           );
 
           for (const panelBlock of panelBlocks) {
             // show all music events in this panel block
-            while (true) {
+            try {
               const nextButton = await panelBlock.$("button#btn-load");
-
-              if (!nextButton) {
-                break;
-              }
-
-              try {
-                await nextButton.click();
-              } catch (e) {
-                if (e instanceof Error) {
-                  this.#logger.error("[" + genreName + "] - Panel next button error: " + e.message, e.stack);
-                } else {
-                  this.#logger.error("[" + genreName + "] - Panel next button error: " + String(e));
-                }
-                break;
+              await nextButton?.click();
+            } catch (e) {
+              if (e instanceof Error) {
+                this.#logger.error("[" + genreName + "] - Panel next button error: " + e.message, e.stack);
+              } else {
+                this.#logger.error("[" + genreName + "] - Panel next button error: " + String(e));
               }
             }
 
