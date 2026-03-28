@@ -6,23 +6,15 @@ export const ALLOWED_NODE_ENVS = ["development", "production"] as const;
 
 export type NodeEnv = (typeof ALLOWED_NODE_ENVS)[number];
 
-export const loadYamlConfig = <
-  TConfigSchema extends Record<keyof TEnvVars, unknown>,
-  TEnvVars extends Record<string, unknown>,
->(
+export const loadYamlConfig = <TConfigSchema extends Record<"nodeEnv" | "port", unknown>>(
   configYamlFile: string,
-  configSchema: ObjectSchema<TConfigSchema>,
-  envVars: TEnvVars
+  configSchema: ObjectSchema<TConfigSchema>
 ): TConfigSchema => {
   const configYaml = loadYaml(readFileSync(configYamlFile, "utf8")) as Record<string, unknown>;
-  const config = {
-    ...configYaml,
-    ...envVars,
-  };
-  const { error, value } = configSchema.validate(config, {
+  const { error, value } = configSchema.validate(configYaml, {
     allowUnknown: false,
     abortEarly: false,
-    debug: envVars["nodeEnv"] === "development",
+    debug: configYaml["nodeEnv"] === "development",
   });
 
   if (error) {

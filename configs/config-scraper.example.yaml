@@ -1,3 +1,9 @@
+# Node environment (development|production)
+nodeEnv:
+
+# Port for the app to run on
+port:
+
 # Redis - message queue
 redis:
   # name of the Redis Docker container

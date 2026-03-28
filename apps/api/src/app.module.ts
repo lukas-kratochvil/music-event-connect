@@ -9,10 +9,7 @@ import { configSchema, type ConfigSchema } from "./config/schema";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [
-        () =>
-          loadYamlConfig("config.yaml", configSchema, { nodeEnv: process.env["NODE_ENV"], port: process.env["PORT"] }),
-      ],
+      load: [() => loadYamlConfig("config.yaml", configSchema)],
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],

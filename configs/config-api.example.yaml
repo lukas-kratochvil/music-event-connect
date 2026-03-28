@@ -1,3 +1,9 @@
+# Node environment (development|production)
+nodeEnv:
+
+# Port for the app to run on
+port:
+
 # CORS
 cors:
   # array of CORS allowed origins

@@ -9,10 +9,7 @@ import { QueueModule } from "./queue/queue.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [
-        () =>
-          loadYamlConfig("config.yaml", configSchema, { nodeEnv: process.env["NODE_ENV"], port: process.env["PORT"] }),
-      ],
+      load: [() => loadYamlConfig("config.yaml", configSchema)],
     }),
     CacheModule.registerAsync({
       isGlobal: true,
