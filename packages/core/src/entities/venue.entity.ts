@@ -1,4 +1,4 @@
-import { hash } from "crypto";
+import { hash } from "node:crypto";
 import type { IVenue } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform, Type } from "class-transformer";
 import { IsLatitude, IsLongitude, IsString, ValidateNested } from "class-validator";

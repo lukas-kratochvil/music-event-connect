@@ -1,4 +1,4 @@
-import { hash } from "crypto";
+import { hash } from "node:crypto";
 import { ItemAvailability, type ITicket } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
 import { IsEnum, IsUrl } from "class-validator";

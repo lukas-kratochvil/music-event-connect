@@ -1,4 +1,4 @@
-import { hash } from "crypto";
+import { hash } from "node:crypto";
 import type { IOnlineAccount } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
 import { IsString, IsUrl } from "class-validator";
