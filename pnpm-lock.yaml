@@ -238,7 +238,7 @@ importers:
         version: 1.2.0
       '@tailwindcss/vite':
         specifier: ^4.2.1
-        version: 4.2.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0))
+        version: 4.2.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3))
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.1)
@@ -311,7 +311,7 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       '@vitejs/plugin-react':
         specifier: ^5.1.1
-        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0))
+        version: 5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3))
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -323,7 +323,7 @@ importers:
         version: 5.8.3
       vite:
         specifier: ^7.2.4
-        version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)
+        version: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3)
 
   packages/core:
     dependencies:
@@ -348,9 +348,6 @@ importers:
       digest-fetch:
         specifier: v2
         version: 2.0.3
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       n3:
         specifier: ^1.26.0
         version: 1.26.0
@@ -375,6 +372,9 @@ importers:
       winston:
         specifier: ^3.17.0
         version: 3.17.0
+      yaml:
+        specifier: ^2.8.3
+        version: 2.8.3
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -385,9 +385,6 @@ importers:
       '@rdfjs/types':
         specifier: ^2.0.1
         version: 2.0.1
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/n3':
         specifier: ^1.26.1
         version: 1.26.1
@@ -2578,9 +2575,6 @@ packages:
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
-
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -6396,6 +6390,11 @@ packages:
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
+  yaml@2.8.3:
+    resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
   yargs-parser@21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
@@ -8534,12 +8533,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.1
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.1
 
-  '@tailwindcss/vite@4.2.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0))':
+  '@tailwindcss/vite@4.2.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3))':
     dependencies:
       '@tailwindcss/node': 4.2.1
       '@tailwindcss/oxide': 4.2.1
       tailwindcss: 4.2.1
-      vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)
+      vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3)
 
   '@tanstack/query-core@5.90.20': {}
 
@@ -8635,8 +8634,6 @@ snapshots:
   '@types/geojson@7946.0.16': {}
 
   '@types/http-cache-semantics@4.0.4': {}
-
-  '@types/js-yaml@4.0.9': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -8964,7 +8961,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.9.2':
     optional: true
 
-  '@vitejs/plugin-react@5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0))':
+  '@vitejs/plugin-react@5.1.1(vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -8972,7 +8969,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.47
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)
+      vite: 7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -12730,7 +12727,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0):
+  vite@7.2.6(@types/node@24.10.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.40.0)(yaml@2.8.3):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -12744,6 +12741,7 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.31.1
       terser: 5.40.0
+      yaml: 2.8.3
 
   watchpack@2.4.4:
     dependencies:
@@ -12902,6 +12900,8 @@ snapshots:
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
+
+  yaml@2.8.3: {}
 
   yargs-parser@21.1.1: {}
 

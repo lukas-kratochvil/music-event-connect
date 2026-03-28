@@ -44,7 +44,6 @@
   "devDependencies": {
     "@music-event-connect/eslint": "workspace:*",
     "@rdfjs/types": "^2.0.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/n3": "^1.26.1",
     "@types/node-fetch": "^2.6.13",
     "@types/sparql-http-client": "^3.1.0",
@@ -58,7 +57,6 @@
     "class-validator": "^0.14.2",
     "deep-object-diff": "^1.1.9",
     "digest-fetch": "v2",
-    "js-yaml": "^4.1.0",
     "n3": "^1.26.0",
     "nest-winston": "^1.10.2",
     "node-fetch": "v2",
@@ -67,6 +65,7 @@
     "sparql-http-client": "^3.1.0",
     "string-similarity-js": "^2.1.4",
     "winston": "^3.17.0",
+    "yaml": "^2.8.3",
     "zod": "^4.3.6"
   }
 }
