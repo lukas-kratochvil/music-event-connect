@@ -1,5 +1,3 @@
-type CronJobType = "interval" | "timeout";
-
 /**
  * Scraper of a concert portal must implement this interface in order to be taken into account and launched.
  */
@@ -10,9 +8,9 @@ export interface ICronJobService {
   readonly jobName: string;
 
   /**
-   * The type of Cron job that determines how the `run` function should be executed.
+   * The type determines how this job should be executed.
    */
-  readonly jobType: CronJobType;
+  readonly jobType: "interval" | "timeout";
 
   /**
    * The action that should be executed as a Cron job.
@@ -20,12 +18,12 @@ export interface ICronJobService {
   run(): Promise<void>;
 
   /**
-   * The earliest time in UTC datetime when the `run` function can be executed again.
+   * The earliest time in UTC datetime when the job can be executed again.
    */
   getRunDate(): Date;
 
   /**
-   * Determines if the `run` function is still in the process.
+   * Determines if the job is still in the process.
    */
   isInProcess(): boolean;
 }
