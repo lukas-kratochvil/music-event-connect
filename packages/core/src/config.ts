@@ -5,6 +5,26 @@ import { z } from "zod";
 
 export const portValidator = z.int().nonnegative().max(65535);
 
+/**
+ * This validator accepts Docker container name as the valid URL hostname (Zod's `z.httpUrl()` throws error).
+ */
+export const dockerUrlValidator = z
+  .string()
+  .trim()
+  .refine(
+    (val) => {
+      try {
+        const parsedUrl = new URL(val);
+        return ["http:", "https:"].includes(parsedUrl.protocol);
+      } catch {
+        return false;
+      }
+    },
+    {
+      error: "Must be a valid URL",
+    }
+  );
+
 export const baseConfigSchema = z.object({
   nodeEnv: z.enum(["development", "production"]),
   port: portValidator,

@@ -18,7 +18,7 @@ throttler:
 
 # Triple store
 tripleStore:
-  # full SPARQL read endpoint URL
+  # full SPARQL read endpoint URL - as the URL hostname use the triple store Docker container name and its port (https://nodejs.org/api/url.html#url-strings-and-url-objects)
   endpointUrl:
   # authorization
   user:

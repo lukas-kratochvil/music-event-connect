@@ -1,4 +1,4 @@
-import { loadYamlConfig } from "@music-event-connect/core";
+import { loadYamlConfig } from "@music-event-connect/core/config";
 import { Logger, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";

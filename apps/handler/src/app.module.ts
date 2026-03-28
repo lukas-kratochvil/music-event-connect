@@ -1,5 +1,5 @@
 import { createKeyv } from "@keyv/redis";
-import { loadYamlConfig } from "@music-event-connect/core";
+import { loadYamlConfig } from "@music-event-connect/core/config";
 import { CacheModule } from "@nestjs/cache-manager";
 import { Logger, Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";

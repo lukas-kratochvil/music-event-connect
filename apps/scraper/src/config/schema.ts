@@ -1,4 +1,4 @@
-import { baseConfigSchema, portValidator } from "@music-event-connect/core";
+import { baseConfigSchema, portValidator } from "@music-event-connect/core/config";
 import { z } from "zod";
 
 export const configSchema = z.object({

@@ -15,9 +15,9 @@ redis:
 
 # Triple store
 tripleStore:
-  # full SPARQL read endpoint URL
+  # full SPARQL read endpoint URL - as the URL hostname use the triple store Docker container name and its port (https://nodejs.org/api/url.html#url-strings-and-url-objects)
   endpointUrl:
-  # full SPARQL update endpoint URL
+  # full SPARQL update endpoint URL - as the URL hostname use the triple store Docker container name and its port (https://nodejs.org/api/url.html#url-strings-and-url-objects)
   updateUrl:
   # authorization
   user:

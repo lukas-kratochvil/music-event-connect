@@ -20,6 +20,11 @@
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "require": "./dist/config.js",
+      "default": "./dist/config.js"
+    },
     "./entities": {
       "types": "./dist/entities/index.d.ts",
       "require": "./dist/entities/index.js",
