@@ -3,6 +3,40 @@ volumes:
   virtuoso_data:
 
 services:
+  traefik:
+    image: traefik:2.11
+    command:
+      # - '--log.level=DEBUG'
+      - '--log.level=INFO'
+      - '--api.insecure=true'
+      - '--api.dashboard=true'
+      # Docker
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      # Dynamic config
+      - '--providers.file.filename=/etc/traefik/config.yaml'
+      # Entrypoints
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      # Redirect HTTP to HTTPS
+      - '--entrypoints.web.http.redirections.entryPoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entryPoint.scheme=https'
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/certs:/certs:ro
+      - ./traefik/config.yaml:/etc/traefik/config.yaml:ro
+    restart: unless-stopped
+    labels:
+      - 'traefik.enable=true'
+      # Dashboard
+      - 'traefik.http.routers.dashboard.rule=Host(`traefik.music-event-connect.localhost`)'
+      - 'traefik.http.routers.dashboard.service=api@internal'
+      - 'traefik.http.routers.dashboard.entrypoints=websecure'
+      - 'traefik.http.routers.dashboard.tls=true'
+
   virtuoso:
     image: openlink/virtuoso-opensource-7:7
     ports:
@@ -34,7 +68,15 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+    depends_on:
+      - traefik
     restart: unless-stopped
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.virtuoso-web.rule=Host(`music-event-connect.localhost`) && (PathPrefix(`/sparql`) || PathPrefix(`/sparql-auth`))'
+      - 'traefik.http.routers.virtuoso-web.entrypoints=websecure'
+      - 'traefik.http.routers.virtuoso-web.tls=true'
+      - 'traefik.http.services.virtuoso-web.loadbalancer.server.port=8890'
 
   redis:
     image: redis:alpine3.22
@@ -99,10 +141,22 @@ services:
       - ./apps/web/public:/app/apps/web/public:ro
       - ./apps/web/src:/app/apps/web/src:ro
     ports:
+      # expose port for Vite HMR
       - '3030:3030'
     environment:
       - NODE_ENV=development
       - PORT=3030
     depends_on:
-      - api
+      traefik:
+        condition: service_started
+      virtuoso:
+        condition: service_healthy
+      api:
+        condition: service_started
     restart: unless-stopped
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.web.rule=Host(`music-event-connect.localhost`)'
+      - 'traefik.http.routers.web.entrypoints=websecure'
+      - 'traefik.http.routers.web.tls=true'
+      - 'traefik.http.services.web.loadbalancer.server.port=3030'
