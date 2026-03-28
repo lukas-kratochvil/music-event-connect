@@ -10,19 +10,21 @@ redis:
   host:
   port:
 
-# Ticketmaster for developers: https://developer.ticketmaster.com/
-ticketmaster:
-  # base URL for the Ticketmaster Discovery API: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
-  url:
-  # get your API key here: https://developer-acct.ticketmaster.com/user/login
-  apiKey:
+# Services offering music event tickets
+services:
+  # Ticketmaster for developers: https://developer.ticketmaster.com/
+  ticketmaster:
+    # base URL for the Ticketmaster Discovery API: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
+    url:
+    # get your API key here: https://developer-acct.ticketmaster.com/user/login
+    apiKey:
 
-# GoOut
-goout:
-  # base URL of the GoOut - cs/en localization supported
-  url:
+  # GoOut
+  goout:
+    # base URL of the GoOut - cs/en localization supported
+    url:
 
-# Ticketportal
-ticketportal:
-  # base URL of the Ticketportal
-  url:
+  # Ticketportal
+  ticketportal:
+    # base URL of the Ticketportal
+    url:

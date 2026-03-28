@@ -38,7 +38,7 @@ export class TicketportalService implements ICronJobService {
     private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
-    const ticketportalConfig = config.get("ticketportal", { infer: true });
+    const ticketportalConfig = config.get("services.ticketportal", { infer: true });
     if (!ticketportalConfig) {
       throw new Error("Config not present!");
     }

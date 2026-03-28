@@ -45,7 +45,7 @@ export class GooutService implements ICronJobService {
     private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
-    const gooutConfig = config.get("goout", { infer: true });
+    const gooutConfig = config.get("services.goout", { infer: true });
     if (!gooutConfig) {
       throw new Error("Config not present!");
     }

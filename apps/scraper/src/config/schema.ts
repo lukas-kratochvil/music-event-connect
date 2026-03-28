@@ -1,45 +1,30 @@
-import { ALLOWED_NODE_ENVS, type NodeEnv } from "@music-event-connect/core";
-import Joi from "joi";
+import { baseConfigSchema, portValidator } from "@music-event-connect/core";
+import { z } from "zod";
 
-export type ConfigSchema = {
-  nodeEnv: NodeEnv;
-  port: number;
-  redis: {
-    host: string;
-    port: number;
-  };
-  goout?: {
-    url: string;
-  };
-  ticketmaster?: {
-    url: string;
-    apiKey: string;
-  };
-  ticketportal?: {
-    url: string;
-  };
-};
-
-export type MusicEventServices = keyof Pick<ConfigSchema, "goout" | "ticketmaster" | "ticketportal">;
-
-export const configSchema = Joi.object<ConfigSchema, true>({
-  nodeEnv: Joi.string()
-    .trim()
-    .valid(...ALLOWED_NODE_ENVS)
-    .required(),
-  port: Joi.number().port().required(),
-  redis: Joi.object<ConfigSchema["redis"], true>({
-    host: Joi.string().trim().required(),
-    port: Joi.number().port().required(),
+export const configSchema = z.object({
+  ...baseConfigSchema.shape,
+  redis: z.object({
+    host: z.string().trim().nonempty(),
+    port: portValidator,
   }),
-  goout: Joi.object<NonNullable<ConfigSchema["goout"]>, true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-  }).optional(),
-  ticketmaster: Joi.object<NonNullable<ConfigSchema["ticketmaster"]>, true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-    apiKey: Joi.string().trim().required(),
-  }).optional(),
-  ticketportal: Joi.object<NonNullable<ConfigSchema["ticketportal"]>, true>({
-    url: Joi.string().trim().uri({ scheme: "https" }).required(),
-  }).optional(),
+  services: z.object({
+    goout: z
+      .object({
+        url: z.httpUrl(),
+      })
+      .optional(),
+    ticketmaster: z
+      .object({
+        url: z.httpUrl(),
+        apiKey: z.string().trim().nonempty(),
+      })
+      .optional(),
+    ticketportal: z
+      .object({
+        url: z.httpUrl(),
+      })
+      .optional(),
+  }),
 });
+
+export type ConfigSchema = z.infer<typeof configSchema>;

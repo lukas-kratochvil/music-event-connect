@@ -9,7 +9,7 @@ export class TicketmasterHttpConfigService implements HttpModuleOptionsFactory {
   constructor(private readonly config: ConfigService<ConfigSchema, true>) {}
 
   createHttpOptions(): HttpModuleOptions {
-    const ticketmasterConfig = this.config.get("ticketmaster", { infer: true });
+    const ticketmasterConfig = this.config.get("services.ticketmaster", { infer: true });
 
     if (!ticketmasterConfig) {
       throw new Error("Config not present!");

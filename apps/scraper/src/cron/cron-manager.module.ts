@@ -1,5 +1,5 @@
 import { Module, type DynamicModule, type Type } from "@nestjs/common";
-import type { ConfigSchema, MusicEventServices } from "../config/schema";
+import type { ConfigSchema } from "../config/schema";
 import { GooutModule } from "../services/goout/goout.module";
 import { GooutService } from "../services/goout/goout.service";
 import { TicketmasterModule } from "../services/ticketmaster/ticketmaster.module";
@@ -9,7 +9,7 @@ import { TicketportalService } from "../services/ticketportal/ticketportal.servi
 import { CRON_MANAGER_PROVIDERS } from "./constants";
 import { CronManagerService } from "./cron-manager.service";
 
-const services: Record<MusicEventServices, { module: Type; provider: Type }> = {
+const services: Record<keyof ConfigSchema["services"], { module: Type; provider: Type }> = {
   goout: {
     module: GooutModule,
     provider: GooutService,
@@ -29,10 +29,10 @@ const services: Record<MusicEventServices, { module: Type; provider: Type }> = {
   exports: [CronManagerService],
 })
 export class CronManagerModule {
-  static register(config: Pick<ConfigSchema, MusicEventServices>): DynamicModule {
+  static register(config: ConfigSchema): DynamicModule {
     // run only scrapers enabled in the config
     const definedServices = (Object.keys(services) as (keyof typeof services)[]).filter(
-      (serviceName) => config[serviceName] !== undefined
+      (serviceName) => config.services[serviceName] !== undefined
     );
     return {
       module: CronManagerModule,

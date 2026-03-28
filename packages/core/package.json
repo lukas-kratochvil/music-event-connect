@@ -58,7 +58,6 @@
     "class-validator": "^0.14.2",
     "deep-object-diff": "^1.1.9",
     "digest-fetch": "v2",
-    "joi": "^17.13.3",
     "js-yaml": "^4.1.0",
     "n3": "^1.26.0",
     "nest-winston": "^1.10.2",
@@ -67,6 +66,7 @@
     "reflect-metadata": "^0.2.2",
     "sparql-http-client": "^3.1.0",
     "string-similarity-js": "^2.1.4",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "zod": "^4.3.6"
   }
 }
