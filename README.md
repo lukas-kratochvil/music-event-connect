@@ -4,6 +4,7 @@
 - [Initial setup](#initial-setup)
   - [Apps](#apps)
   - [Traefik](#traefik)
+    - [Local development](#local-development)
   - [Virtuoso triple store](#virtuoso-triple-store)
     - [Import data from MusicBrainz and OpenStreetMap](#import-data-from-musicbrainz-and-openstreetmap)
     - [Create users](#create-users)
@@ -21,7 +22,8 @@ More in app-specific READMEs:
 ### Traefik
 You need to obtain TLS certificates and serve it through `traefik` Docker service.
 
-In local development, you can use the tool [mkcert](https://github.com/FiloSottile/mkcert) to generate locally-trusted development certificates. The best practice is to create certificates for the domain `music-event-connect.localhost` and use the ready-to-use docker-compose configuration.
+#### Local development
+You can use the tool [mkcert](https://github.com/FiloSottile/mkcert) to generate locally-trusted development certificates. The best practice is to create certificates for the domain `music-event-connect.localhost` and use the ready-to-use docker-compose configuration.
 
 ### Virtuoso triple store
 #### Import data from MusicBrainz and OpenStreetMap
