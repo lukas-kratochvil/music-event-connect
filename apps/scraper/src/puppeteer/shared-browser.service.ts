@@ -27,7 +27,7 @@ export class SharedBrowserService implements OnApplicationShutdown {
   async acquireContext(): Promise<BrowserContext> {
     const browser = await this.#getOrLaunchBrowser();
     this.#activeContexts++;
-    this.#logger.log(`Creating isolated context. Active contexts: ${this.#activeContexts}`);
+    this.#logger.log("Creating isolated context. Active contexts: " + this.#activeContexts);
     return browser.createBrowserContext();
   }
 
@@ -36,17 +36,26 @@ export class SharedBrowserService implements OnApplicationShutdown {
    */
   async releaseContext(context: BrowserContext): Promise<void> {
     this.#logger.log("Closing isolated context...");
-    await context.close().catch((e) => this.#logger.error("Error closing context", e));
+    try {
+      await context.close();
+      this.#logger.log("Context closed.");
+    } catch (e) {
+      this.#logger.error("Error closing context", e);
+    }
     this.#activeContexts--;
-    this.#logger.log("Context closed. Active contexts left: " + this.#activeContexts);
+    this.#logger.log("Active contexts left: " + this.#activeContexts);
 
-    // if no more scrapers are running, kill the root browser
     if (this.#activeContexts <= 0) {
       this.#activeContexts = 0;
 
       if (this.#browser) {
-        this.#logger.log("No active jobs. Closing the browser to free resources...");
-        await this.#browser.close().catch((e) => this.#logger.error("Error closing browser", e));
+        this.#logger.log("No active contexts. Closing the browser...");
+        try {
+          await this.#browser.close();
+          this.#logger.log("Browser closed.");
+        } catch (e) {
+          this.#logger.error("Error closing browser", e);
+        }
         this.#browser = null;
       }
     }
@@ -81,7 +90,6 @@ export class SharedBrowserService implements OnApplicationShutdown {
       });
 
       this.#browser.on("disconnected", () => {
-        this.#logger.warn("Browser disconnected unexpectedly!");
         this.#browser = null;
         this.#launchPromise = null;
         this.#activeContexts = 0;
@@ -97,7 +105,12 @@ export class SharedBrowserService implements OnApplicationShutdown {
   async onApplicationShutdown() {
     if (this.#browser) {
       this.#logger.log("Closing the browser...");
-      await this.#browser.close();
+      try {
+        await this.#browser.close();
+        this.#logger.log("Browser closed.");
+      } catch (e) {
+        this.#logger.error("Error closing browser", e);
+      }
       this.#browser = null;
     }
   }
