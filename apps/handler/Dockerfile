@@ -49,8 +49,10 @@ COPY --from=builder /app/out/full/ .
 #-------------------------------------------
 FROM development AS installer
 
-# Build the project
-RUN pnpm turbo run build
+# Build the project.
+RUN pnpm turbo run build --filter=handler
+# Create isolated portable package.
+RUN pnpm --filter handler --prod deploy pruned
 
 
 #-------------------------------------------
@@ -59,12 +61,13 @@ RUN pnpm turbo run build
 FROM base
 
 # Don't run production as root.
-# Remove default Node alpine image user and create a new one.
+# Remove default Node user and create a new one.
 RUN deluser --remove-home node \
   && addgroup -S -g 1001 node \
   && adduser -S -g node -u 1001 handler
 USER handler
 
-COPY --from=installer --chown=handler:node /app/apps/handler/dist ./
+COPY --from=installer --chown=handler:node /app/pruned/node_modules ./node_modules
+COPY --from=installer --chown=handler:node /app/pruned/dist ./dist
 
-CMD node apps/handler/dist/main.js
+CMD [ "sh", "-c", "exec node dist/main" ]

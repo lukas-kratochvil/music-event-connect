@@ -85,15 +85,12 @@ services:
     restart: unless-stopped
 
   handler:
-    image: music-event-connect-handler:devel
     build:
       context: .
       dockerfile: ./apps/handler/Dockerfile
-      target: development
-    command: pnpm start:dev
     volumes:
-      - ./configs/config-handler.yaml:/app/apps/handler/config.yaml:ro
-      - ./logs/handler:/app/apps/handler/logs:rw
+      - ./configs/config-handler.yaml:/app/config.yaml:ro
+      - ./logs/handler:/app/logs:rw
     depends_on:
       virtuoso:
         condition: service_healthy
@@ -102,54 +99,43 @@ services:
     restart: unless-stopped
 
   scraper:
-    image: music-event-connect-scraper:devel
     build:
       context: .
       dockerfile: ./apps/scraper/Dockerfile
-      target: development
-    command: pnpm start:dev
     volumes:
-      - ./configs/config-scraper.yaml:/app/apps/scraper/config.yaml:ro
-      - ./logs/scraper:/app/apps/scraper/logs:rw
+      - ./configs/config-scraper.yaml:/app/config.yaml:ro
+      - ./logs/scraper:/app/logs:rw
     depends_on:
       - redis
     restart: unless-stopped
 
   api:
-    image: music-event-connect-api:devel
     build:
       context: .
       dockerfile: ./apps/api/Dockerfile
-      target: development
-    command: pnpm start:dev
     ports:
       - '3060:3060'
     volumes:
-      - ./configs/config-api.yaml:/app/apps/api/config.yaml:ro
-      - ./logs/api:/app/apps/api/logs:rw
+      - ./configs/config-api.yaml:/app/config.yaml:ro
+      - ./logs/api:/app/logs:rw
     depends_on:
       virtuoso:
         condition: service_healthy
     restart: unless-stopped
 
   web:
-    image: music-event-connect-web:devel
     build:
       context: .
       dockerfile: ./apps/web/Dockerfile
-      target: development
-    command: pnpm start:dev
     volumes:
-      - ./configs/config-web.json:/app/apps/web/public/config.json:ro
-      - ./logs/web:/app/apps/web/logs:rw
-      - ./apps/web/public:/app/apps/web/public:ro
-      - ./apps/web/src:/app/apps/web/src:ro
-    ports:
-      # expose port for Vite HMR
-      - '3030:3030'
+      - ./configs/config-web.json:/mnt/config.json:ro
+      - ./logs/web:/var/log/nginx
     environment:
-      - NODE_ENV=development
-      - PORT=3030
+      - NODE_ENV=production
+      # MEC_API_ADDRESS setup:
+      #   - The 'api' hostname is our docker-compose MEC API service that runs on the same machine as this Nginx reverse proxy.
+      #   - For port see the 'api' service config.
+      - MEC_API_ADDRESS=api:3060
     depends_on:
       traefik:
         condition: service_started
@@ -163,4 +149,3 @@ services:
       - 'traefik.http.routers.web.rule=Host(`music-event-connect.localhost`)'
       - 'traefik.http.routers.web.entrypoints=websecure'
       - 'traefik.http.routers.web.tls=true'
-      - 'traefik.http.services.web.loadbalancer.server.port=3030'

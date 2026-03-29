@@ -1,0 +1,41 @@
+upstream mec_api {
+  server ${MEC_API_ADDRESS};
+}
+
+# HTTP requests
+server {
+  # SSL/TLS is realized at the MAFIL Docker container level
+  listen 80;      # IPv4
+  listen [::]:80; # IPv6
+
+  # Using the Docker internal DNS resolver
+  resolver 127.0.0.11 valid=10s;
+  resolver_timeout 5s;
+
+  # Directory where the static content, mainly the index.html and frontend config.json, is placed (the path is taken from the frontend/Dockerfile)
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # Our backend server API calls
+  location /api {
+    proxy_pass http://mec_api;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location ^~ /assets/ {
+    add_header Cache-Control "public, max-age=31536000, immutable";
+    access_log off;
+  }
+
+  location / {
+    add_header Cache-Control "no-cache";
+    # setup fallback index.html file to use if it isn't found in the specified URI
+    # - React app has only one index.html -> so this always fallback to the root index.html for every URI requested
+    # - see also: https://linuxhint.com/use-nginx-try_files-directive/
+    try_files $uri $uri/ /index.html;
+  }
+}

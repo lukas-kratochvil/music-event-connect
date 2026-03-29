@@ -5,7 +5,11 @@ FROM node:20-bullseye AS base
 
 WORKDIR /app
 
-# Install dependencies required by Chromium - installed by Puppeteer into the /root/.cache/puppeteer/chrome/ directory. See https://pptr.dev/troubleshooting#chrome-doesnt-launch-on-linux.
+# Tell Puppeteer to store Chrome inside the specified directory, not in a user's home folder (~/.cache/puppeteer).
+# (When the user is not defined it defaults to the root user: /root/.cache/puppeteer/chrome-headless-shell and /root/.cache/puppeteer/chrome).
+ENV PUPPETEER_CACHE_DIR="/app/.cache/puppeteer"
+
+# Install dependencies required by Chromium, see https://pptr.dev/troubleshooting#chrome-doesnt-launch-on-linux.
 RUN apt-get update && apt-get install -y \
   ca-certificates \
   fonts-liberation \
@@ -90,8 +94,10 @@ COPY --from=builder /app/out/full/ .
 #-------------------------------------------
 FROM development AS installer
 
-# Build the project
-RUN pnpm turbo run build
+# Build the project.
+RUN pnpm turbo run build --filter=scraper
+# Create isolated portable package.
+RUN pnpm --filter scraper --prod deploy pruned
 
 
 #-------------------------------------------
@@ -100,12 +106,15 @@ RUN pnpm turbo run build
 FROM base
 
 # Don't run production as root.
-# Remove default Node alpine image user and create a new one.
+# Remove default Node user and create a new one.
 RUN deluser --remove-home node \
-  && addgroup -S -g 1001 node \
-  && adduser -S -g node -u 1001 scraper
+  && groupadd -r node \
+  # The '-m' flag is required by Puppeteer's Chrome browser to write its data.
+  && useradd -r -m -g node scraper
 USER scraper
 
-COPY --from=installer --chown=scraper:node /app/apps/scraper/dist ./
+COPY --from=installer --chown=scraper:node /app/.cache/puppeteer ./.cache/puppeteer
+COPY --from=installer --chown=scraper:node /app/pruned/node_modules ./node_modules
+COPY --from=installer --chown=scraper:node /app/pruned/dist ./dist
 
-CMD node apps/scraper/dist/main.js
+CMD [ "sh", "-c", "exec node dist/main" ]

@@ -49,8 +49,8 @@ COPY --from=builder /app/out/full/ .
 #-------------------------------------------
 FROM development AS installer
 
-# Build the project
-RUN pnpm turbo run build
+# Build the project.
+RUN pnpm turbo run build --filter=web
 
 
 #-------------------------------------------
@@ -58,4 +58,12 @@ RUN pnpm turbo run build
 #-------------------------------------------
 FROM nginx:1.25.5-alpine
 
-# TODO: create production image
+# Problem of specifying custom ENTRYPOINT shell script in Nginx image: https://github.com/nginxinc/docker-nginx/issues/422#issuecomment-644299743.
+# That's why we copy our script to the '/docker-entrypoint.d' directory. Scripts inside this directory are executed before Nginx is.
+COPY apps/web/config-copy.sh /docker-entrypoint.d/config-copy.sh
+RUN chmod +x /docker-entrypoint.d/config-copy.sh
+
+COPY apps/web/nginx /etc/nginx
+COPY --from=installer /app/apps/web/dist /usr/share/nginx/html
+
+CMD [ "nginx", "-g", "daemon off;" ]

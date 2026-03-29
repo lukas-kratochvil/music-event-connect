@@ -2,6 +2,7 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { compression } from "vite-plugin-compression2";
 
 const port = process.env["PORT"] ? +process.env["PORT"] : undefined;
 
@@ -16,6 +17,10 @@ export default defineConfig({
       },
     }),
     tailwindcss(),
+    // Vite build also creates compressed files
+    compression({
+      algorithms: ["gzip"],
+    }),
   ],
   resolve: {
     alias: {
