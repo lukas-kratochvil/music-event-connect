@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Tell Puppeteer to store Chrome inside the specified directory, not in a user's home folder (~/.cache/puppeteer).
 # (When the user is not defined it defaults to the root user: /root/.cache/puppeteer/chrome-headless-shell and /root/.cache/puppeteer/chrome).
-ENV PUPPETEER_CACHE_DIR="/app/.cache/puppeteer"
+ENV PUPPETEER_CACHE_DIR="/puppeteer/.cache"
 
 # Install dependencies required by Chromium, see https://pptr.dev/troubleshooting#chrome-doesnt-launch-on-linux.
 RUN apt-get update && apt-get install -y \
@@ -113,7 +113,7 @@ RUN deluser --remove-home node \
   && useradd -r -m -g node scraper
 USER scraper
 
-COPY --from=installer --chown=scraper:node /app/.cache/puppeteer ./.cache/puppeteer
+COPY --from=installer --chown=scraper:node /puppeteer/.cache /puppeteer/.cache
 COPY --from=installer --chown=scraper:node /app/pruned/node_modules ./node_modules
 COPY --from=installer --chown=scraper:node /app/pruned/dist ./dist
 
