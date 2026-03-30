@@ -1,6 +1,6 @@
 import type { MusicEventsQueueNameType } from "../queue/queue";
 
-export const VALID_ENTITY_ID_PREFIXES = ["go", "tm", "tp"] as const;
+const VALID_ENTITY_ID_PREFIXES = ["go", "tm", "tp"] as const;
 
 type EntityIdPrefix = (typeof VALID_ENTITY_ID_PREFIXES)[number];
 
@@ -10,7 +10,7 @@ const ENTITY_ID_MAPPER = {
   ticketportal: "tp",
 } as const satisfies Record<MusicEventsQueueNameType, EntityIdPrefix>;
 
-export const ENTITY_ID_DELIM = "-";
+const ENTITY_ID_DELIM = "-";
 
 /**
  * Creates entity id.
@@ -20,5 +20,11 @@ export const ENTITY_ID_DELIM = "-";
 export const createEntityId = (origin: keyof typeof ENTITY_ID_MAPPER, id: string) =>
   `${ENTITY_ID_MAPPER[origin]}${ENTITY_ID_DELIM}${encodeURIComponent(id)}` as const;
 
+/**
+ * Checks if the `val` was created by the `createEntityId()`.
+ */
 export const isEntityId = (val: string): val is ReturnType<typeof createEntityId> =>
-  VALID_ENTITY_ID_PREFIXES.some((prefix) => val.startsWith(prefix + ENTITY_ID_DELIM));
+  VALID_ENTITY_ID_PREFIXES.some((prefix) => {
+    const fullPrefix = prefix + ENTITY_ID_DELIM;
+    return val.startsWith(fullPrefix) && val.length > fullPrefix.length;
+  });
