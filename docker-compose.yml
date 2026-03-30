@@ -68,8 +68,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    depends_on:
-      - traefik
     restart: unless-stopped
     labels:
       - 'traefik.enable=true'
