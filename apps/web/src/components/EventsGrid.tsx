@@ -1,3 +1,4 @@
+import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { useQuery } from "@tanstack/react-query";
 import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
@@ -17,13 +18,27 @@ const EventsGrid = () => {
   const [startDate, setStartDate] = useState<DateRange>();
   const [tempStartDate, setTempStartDate] = useState<DateRange>();
 
+  const searchOptions = {
+    filters: {
+      startDateRange: startDate,
+    },
+    pagination: {
+      limit: 20,
+      offset: 0,
+    },
+    sorters: [
+      {
+        propertyName: "startDate",
+      },
+    ],
+  } satisfies IEventSearchOptions;
   const {
     data: events,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["events", { startDate }] as const,
-    queryFn: () => searchEvents({ startDate }),
+    queryKey: ["events", searchOptions] as const,
+    queryFn: () => searchEvents(searchOptions),
   });
 
   const onStartDatePickerSelect = (selectedDate: DateRange | undefined) => {

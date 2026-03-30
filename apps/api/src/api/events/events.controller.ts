@@ -1,10 +1,10 @@
+import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
 import { EventsSearchDTO } from "./dto/event-search.dto";
 import { EventSearch } from "./entities/event-search.entity";
 import { Event } from "./entities/event.entity";
 import { EventsService } from "./events.service";
-import type { SearchEventsOptions } from "./interfaces/search.interface";
 
 @ApiTags("events")
 @Controller("events")
@@ -25,11 +25,11 @@ export class EventsController {
     }
 
     const { pagination, filters, sorters } = body;
-    let searchFilters: SearchEventsOptions["filters"] = undefined;
+    let searchFilters: IEventSearchOptions["filters"] = undefined;
 
     if (filters) {
       const { artistNames, startFrom, startTo } = filters;
-      const startDateRange: NonNullable<SearchEventsOptions["filters"]>["startDateRange"] =
+      const startDateRange: NonNullable<IEventSearchOptions["filters"]>["startDateRange"] =
         startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
       searchFilters = {
         artistNames,

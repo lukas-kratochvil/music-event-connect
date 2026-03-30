@@ -1,3 +1,4 @@
+import type { IEvent } from "@music-event-connect/shared/api";
 import { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -16,8 +17,8 @@ class EventArtist {
   @ApiProperty({ type: "string", isArray: true })
   genres: string[];
 
-  @ApiPropertyOptional({ type: "string" })
-  url: string | undefined;
+  @ApiProperty({ type: "string", isArray: true })
+  urls: string[];
 
   @ApiProperty({ type: () => EventAccount, isArray: true })
   accounts: EventAccount[];
@@ -59,7 +60,7 @@ class EventOffer {
   availability: ItemAvailability;
 }
 
-export class Event {
+export class Event implements IEvent {
   @ApiProperty()
   id: string;
 
@@ -84,6 +85,6 @@ export class Event {
   @ApiProperty({ type: () => EventVenue, isArray: true })
   venues: EventVenue[];
 
-  @ApiProperty({ type: () => EventOffer, isArray: true })
-  offers: EventOffer[];
+  @ApiProperty({ type: () => EventOffer })
+  offer: EventOffer;
 }

@@ -20,6 +20,11 @@
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "require": "./dist/api/index.js",
+      "default": "./dist/api/index.js"
+    },
     "./interfaces": {
       "types": "./dist/interfaces/index.d.ts",
       "require": "./dist/interfaces/index.js",

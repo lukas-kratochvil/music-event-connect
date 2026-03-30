@@ -1,3 +1,4 @@
+import type { IEventSearch } from "@music-event-connect/shared/api";
 import { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { ApiProperty } from "@nestjs/swagger";
 
@@ -30,7 +31,7 @@ class EventSearchOffer {
   availability: ItemAvailability;
 }
 
-export class EventSearch {
+export class EventSearch implements IEventSearch {
   @ApiProperty()
   id: string;
 

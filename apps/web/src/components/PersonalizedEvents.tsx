@@ -1,3 +1,4 @@
+import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { useQuery } from "@tanstack/react-query";
 import { addMonths, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -36,17 +37,32 @@ const PersonalizedEvents = () => {
     select: (data) => data.map((artist) => artist.name),
   });
   const startDateFrom = startOfDay(new Date());
-  const startDate = {
+  const startDateRange = {
     from: startDateFrom,
     to: addMonths(startDateFrom, 1),
   } as const satisfies DateRange;
+  const searchOptions = {
+    filters: {
+      artistNames,
+      startDateRange,
+    },
+    pagination: {
+      limit: 20,
+      offset: 0,
+    },
+    sorters: [
+      {
+        propertyName: "startDate",
+      },
+    ],
+  } satisfies IEventSearchOptions;
   const {
     data: events,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["events", { artistNames, startDate }] as const,
-    queryFn: () => searchEvents({ artistNames, startDate }),
+    queryKey: ["events", searchOptions] as const,
+    queryFn: () => searchEvents(searchOptions),
     enabled: !!artistNames,
   });
 

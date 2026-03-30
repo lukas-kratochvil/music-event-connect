@@ -1,25 +1,12 @@
-import type { DateRange } from "react-day-picker";
+import type { IEvent, IEventSearch, IEventSearchOptions } from "@music-event-connect/shared/api";
 import { mecApi } from "./mec-api";
-import type { MusicEventDTO, MusicEventSearchDTO } from "./response-types";
 
-type EventsFilters = {
-  artistNames?: string[];
-  startDate?: DateRange;
-};
-
-export const searchEvents = async (filters?: EventsFilters) => {
-  const response = await mecApi.post<MusicEventSearchDTO[]>("events/search", {
-    filters,
-    sorters: [
-      {
-        propertyName: "startDate",
-      },
-    ],
-  });
+export const searchEvents = async (options: IEventSearchOptions) => {
+  const response = await mecApi.post<IEventSearch[]>("events/search", options);
   return response.data;
 };
 
 export const fetchEventDetail = async (id: string) => {
-  const response = await mecApi.get<MusicEventDTO>(`events/${id}`);
+  const response = await mecApi.get<IEvent>(`events/${id}`);
   return response.data;
 };

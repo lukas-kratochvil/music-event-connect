@@ -43,7 +43,6 @@ const EventDetailPage = () => {
     text: venue.name,
     position: [venue.latitude, venue.longitude] as [number, number],
   }));
-  const availableOffers = event.offers.filter((offer) => offer.availability === "InStock");
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-8">
@@ -155,9 +154,10 @@ const EventDetailPage = () => {
 
                     {/* Website and other third-party accounts */}
                     <div className="flex flex-wrap items-center gap-4 text-sm mt-4">
-                      {artist.url && (
+                      {artist.urls.map((url) => (
                         <a
-                          href={artist.url}
+                          key={url}
+                          href={url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 hover:text-primary transition-colors"
@@ -165,7 +165,7 @@ const EventDetailPage = () => {
                           <Globe className="h-4 w-4" />
                           <span>Official Site</span>
                         </a>
-                      )}
+                      ))}
                       {artist.accounts.map((account) => (
                         <a
                           key={account.name}
@@ -240,7 +240,7 @@ const EventDetailPage = () => {
                 <div className="text-sm text-muted-foreground">Available tickets.</div>
               </CardContent>
               <CardFooter>
-                {availableOffers.length === 0 ? (
+                {event.offer.availability === "SoldOut" ? (
                   <Button
                     className="w-full text-lg py-6"
                     disabled
@@ -248,24 +248,19 @@ const EventDetailPage = () => {
                     Sold Out
                   </Button>
                 ) : (
-                  <>
-                    {availableOffers.map((offer) => (
-                      <Button
-                        key={offer.url}
-                        asChild
-                        className="w-full text-lg py-6 shadow-md hover:shadow-lg transition-all"
-                      >
-                        <a
-                          href={offer.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {/* TODO: extract the name of the portal offering the ticket */}
-                          {offer.url}
-                        </a>
-                      </Button>
-                    ))}
-                  </>
+                  <Button
+                    asChild
+                    className="w-full text-lg py-6 shadow-md hover:shadow-lg transition-all"
+                  >
+                    <a
+                      href={event.offer.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {/* TODO: extract the name of the portal offering the ticket */}
+                      {event.offer.url}
+                    </a>
+                  </Button>
                 )}
               </CardFooter>
             </Card>

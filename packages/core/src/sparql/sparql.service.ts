@@ -44,6 +44,7 @@ export class SPARQLService {
     const quads = links
       .map(([source, targetIRI]) => {
         const target = namedNode(targetIRI);
+        // insert `sameAs` links in both directions
         return [triple(source, sameAs, target), triple(target, sameAs, source)];
       })
       .flat();
