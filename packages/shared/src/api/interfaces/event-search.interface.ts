@@ -1,21 +1,24 @@
 import type { ItemAvailability } from "../../interfaces/ticket.interface";
 
-type IEventSearchPagination = {
+//----------------------------------------------------
+// Search options
+//----------------------------------------------------
+export interface IEventSearchPagination {
   offset: number;
   limit: number;
-};
-
-type DateRange = {
-  from: Date | undefined;
-  to?: Date | undefined;
-};
-
-interface IEventSearchFilters {
-  artistNames?: string[];
-  startDateRange?: DateRange;
 }
 
-interface IEventSearchSorter {
+export interface IEventSearchDateRange {
+  from: Date | undefined;
+  to?: Date | undefined;
+}
+
+export interface IEventSearchFilters {
+  artistNames?: string[];
+  startDateRange?: IEventSearchDateRange;
+}
+
+export interface IEventSearchSorter {
   propertyName: string;
   desc?: boolean;
 }
@@ -26,21 +29,24 @@ export interface IEventSearchOptions {
   sorters?: IEventSearchSorter[];
 }
 
-interface IEventSearchArtist {
+//----------------------------------------------------
+// Searched entity
+//----------------------------------------------------
+export interface IEventSearchArtist {
   name: string;
 }
 
-interface IEventSearchAddress {
+export interface IEventSearchAddress {
   locality: string;
   country: string;
 }
 
-interface IEventSearchVenue {
+export interface IEventSearchVenue {
   name: string;
   address: IEventSearchAddress;
 }
 
-interface IEventSearchOffer {
+export interface IEventSearchOffer {
   url: string;
   availability: ItemAvailability;
 }

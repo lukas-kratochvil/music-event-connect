@@ -1,7 +1,6 @@
-import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { Body, Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import { ApiBody, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags } from "@nestjs/swagger";
-import { EventsSearchDTO } from "./dto/event-search.dto";
+import { EventsSearchOptions } from "./dto/event-search.dto";
 import { EventSearch } from "./entities/event-search.entity";
 import { Event } from "./entities/event.entity";
 import { EventsService } from "./events.service";
@@ -11,7 +10,7 @@ import { EventsService } from "./events.service";
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @ApiBody({ type: () => EventsSearchDTO, required: false, description: "Filtering of events." })
+  @ApiBody({ type: () => EventsSearchOptions, required: false, description: "Filtering of events." })
   @ApiOkResponse({
     type: () => EventSearch,
     isArray: true,
@@ -19,29 +18,8 @@ export class EventsController {
   })
   @Post("search")
   @HttpCode(200)
-  async searchEvents(@Body() body?: EventsSearchDTO): Promise<EventSearch[]> {
-    if (!body) {
-      return this.eventsService.findAll();
-    }
-
-    const { pagination, filters, sorters } = body;
-    let searchFilters: IEventSearchOptions["filters"] = undefined;
-
-    if (filters) {
-      const { artistNames, startFrom, startTo } = filters;
-      const startDateRange: NonNullable<IEventSearchOptions["filters"]>["startDateRange"] =
-        startFrom || startTo ? { from: startFrom, to: startTo } : undefined;
-      searchFilters = {
-        artistNames,
-        startDateRange,
-      };
-    }
-
-    return this.eventsService.findAll({
-      pagination,
-      filters: searchFilters,
-      sorters,
-    });
+  async searchEvents(@Body() searchOptions?: EventsSearchOptions): Promise<EventSearch[]> {
+    return this.eventsService.findAll(searchOptions);
   }
 
   @ApiParam({ name: "id", required: true, description: "Event identifier." })

@@ -1,11 +1,11 @@
 import type { ItemAvailability } from "../../interfaces/ticket.interface";
 
-interface IEventAccount {
+export interface IEventAccount {
   name: string;
   url: string;
 }
 
-interface IEventArtist {
+export interface IEventArtist {
   name: string;
   genres: string[];
   urls: string[];
@@ -13,20 +13,20 @@ interface IEventArtist {
   images: string[];
 }
 
-interface IEventAddress {
+export interface IEventAddress {
   street: string | undefined;
   locality: string;
   country: string;
 }
 
-interface IEventVenue {
+export interface IEventVenue {
   name: string;
   latitude: number;
   longitude: number;
   address: IEventAddress;
 }
 
-interface IEventOffer {
+export interface IEventOffer {
   url: string;
   availability: ItemAvailability;
 }

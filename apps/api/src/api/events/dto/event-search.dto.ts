@@ -1,4 +1,11 @@
 import { IsDateMoreInFutureThan } from "@music-event-connect/core/validation";
+import type {
+  IEventSearchDateRange,
+  IEventSearchFilters,
+  IEventSearchOptions,
+  IEventSearchPagination,
+  IEventSearchSorter,
+} from "@music-event-connect/shared/api";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
@@ -14,7 +21,22 @@ import {
   ValidateNested,
 } from "class-validator";
 
-class Filters {
+class DateRange implements IEventSearchDateRange {
+  @ApiPropertyOptional({ type: Date })
+  @Type(() => Date)
+  @IsOptional()
+  @IsDate()
+  from: Date | undefined;
+
+  @ApiPropertyOptional({ type: Date })
+  @Type(() => Date)
+  @IsOptional()
+  @IsDate()
+  @IsDateMoreInFutureThan<DateRange>("from")
+  to?: Date | undefined;
+}
+
+class Filters implements IEventSearchFilters {
   @ApiPropertyOptional({ type: "string", isArray: true })
   @IsOptional()
   @IsArray()
@@ -22,21 +44,14 @@ class Filters {
   @IsString({ each: true })
   artistNames?: string[];
 
-  @ApiPropertyOptional({ type: Date })
-  @Type(() => Date)
+  @ApiPropertyOptional({ type: () => DateRange })
+  @Type(() => DateRange)
   @IsOptional()
-  @IsDate()
-  startFrom?: Date;
-
-  @ApiPropertyOptional({ type: Date })
-  @Type(() => Date)
-  @IsOptional()
-  @IsDate()
-  @IsDateMoreInFutureThan<Filters>("startFrom")
-  startTo?: Date;
+  @ValidateNested()
+  startDateRange?: DateRange;
 }
 
-class Sorter {
+class Sorter implements IEventSearchSorter {
   @ApiProperty({ type: "string" })
   @IsString()
   propertyName: string;
@@ -47,7 +62,7 @@ class Sorter {
   desc?: boolean;
 }
 
-class Pagination {
+class Pagination implements IEventSearchPagination {
   @ApiProperty({ type: "number", default: 0 })
   @IsInt()
   @Min(0)
@@ -59,7 +74,7 @@ class Pagination {
   limit: number;
 }
 
-export class EventsSearchDTO {
+export class EventsSearchOptions implements IEventSearchOptions {
   @ApiProperty({ type: () => Pagination })
   @Type(() => Pagination)
   @ValidateNested()
