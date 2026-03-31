@@ -1,11 +1,11 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common";
 import { Interval, SchedulerRegistry } from "@nestjs/schedule";
 import { minutesToMilliseconds } from "date-fns";
 import { CRON_MANAGER_PROVIDERS } from "./constants";
 import type { ICronJobService } from "./cron-job-service.interface";
 
 @Injectable()
-export class CronManagerService {
+export class CronManagerService implements OnApplicationBootstrap {
   readonly #logger = new Logger(CronManagerService.name);
 
   constructor(
@@ -13,12 +13,17 @@ export class CronManagerService {
     @Inject(CRON_MANAGER_PROVIDERS.cronJobServices) private readonly cronJobServices: ICronJobService[]
   ) {}
 
+  onApplicationBootstrap() {
+    this.#logger.log("Triggering initial cron jobs run");
+    this.runJobs();
+  }
+
   readonly #runJobMap: Record<ICronJobService["jobType"], (job: ICronJobService) => void> = {
     interval: (job) => this.#runIntervalJob(job),
     timeout: (job) => this.#runTimeoutJob(job),
   };
 
-  @Interval(minutesToMilliseconds(5))
+  @Interval(minutesToMilliseconds(10))
   runJobs() {
     this.cronJobServices
       .filter((cronJobService) => !cronJobService.isInProcess())
