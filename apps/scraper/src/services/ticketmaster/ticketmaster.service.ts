@@ -6,8 +6,10 @@ import {
 } from "@music-event-connect/core/queue";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
 import { addDays, addHours, compareAsc, max, set } from "date-fns";
+import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
 import { RateLimitError } from "./rate-limit.error";
 import { TicketmasterApiProxy } from "./ticketmaster-api-proxy.service";
@@ -16,9 +18,9 @@ import type { AccessDate, Dates, Image } from "./ticketmaster-api.types";
 @Injectable()
 export class TicketmasterService implements ICronJobService {
   readonly #logger = new Logger(TicketmasterService.name);
+  readonly #scheduledTime: NonNullable<ConfigSchema["services"]["ticketmaster"]>["scheduledTime"];
   #currentPage = 0;
   #runDate = new Date(Date.now());
-  readonly #scheduledHour = 2;
 
   readonly jobName = "ticketmaster";
   readonly jobType = "interval";
@@ -30,8 +32,15 @@ export class TicketmasterService implements ICronJobService {
       MusicEventsQueueDataType,
       MusicEventsQueueNameType
     >,
-    private readonly ticketmasterApi: TicketmasterApiProxy
-  ) {}
+    private readonly ticketmasterApi: TicketmasterApiProxy,
+    config: ConfigService<ConfigSchema, true>
+  ) {
+    const ticketmasterConfig = config.get("services.ticketmaster", { infer: true });
+    if (!ticketmasterConfig) {
+      throw new Error("Config not present!");
+    }
+    this.#scheduledTime = ticketmasterConfig.scheduledTime;
+  }
 
   getRunDate(): Date {
     return this.#runDate;
@@ -44,9 +53,7 @@ export class TicketmasterService implements ICronJobService {
   #computeNextRunDate() {
     const now = new Date();
     let runDate = set(now, {
-      hours: this.#scheduledHour,
-      minutes: 0,
-      seconds: 0,
+      ...this.#scheduledTime,
       milliseconds: 0,
     });
 

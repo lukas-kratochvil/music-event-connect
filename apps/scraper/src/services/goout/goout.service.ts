@@ -27,10 +27,10 @@ const extractIdFromUrl = (url: string) => new URL(url).pathname.match(matchLastP
 export class GooutService implements ICronJobService {
   readonly #logger = new Logger(GooutService.name);
   readonly #baseUrl: string;
+  readonly #scheduledTime: NonNullable<ConfigSchema["services"]["goout"]>["scheduledTime"];
 
   #isInProcess = false;
   #runDate = new Date(Date.now());
-  readonly #scheduledHour = 1;
 
   readonly jobName = "goout";
   readonly jobType = "timeout";
@@ -50,6 +50,7 @@ export class GooutService implements ICronJobService {
       throw new Error("Config not present!");
     }
     this.#baseUrl = gooutConfig.url;
+    this.#scheduledTime = gooutConfig.scheduledTime;
   }
 
   getRunDate(): Date {
@@ -417,9 +418,7 @@ export class GooutService implements ICronJobService {
   #setNextRunDate() {
     const now = new Date();
     let runDate = set(now, {
-      hours: this.#scheduledHour,
-      minutes: 0,
-      seconds: 0,
+      ...this.#scheduledTime,
       milliseconds: 0,
     });
 

@@ -14,6 +14,7 @@ import { TicketmasterService } from "./ticketmaster.service";
       useClass: TicketmasterHttpConfigService,
     }),
     QueueModule,
+    ConfigModule,
   ],
   providers: [TicketmasterApi, TicketmasterApiProxy, TicketmasterService],
   exports: [TicketmasterService],

@@ -14,6 +14,8 @@ redis:
 services:
   # Ticketmaster for developers: https://developer.ticketmaster.com/
   ticketmaster:
+    # at what time should scraping start each day, except the first/initial day (ISO 8601 time "HH:MM:SS")
+    scheduledTime:
     # base URL for the Ticketmaster Discovery API: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
     url:
     # get your API key here: https://developer-acct.ticketmaster.com/user/login
@@ -21,10 +23,14 @@ services:
 
   # GoOut
   goout:
+    # at what time should scraping start each day, except the first/initial day (ISO 8601 time "HH:MM:SS")
+    scheduledTime:
     # base URL of the GoOut - cs/en localization supported
     url:
 
   # Ticketportal
   ticketportal:
+    # at what time should scraping start each day, except the first/initial day (ISO 8601 time "HH:MM:SS")
+    scheduledTime:
     # base URL of the Ticketportal
     url:

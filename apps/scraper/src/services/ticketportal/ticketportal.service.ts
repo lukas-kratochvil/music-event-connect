@@ -8,7 +8,7 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
-import { addDays, format, hoursToMilliseconds, set } from "date-fns";
+import { addDays, format, set } from "date-fns";
 import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
@@ -20,10 +20,10 @@ const CZ_TIMEZONE = "Europe/Prague";
 export class TicketportalService implements ICronJobService {
   readonly #logger = new Logger(TicketportalService.name);
   readonly #baseUrl: string;
+  readonly #scheduledTime: NonNullable<ConfigSchema["services"]["ticketportal"]>["scheduledTime"];
 
   #isInProcess = false;
-  #runDate = new Date(Date.now() + hoursToMilliseconds(1));
-  readonly #scheduledHour = 2;
+  #runDate = new Date();
 
   readonly jobName = "ticketportal";
   readonly jobType = "timeout";
@@ -43,6 +43,7 @@ export class TicketportalService implements ICronJobService {
       throw new Error("Config not present!");
     }
     this.#baseUrl = ticketportalConfig.url;
+    this.#scheduledTime = ticketportalConfig.scheduledTime;
   }
 
   getRunDate(): Date {
@@ -445,9 +446,7 @@ export class TicketportalService implements ICronJobService {
   #setNextRunDate() {
     const now = new Date();
     let runDate = set(now, {
-      hours: this.#scheduledHour,
-      minutes: 0,
-      seconds: 0,
+      ...this.#scheduledTime,
       milliseconds: 0,
     });
 
