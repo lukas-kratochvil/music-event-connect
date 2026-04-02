@@ -18,15 +18,16 @@ export interface IEventSearchFilters {
   startDateRange?: IEventSearchDateRange;
 }
 
-export interface IEventSearchSorter {
-  propertyName: string;
-  desc?: boolean;
+export interface IEventSearchSorters {
+  startDate?: {
+    desc?: boolean;
+  };
 }
 
 export interface IEventSearchOptions {
   pagination: IEventSearchPagination;
   filters?: IEventSearchFilters;
-  sorters?: IEventSearchSorter[];
+  sorters?: IEventSearchSorters;
 }
 
 //----------------------------------------------------
@@ -58,5 +59,5 @@ export interface IEventSearch {
   images: string[];
   artists: IEventSearchArtist[];
   venues: IEventSearchVenue[];
-  offers: IEventSearchOffer[];
+  offer: IEventSearchOffer;
 }

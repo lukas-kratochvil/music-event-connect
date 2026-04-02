@@ -3,7 +3,13 @@ import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
 import { ns } from "../rdf/ontology";
-import { SPARQL_QUERY_BUILDER_VARIABLES, SPARQLQueryBuilderService } from "./sparql-query-builder.service";
+import {
+  SPARQL_QUERY_BUILDER_VARIABLES,
+  SPARQLQueryBuilderService,
+  type ConstructEventsFilters,
+  type ConstructEventsSorters,
+  type Pagination,
+} from "./sparql-query-builder.service";
 import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
 
 const { namedNode, triple } = DataFactory;
@@ -36,6 +42,23 @@ export class SPARQLService {
 
   constructEntity(entityIRI: NamedNode, graphIRI: string | undefined) {
     const constructQuery = this.queryBuilder.constructEntity(entityIRI, graphIRI);
+    return constructQuery.execute(this.sparqlClient);
+  }
+
+  constructEvents(
+    entityTypeIRI: NamedNode,
+    linksGraphIRI: string,
+    pagination: Pagination,
+    filters: ConstructEventsFilters | undefined,
+    sorters: ConstructEventsSorters | undefined
+  ) {
+    const constructQuery = this.queryBuilder.constructEvents(
+      entityTypeIRI,
+      linksGraphIRI,
+      pagination,
+      filters,
+      sorters
+    );
     return constructQuery.execute(this.sparqlClient);
   }
 

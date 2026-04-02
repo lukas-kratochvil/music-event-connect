@@ -9,20 +9,20 @@ import { LinksMapper } from "../links/links-mapper.service";
 
 export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   @Inject(RdfEntitySerializerService)
-  private readonly serializer: RdfEntitySerializerService;
+  protected readonly serializer: RdfEntitySerializerService;
 
   @Inject(RdfEntityDeserializerService)
-  private readonly deserializer: RdfEntityDeserializerService;
+  protected readonly deserializer: RdfEntityDeserializerService;
 
   @Inject(SPARQLService)
-  private readonly sparqlService: SPARQLService;
+  protected readonly sparqlService: SPARQLService;
 
   @Inject(LinksMapper)
-  private readonly linksMapper: LinksMapper;
+  protected readonly linksMapper: LinksMapper;
 
   protected abstract getClassConstructor(): ClassConstructor<TEntity>;
 
-  private createNewEntity(id: string) {
+  protected createNewEntity(id: string) {
     const cls = this.getClassConstructor();
     const entity = new cls();
     entity.id = id;

@@ -4,7 +4,7 @@ import type {
   IEventSearchFilters,
   IEventSearchOptions,
   IEventSearchPagination,
-  IEventSearchSorter,
+  IEventSearchSorters,
 } from "@music-event-connect/shared/api";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
@@ -51,15 +51,19 @@ class Filters implements IEventSearchFilters {
   startDateRange?: DateRange;
 }
 
-class Sorter implements IEventSearchSorter {
-  @ApiProperty({ type: "string" })
-  @IsString()
-  propertyName: string;
-
-  @ApiPropertyOptional({ type: "boolean", description: "Ascending sort is default." })
+class SorterOptions {
+  @ApiPropertyOptional({ type: "boolean", description: "The default is ascending order." })
   @IsOptional()
   @IsBoolean()
   desc?: boolean;
+}
+
+class Sorters implements IEventSearchSorters {
+  @ApiPropertyOptional({ type: () => SorterOptions })
+  @Type(() => SorterOptions)
+  @IsOptional()
+  @ValidateNested()
+  startDate?: SorterOptions;
 }
 
 class Pagination implements IEventSearchPagination {
@@ -86,11 +90,9 @@ export class EventsSearchOptions implements IEventSearchOptions {
   @ValidateNested()
   filters?: Filters;
 
-  @ApiPropertyOptional({ type: () => Sorter, isArray: true })
-  @Type(() => Sorter)
+  @ApiPropertyOptional({ type: () => Sorters })
+  @Type(() => Sorters)
   @IsOptional()
-  @IsArray()
-  @ArrayUnique<Sorter>((elem) => elem.propertyName)
-  @ValidateNested({ each: true })
-  sorters?: Sorter[];
+  @ValidateNested()
+  sorters?: Sorters;
 }

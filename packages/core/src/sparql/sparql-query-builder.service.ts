@@ -6,6 +6,25 @@ import type { SparqlBuilderType } from "./util";
 
 const { literal, namedNode, variable } = DataFactory;
 
+export type Pagination = {
+  limit: number;
+  offset: number;
+};
+
+export type ConstructEventsFilters = {
+  artistNames?: string[];
+  startDateRange?: {
+    from: Date | undefined;
+    to?: Date | undefined;
+  };
+};
+
+export type ConstructEventsSorters = {
+  startDate?: {
+    desc?: boolean;
+  };
+};
+
 export const SPARQL_QUERY_BUILDER_VARIABLES = {
   selectLinks: {
     linkedResource: {
@@ -58,7 +77,7 @@ export class SPARQLQueryBuilderService {
     const query = this.builder.CONSTRUCT`
       ?s ?p1 ?child .
       ?child ?p2 ?grandchild .
-      ?grandchild  ?p3 ?o .
+      ?grandchild ?p3 ?o .
     `.WHERE`
       VALUES ?s { ${entityIRI} }
       ?s ?p1 ?child .
@@ -70,6 +89,89 @@ export class SPARQLQueryBuilderService {
       }
     `;
     return graphIRI ? query.FROM(namedNode(graphIRI)) : query;
+  }
+
+  /**
+   * Constructs events and also retrieves its nested entities max. 2 levels deep.
+   */
+  constructEvents(
+    eventEntityTypeIRI: NamedNode,
+    linksGraphIRI: string,
+    pagination: Pagination,
+    filters: ConstructEventsFilters | undefined,
+    sorters: ConstructEventsSorters | undefined
+  ) {
+    // RDF terms setup
+    const { rdf, schema, xsd } = ns;
+    const linksGraph = namedNode(linksGraphIRI);
+    const event = variable("event");
+    const startDate = variable("startDate");
+    const startDateGrouped = variable("startDateGrouped");
+    const artistName = variable("artistName");
+
+    // Filters
+    let filterClauses = "";
+
+    if (filters?.startDateRange) {
+      const { from, to } = filters.startDateRange;
+      if (from) {
+        filterClauses += `FILTER (${startDate} >= ${literal(from.toISOString(), namedNode(xsd.dateTime))})\n`;
+      }
+      if (to) {
+        filterClauses += `FILTER (${startDate} <= ${literal(to.toISOString(), namedNode(xsd.dateTime))})\n`;
+      }
+    }
+
+    // the length must be greater than 0 otherwise `?var IN ()` is always false so no triples will be returned
+    if (filters?.artistNames && filters.artistNames.length > 0) {
+      const names = filters.artistNames.map((name) => `"${name}"`).join(", ");
+      filterClauses += `FILTER (${artistName} IN (${names}))\n`;
+    }
+
+    // Pagination
+    const { limit, offset } = pagination;
+
+    return this.builder.CONSTRUCT`
+      ${event} ?p1 ?child .
+      ?child ?p2 ?grandchild .
+      ?grandchild  ?p3 ?o .
+    `.WHERE`
+      {
+        SELECT ${event} (MIN(${startDate}) AS ${startDateGrouped})
+        WHERE {
+          ${event} ${namedNode(rdf.type)} ${eventEntityTypeIRI} ;
+                    ${namedNode(schema.startDate)} ${startDate} ;
+                    ${namedNode(schema.performer)} ?artist .
+          OPTIONAL {
+            ?artist ${namedNode(schema.name)} ${artistName}
+          }
+
+          ${filterClauses}
+
+          # take only one event out of all the linked events (because the same physical event can be stored from multiple sources)
+          FILTER NOT EXISTS {
+            GRAPH ${linksGraph} {
+              { ${event} ${namedNode(schema.sameAs)} ?linkedEvent }
+              UNION
+              { ?linkedEvent ${namedNode(schema.sameAs)} ${event} }
+            }
+            FILTER (STR(?linkedEvent) < STR(${event}))
+          }
+        }
+        GROUP BY ${event}
+        ORDER BY ${sorters?.startDate?.desc ? "DESC" : "ASC"}(${startDateGrouped})
+        LIMIT ${limit}
+        OFFSET ${offset}
+      }
+
+      ${event} ?p1 ?child .
+      OPTIONAL {
+        ?child ?p2 ?grandchild .
+        OPTIONAL {
+          ?grandchild ?p3 ?o .
+        }
+      }
+    `;
   }
 
   /**

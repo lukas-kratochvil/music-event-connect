@@ -50,6 +50,6 @@ export class EventSearch implements IEventSearch {
   @ApiProperty({ type: () => EventSearchVenue, isArray: true })
   venues: EventSearchVenue[];
 
-  @ApiProperty({ type: () => EventSearchOffer, isArray: true })
-  offers: EventSearchOffer[];
+  @ApiProperty({ type: () => EventSearchOffer })
+  offer: EventSearchOffer;
 }
