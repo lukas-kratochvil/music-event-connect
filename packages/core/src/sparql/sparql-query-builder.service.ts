@@ -178,6 +178,7 @@ export class SPARQLQueryBuilderService {
    * Selects all the linked resources to the given resource.
    */
   selectLinks(sourceIRI: NamedNode, linksGraphIRI: string) {
+    const { schema } = ns;
     const linksGraph = namedNode(linksGraphIRI);
     const linkedResourceIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.iri);
     const linkedResourceGraph = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.graph);
@@ -185,16 +186,16 @@ export class SPARQLQueryBuilderService {
     return this.builder.SELECT.DISTINCT`${linkedResourceIRI} ${linkedResourceGraph}`.WHERE`
       GRAPH ${linksGraph} {
         {
-          ${sourceIRI} ${namedNode(ns.schema.sameAs)} ${linkedResourceIRI} .
+          ${sourceIRI} ${namedNode(schema.sameAs)} ${linkedResourceIRI} .
         }
         UNION
         {
-          ${linkedResourceIRI} ${namedNode(ns.schema.sameAs)} ${sourceIRI} .
+          ${linkedResourceIRI} ${namedNode(schema.sameAs)} ${sourceIRI} .
         }
       }
 
       GRAPH ${linkedResourceGraph} {
-        ${linkedResourceIRI} ${variable("p")} ${variable("o")} .
+        ${linkedResourceIRI} ?p ?o .
       }
 
       FILTER (${linkedResourceGraph} != ${linksGraph})
@@ -205,18 +206,19 @@ export class SPARQLQueryBuilderService {
    * Selects all the Event entities for the given start date in the Event graph.
    */
   selectEventEntitiesByDate(startDate: Date, eventGraphIRI: string) {
+    const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
     const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
     const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
     const eventStartDate = variable("eventStartDate");
-    const eventStartDatePrefix = startDate.toISOString().split("T").at(0);
+    const eventStartDatePrefix = literal(startDate.toISOString().split("T").at(0)!);
 
     return this.builder.SELECT.DISTINCT`${eventIRI} ${eventName}`.WHERE`
         GRAPH ${sourceGraph} {
-          ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicEvent)} ;
-                      ${namedNode(ns.schema.name)} ${eventName} ;
-                      ${namedNode(ns.schema.startDate)} ${eventStartDate} .
-          FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
+          ${eventIRI} ${namedNode(rdf.type)} ${namedNode(schema.MusicEvent)} ;
+                      ${namedNode(schema.name)} ${eventName} ;
+                      ${namedNode(schema.startDate)} ${eventStartDate} .
+          FILTER(STRSTARTS(STR(${eventStartDate}), ${eventStartDatePrefix}))
         }
       `;
   }
@@ -225,18 +227,19 @@ export class SPARQLQueryBuilderService {
    * Selects all the Event entities for the given start date in the MusicBrainz graph.
    */
   selectMusicBrainzEventsByDate(startDate: Date, musicBrainzGraphIRI: string) {
+    const { mb, rdf, rdfs, wdt } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
     const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
     const eventStartDate = variable("eventStartDate");
-    const eventStartDatePrefix = startDate.toISOString().split("T").at(0);
+    const eventStartDatePrefix = literal(startDate.toISOString().split("T").at(0)!);
 
     return this.builder.SELECT.DISTINCT`${eventIRI} ${eventName}`.WHERE`
         GRAPH ${sourceGraph} {
-          ${eventIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Event)} ;
-                      ${namedNode(ns.rdfs.label)} ${eventName} ;
-                      ${namedNode(ns.wdt.startTime)} ${eventStartDate} .
-          FILTER(STRSTARTS(STR(${eventStartDate}), "${eventStartDatePrefix}"))
+          ${eventIRI} ${namedNode(rdf.type)} ${namedNode(mb.Event)} ;
+                      ${namedNode(rdfs.label)} ${eventName} ;
+                      ${namedNode(wdt.startTime)} ${eventStartDate} .
+          FILTER(STRSTARTS(STR(${eventStartDate}), ${eventStartDatePrefix}))
         }
       `;
   }
@@ -245,12 +248,13 @@ export class SPARQLQueryBuilderService {
    * Selects all the Artist entities by the given name in the Event graph.
    */
   selectArtistEntitiesByName(artistName: string, eventGraphIRI: string) {
+    const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
-        ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.MusicGroup)} ;
-                      ${namedNode(ns.schema.name)} ${literal(artistName)} .
+        ${artistIRI}  ${namedNode(rdf.type)} ${namedNode(schema.MusicGroup)} ;
+                      ${namedNode(schema.name)} ${literal(artistName)} .
       }
     `;
   }
@@ -259,19 +263,20 @@ export class SPARQLQueryBuilderService {
    * Selects all the Artist entities by the given name in the MusicBrainz graph.
    */
   selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
+    const { mb, rdf, rdfs, skos, xsd } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
     // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
     // in the extracted MusicBrainz RDF data, RDFS label and SKOS altLabel are mostly XSD strings and sometimes language-tagged literals
-    // HACK: we must use `${literal(artistName)}^^<${ns.xsd.string}>` instead of `${literal(artistName, namedNode(ns.xsd.string))}`, because `literal()` strips the XSD string datatype as is the intended behavior for RDF 1.1, but Virtuoso is still using the RDF 1.0 specification: https://github.com/openlink/virtuoso-opensource/issues/728
+    // HACK: we must use `${literal(artistName)}^^<${xsd.string}>` instead of `${literal(artistName, namedNode(xsd.string))}`, because `literal()` strips the XSD string datatype as is the intended behavior for RDF 1.1, but Virtuoso is still using the RDF 1.0 specification: https://github.com/openlink/virtuoso-opensource/issues/728
     return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         {
-          ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.rdfs.label)} ${literal(artistName)}^^<${ns.xsd.string}> .
+          ${artistIRI}  ${namedNode(rdf.type)} ${namedNode(mb.Artist)} ;
+                        ${namedNode(rdfs.label)} ${literal(artistName)}^^<${xsd.string}> .
         } UNION {
-          ${artistIRI}  ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Artist)} ;
-                        ${namedNode(ns.skos.altLabel)} ${literal(artistName)}^^<${ns.xsd.string}> .
+          ${artistIRI}  ${namedNode(rdf.type)} ${namedNode(mb.Artist)} ;
+                        ${namedNode(skos.altLabel)} ${literal(artistName)}^^<${xsd.string}> .
         }
       }
     `;
@@ -283,6 +288,7 @@ export class SPARQLQueryBuilderService {
    * @param toleranceInDegrees default tolerance is set to ~222 meters
    */
   selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
+    const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
     const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
     const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
@@ -293,14 +299,14 @@ export class SPARQLQueryBuilderService {
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName} ${addressIRI} ${addressStreet}`.WHERE`
       GRAPH ${sourceGraph} {
-        ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.Place)} ;
-                    ${namedNode(ns.schema.name)} ${placeName} ;
-                    ${namedNode(ns.schema.latitude)} ${latVar} ;
-                    ${namedNode(ns.schema.longitude)} ${lonVar} ;
-                    ${namedNode(ns.schema.address)} ${addressIRI} .
+        ${placeIRI} ${namedNode(rdf.type)} ${namedNode(schema.Place)} ;
+                    ${namedNode(schema.name)} ${placeName} ;
+                    ${namedNode(schema.latitude)} ${latVar} ;
+                    ${namedNode(schema.longitude)} ${lonVar} ;
+                    ${namedNode(schema.address)} ${addressIRI} .
 
-        ${addressIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.schema.PostalAddress)} ;
-                      ${namedNode(ns.schema.streetAddress)} ${addressStreet} .
+        ${addressIRI} ${namedNode(rdf.type)} ${namedNode(schema.PostalAddress)} ;
+                      ${namedNode(schema.streetAddress)} ${addressStreet} .
 
         FILTER (
           ABS(${latVar} - ${latitude}) <= ${toleranceInDegrees} &&
@@ -321,6 +327,7 @@ export class SPARQLQueryBuilderService {
     musicBrainzGraphIRI: string,
     radiusInKm = 0.222
   ) {
+    const { mb, rdf, rdfs, wdt } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
     const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
@@ -328,9 +335,9 @@ export class SPARQLQueryBuilderService {
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName}`.WHERE`
       GRAPH ${sourceGraph} {
-        ${placeIRI} ${namedNode(ns.rdf.type)} ${namedNode(ns.mb.Place)} ;
-                    ${namedNode(ns.rdfs.label)} ${placeName} ;
-                    ${namedNode(ns.wdt.coordinateLocation)} ${coords} .
+        ${placeIRI} ${namedNode(rdf.type)} ${namedNode(mb.Place)} ;
+                    ${namedNode(rdfs.label)} ${placeName} ;
+                    ${namedNode(wdt.coordinateLocation)} ${coords} .
 
         FILTER (bif:st_intersects(${coords}, bif:st_point(${longitude}, ${latitude}), ${radiusInKm}))
       }
