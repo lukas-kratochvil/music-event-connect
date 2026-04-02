@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { compression } from "vite-plugin-compression2";
 
-const port = process.env["PORT"] ? +process.env["PORT"] : undefined;
+const port = process.env["VITE_PORT"] ? +process.env["VITE_PORT"] : undefined;
 
 const reactCompilerConfig = {};
 
@@ -34,9 +34,11 @@ export default defineConfig({
     host: true, // it's a must for Docker container port mapping to work
     strictPort: true,
     port,
-    // `hmr.clientPort` and `watch.usePolling` are important for HMR to work in the Docker container
+    // `hmr` and `watch.usePolling` are important for HMR to work in the Docker container
     hmr: {
-      clientPort: port,
+      host: process.env["VITE_HMR_HOSTNAME"],
+      clientPort: process.env["VITE_HMR_PORT"] ? +process.env["VITE_HMR_PORT"] : undefined,
+      protocol: "wss",
     },
     watch: {
       usePolling: true,

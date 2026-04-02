@@ -142,12 +142,11 @@ services:
       - ./logs/web:/app/apps/web/logs:rw
       - ./apps/web/public:/app/apps/web/public:ro
       - ./apps/web/src:/app/apps/web/src:ro
-    ports:
-      # expose port for Vite HMR
-      - '3030:3030'
     environment:
       - NODE_ENV=development
-      - PORT=3030
+      - VITE_PORT=3030
+      - VITE_HMR_HOSTNAME=music-event-connect.localhost
+      - VITE_HMR_PORT=443
     depends_on:
       traefik:
         condition: service_started

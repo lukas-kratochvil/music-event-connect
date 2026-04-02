@@ -3,8 +3,7 @@
   "globalEnv": [
     "PUPPETEER_CACHE_DIR",
     "DEV",
-    "NODE_ENV",
-    "PORT"
+    "NODE_ENV"
   ],
   "tasks": {
     "build": {
