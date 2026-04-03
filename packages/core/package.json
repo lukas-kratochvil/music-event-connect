@@ -60,6 +60,7 @@
     "@tpluscode/sparql-builder": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "date-fns": "^4.1.0",
     "deep-object-diff": "^1.1.9",
     "digest-fetch": "v2",
     "n3": "^1.26.0",

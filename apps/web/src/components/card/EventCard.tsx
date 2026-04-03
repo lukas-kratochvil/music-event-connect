@@ -12,13 +12,14 @@ type EventCardProps = {
 const EventCard = ({ event }: EventCardProps) => {
   // TODO: show multiple offers or choose only one that is available?
   const offer = event.offers[0]!;
+  const images = [...event.images, ...event.artists.map((artist) => artist.images).flat()];
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={RoutingPath.EVENTS + "/" + event.id}>
         <div className="aspect-video w-full overflow-hidden">
           <img
             className="h-full w-full object-cover transition-transform hover:scale-105"
-            src={event.images.at(0)}
+            src={images.at(0)}
             alt={event.name}
           />
         </div>

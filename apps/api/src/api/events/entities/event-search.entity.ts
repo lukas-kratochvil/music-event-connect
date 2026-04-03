@@ -5,6 +5,9 @@ import { ApiProperty } from "@nestjs/swagger";
 class EventSearchArtist {
   @ApiProperty()
   name: string;
+
+  @ApiProperty({ type: "string", isArray: true })
+  images: string[];
 }
 
 class EventSearchAddress {
@@ -50,6 +53,6 @@ export class EventSearch implements IEventSearch {
   @ApiProperty({ type: () => EventSearchVenue, isArray: true })
   venues: EventSearchVenue[];
 
-  @ApiProperty({ type: () => EventSearchOffer })
-  offer: EventSearchOffer;
+  @ApiProperty({ type: () => EventSearchOffer, isArray: true })
+  offers: EventSearchOffer[];
 }

@@ -62,34 +62,36 @@ const EventDetailPage = () => {
       </div>
 
       {/* Images */}
-      <div className="mb-10 px-12 w-full">
-        <Carousel
-          className="w-full"
-          opts={{
-            align: "start",
-            dragFree: true, // for touch devices
-          }}
-        >
-          <CarouselContent className="-ml-4">
-            {allImages.map(({ type, imgUrl }) => (
-              <CarouselItem
-                key={imgUrl}
-                className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-              >
-                <div className="aspect-square overflow-hidden rounded-xl border">
-                  <img
-                    className="h-full w-full object-cover"
-                    src={imgUrl}
-                    alt={type + " media"}
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
+      {allImages.length > 0 && (
+        <div className="mb-10 px-12 w-full">
+          <Carousel
+            className="w-full"
+            opts={{
+              align: "start",
+              dragFree: true, // for touch devices
+            }}
+          >
+            <CarouselContent className="-ml-4">
+              {allImages.map(({ type, imgUrl }) => (
+                <CarouselItem
+                  key={imgUrl}
+                  className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                >
+                  <div className="aspect-square overflow-hidden rounded-xl border">
+                    <img
+                      className="h-full w-full object-cover"
+                      src={imgUrl}
+                      alt={type + " media"}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
+      )}
 
       {/* TWO-COLUMN layout for content and tickets */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative">

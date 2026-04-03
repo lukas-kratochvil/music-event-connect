@@ -1,3 +1,4 @@
+import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
@@ -82,6 +83,21 @@ export class SPARQLService {
     return results.map((row) => ({
       iri: row[VARIABLES.linkedResource.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
       graph: row[VARIABLES.linkedResource.graph]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+    }));
+  }
+
+  async getLinkedEventOffers(eventIRIs: NamedNode[], linksGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectLinkedEventOffers(eventIRIs, linksGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers;
+    return results.map((row) => ({
+      event: {
+        id: row[VARIABLES.event.id]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        offer: {
+          url: row[VARIABLES.event.offer.url]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+          availability: row[VARIABLES.event.offer.availability]?.value! as ItemAvailability, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        },
+      },
     }));
   }
 

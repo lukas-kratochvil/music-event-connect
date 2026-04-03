@@ -32,6 +32,15 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
       graph: "sourceGraph",
     },
   },
+  selectLinkedEventOffers: {
+    event: {
+      id: "eventId",
+      offer: {
+        url: "offerURL",
+        availability: "offerAvailability",
+      },
+    },
+  },
   selectEventsByDate: {
     event: {
       iri: "eventIRI",
@@ -95,7 +104,7 @@ export class SPARQLQueryBuilderService {
    * Constructs events and also retrieves its nested entities max. 2 levels deep.
    */
   constructEvents(
-    eventEntityTypeIRI: NamedNode,
+    _eventEntityTypeIRI: NamedNode,
     linksGraphIRI: string,
     pagination: Pagination,
     filters: ConstructEventsFilters | undefined,
@@ -108,6 +117,9 @@ export class SPARQLQueryBuilderService {
     const startDate = variable("startDate");
     const startDateGrouped = variable("startDateGrouped");
     const artistName = variable("artistName");
+    const linkedEventImage = variable("linkedEventImage");
+    const eventArtist = variable("eventArtist");
+    const linkedArtistImage = variable("linkedArtistImage");
 
     // Filters
     let filterClauses = "";
@@ -115,17 +127,17 @@ export class SPARQLQueryBuilderService {
     if (filters?.startDateRange) {
       const { from, to } = filters.startDateRange;
       if (from) {
-        filterClauses += `FILTER (${startDate} >= ${literal(from.toISOString(), namedNode(xsd.dateTime))})\n`;
+        filterClauses += `FILTER (?${startDate.value} >= "${from.toISOString()}"^^<${xsd.dateTime}>)\n`;
       }
       if (to) {
-        filterClauses += `FILTER (${startDate} <= ${literal(to.toISOString(), namedNode(xsd.dateTime))})\n`;
+        filterClauses += `FILTER (?${startDate.value} <= "${to.toISOString()}"^^<${xsd.dateTime}>)\n`;
       }
     }
 
     // the length must be greater than 0 otherwise `?var IN ()` is always false so no triples will be returned
     if (filters?.artistNames && filters.artistNames.length > 0) {
       const names = filters.artistNames.map((name) => `"${name}"`).join(", ");
-      filterClauses += `FILTER (${artistName} IN (${names}))\n`;
+      filterClauses += `FILTER (?${artistName.value} IN (${names}))\n`;
     }
 
     // Pagination
@@ -135,11 +147,14 @@ export class SPARQLQueryBuilderService {
       ${event} ?p1 ?child .
       ?child ?p2 ?grandchild .
       ?grandchild  ?p3 ?o .
+      # linked events data
+      ${event} ${namedNode(schema.image)} ${linkedEventImage} .
+      ${eventArtist} ${namedNode(schema.image)} ${linkedArtistImage} .
     `.WHERE`
       {
         SELECT ${event} (MIN(${startDate}) AS ${startDateGrouped})
         WHERE {
-          ${event} ${namedNode(rdf.type)} ${eventEntityTypeIRI} ;
+          ${event} ${namedNode(rdf.type)} ${namedNode(schema.MusicEvent)} ;
                     ${namedNode(schema.startDate)} ${startDate} ;
                     ${namedNode(schema.performer)} ?artist .
           OPTIONAL {
@@ -164,6 +179,20 @@ export class SPARQLQueryBuilderService {
         OFFSET ${offset}
       }
 
+      # get data from the linked artists
+      OPTIONAL {
+        ${event} ${namedNode(schema.performer)} ${eventArtist} .
+
+        GRAPH ${linksGraph} {
+          { ${eventArtist} ${namedNode(schema.sameAs)} ?linkedArtist }
+          UNION
+          { ?linkedArtist ${namedNode(schema.sameAs)} ${eventArtist} }
+        }
+
+        ?linkedArtist ${namedNode(schema.image)} ${linkedArtistImage} .
+      }
+
+      # get all the data about the chosen event
       ${event} ?p1 ?child .
       OPTIONAL {
         ?child ?p2 ?grandchild .
@@ -172,6 +201,30 @@ export class SPARQLQueryBuilderService {
         }
       }
     `;
+  }
+
+  selectLinkedEventOffers(eventIRIs: NamedNode[], linksGraphIRI: string) {
+    const { schema } = ns;
+    const linksGraph = namedNode(linksGraphIRI);
+    const eventId = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.id);
+    const linkedOfferTicketURL = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.offer.url);
+    const linkedOfferAvailability = variable(
+      SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.offer.availability
+    );
+    return this.builder.SELECT.DISTINCT`${eventId} ${linkedOfferTicketURL} ${linkedOfferAvailability}`.WHERE`
+        VALUES ?event { ${eventIRIs} }
+
+        GRAPH ${linksGraph} {
+          { ?event ${namedNode(schema.sameAs)} ?linkedEvent }
+          UNION
+          { ?linkedEvent ${namedNode(schema.sameAs)} ?event }
+        }
+
+        ?event ${namedNode(schema.identifier)} ${eventId} .
+        ?linkedEvent ${namedNode(schema.offers)} ?linkedOffer .
+        ?linkedOffer ${namedNode(schema.url)} ${linkedOfferTicketURL} ;
+                        ${namedNode(schema.availability)} ${linkedOfferAvailability} .
+      `;
   }
 
   /**

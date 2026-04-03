@@ -35,6 +35,7 @@ export interface IEventSearchOptions {
 //----------------------------------------------------
 export interface IEventSearchArtist {
   name: string;
+  images: string[];
 }
 
 export interface IEventSearchAddress {
@@ -59,5 +60,5 @@ export interface IEventSearch {
   images: string[];
   artists: IEventSearchArtist[];
   venues: IEventSearchVenue[];
-  offer: IEventSearchOffer;
+  offers: IEventSearchOffer[];
 }

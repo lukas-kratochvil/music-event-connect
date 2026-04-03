@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import type { ClassConstructor } from "class-transformer";
+import { compareAsc, compareDesc } from "date-fns";
 import { DataFactory, type NamedNode } from "n3";
 import { MusicEventEntity } from "../../entities";
 import { RDF_METADATA_KEYS } from "../../rdf/decorators/metadata-keys";
 import { ns } from "../../rdf/ontology";
+import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
 import type {
   ConstructEventsFilters,
   ConstructEventsSorters,
@@ -42,6 +44,23 @@ export class MusicEventMapper extends AbstractEntityMapper<MusicEventEntity> {
       musicEventEntities.push(musicEventEntity);
     }
 
+    if (sorters) {
+      const { startDate } = sorters;
+      if (startDate) {
+        return musicEventEntities.toSorted((a, b) =>
+          startDate.desc ? compareDesc(a.startDate, b.startDate) : compareAsc(a.startDate, b.startDate)
+        );
+      }
+    }
+
     return musicEventEntities;
+  }
+
+  async findAllRelatedTickets(eventIds: string[]) {
+    const eventIRIs = eventIds.map((id) => {
+      const entity = this.createNewEntity(id);
+      return RdfEntitySerializerService.createEntityIRI(entity);
+    });
+    return this.sparqlService.getLinkedEventOffers(eventIRIs, GRAPHS_MAP.links);
   }
 }

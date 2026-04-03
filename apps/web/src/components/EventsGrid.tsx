@@ -20,17 +20,17 @@ const EventsGrid = () => {
 
   const searchOptions = {
     filters: {
-      startDateRange: startDate,
+      startDateRange: startDate ?? { from: new Date() },
     },
     pagination: {
       limit: 20,
       offset: 0,
     },
-    sorters: [
-      {
-        propertyName: "startDate",
+    sorters: {
+      startDate: {
+        desc: false,
       },
-    ],
+    },
   } satisfies IEventSearchOptions;
   const {
     data: events,

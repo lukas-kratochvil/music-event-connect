@@ -18,26 +18,32 @@ export class EventsService {
         offset: 0,
       } satisfies IEventSearchPagination);
     const events = await this.musicEventMapper.findAll(pagination, options?.filters, options?.sorters);
-    return events.map((event) => ({
-      id: event.id,
-      name: event.name,
-      startDate: event.startDate,
-      images: event.images ?? [],
-      artists: event.artists.map((artist) => ({
-        name: artist.name,
-      })),
-      venues: event.venues.map((venue) => ({
-        name: venue.name,
-        address: {
-          locality: venue.address.locality,
-          country: venue.address.country,
-        },
-      })),
-      offer: {
-        url: event.ticket.url,
-        availability: event.ticket.availability,
-      },
-    }));
+    const eventsWithRelatedTickets = await this.musicEventMapper.findAllRelatedTickets(events.map((event) => event.id));
+    return events.map((event) => {
+      const relatedEventData = eventsWithRelatedTickets.filter((relatedData) => relatedData.event.id === event.id);
+      const relatedOffers = relatedEventData.map((data) => data.event.offer);
+      return {
+        id: event.id,
+        name: event.name,
+        startDate: event.startDate,
+        images: event.images ?? [], // TODO: improve IMusicEvent so images can be also undefined? Check other props!
+        artists: (event.artists ?? []).map((artist) => ({
+          name: artist.name,
+          images: artist.images ?? [],
+        })),
+        venues: (event.venues ?? []).map((venue) => ({
+          name: venue.name,
+          address: {
+            locality: venue.address.locality,
+            country: venue.address.country,
+          },
+        })),
+        offers: [event.ticket, ...relatedOffers].map((ticket) => ({
+          url: ticket.url,
+          availability: ticket.availability,
+        })),
+      };
+    });
   }
 
   async findOne(eventId: string): Promise<Event> {
@@ -49,6 +55,7 @@ export class EventsService {
 
     const graphIri = GRAPHS_MAP["events"][eventOrigin];
     const event = await this.musicEventMapper.getWholeEntity(eventId, graphIri);
+    // return this.musicEventMapper.getWholeEntityIncludingRelatives(eventId);
     return {
       id: event.id,
       name: event.name,
