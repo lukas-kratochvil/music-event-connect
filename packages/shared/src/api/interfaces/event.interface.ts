@@ -40,5 +40,5 @@ export interface IEvent {
   images?: string[];
   artists?: IEventArtist[];
   venues: IEventVenue[];
-  offer: IEventOffer;
+  offers: IEventOffer[];
 }

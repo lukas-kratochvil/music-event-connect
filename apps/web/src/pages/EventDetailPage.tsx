@@ -45,6 +45,12 @@ const EventDetailPage = () => {
     text: venue.name,
     position: [venue.latitude, venue.longitude] as [number, number],
   }));
+  const availableOffers = event.offers
+    .filter((offer) => offer.availability === "InStock")
+    .map((offer) => ({
+      ...offer,
+      origin: new URL(offer.url).hostname,
+    }));
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-8">
@@ -248,7 +254,7 @@ const EventDetailPage = () => {
                 <div className="text-sm text-muted-foreground">Available tickets.</div>
               </CardContent>
               <CardFooter>
-                {event.offer.availability === "SoldOut" ? (
+                {availableOffers.length === 0 ? (
                   <Button
                     className="w-full text-lg py-6"
                     disabled
@@ -256,19 +262,23 @@ const EventDetailPage = () => {
                     Sold Out
                   </Button>
                 ) : (
-                  <Button
-                    asChild
-                    className="w-full text-lg py-6 shadow-md hover:shadow-lg transition-all"
-                  >
-                    <a
-                      href={event.offer.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {/* TODO: extract the name of the portal offering the ticket */}
-                      {event.offer.url}
-                    </a>
-                  </Button>
+                  <>
+                    {availableOffers.map((offer) => (
+                      <Button
+                        key={offer.url}
+                        asChild
+                        className="w-full text-lg py-6 shadow-md hover:shadow-lg transition-all"
+                      >
+                        <a
+                          href={offer.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {offer.origin}
+                        </a>
+                      </Button>
+                    ))}
+                  </>
                 )}
               </CardFooter>
             </Card>

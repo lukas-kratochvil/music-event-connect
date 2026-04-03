@@ -85,6 +85,6 @@ export class Event implements IEvent {
   @ApiProperty({ type: () => EventVenue, isArray: true })
   venues: EventVenue[];
 
-  @ApiProperty({ type: () => EventOffer })
-  offer: EventOffer;
+  @ApiProperty({ type: () => EventOffer, isArray: true })
+  offers: EventOffer[];
 }

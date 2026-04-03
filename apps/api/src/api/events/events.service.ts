@@ -55,7 +55,8 @@ export class EventsService {
 
     const graphIri = GRAPHS_MAP["events"][eventOrigin];
     const event = await this.musicEventMapper.getWholeEntity(eventId, graphIri);
-    // return this.musicEventMapper.getWholeEntityIncludingRelatives(eventId);
+    const relatedData = await this.musicEventMapper.findAllRelatedTickets([event.id]);
+    const relatedOffers = relatedData.map((data) => data.event.offer);
     return {
       id: event.id,
       name: event.name,
@@ -83,10 +84,10 @@ export class EventsService {
           country: venue.address.country,
         },
       })),
-      offer: {
-        url: event.ticket.url,
-        availability: event.ticket.availability,
-      },
+      offers: [event.ticket, ...relatedOffers].map((ticket) => ({
+        url: ticket.url,
+        availability: ticket.availability,
+      })),
     } satisfies Event;
   }
 }
