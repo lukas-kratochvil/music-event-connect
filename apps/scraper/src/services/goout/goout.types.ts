@@ -41,3 +41,15 @@ type Offer = {
   price: string;
   priceCurrency: string;
 };
+
+/**
+ * Published Linked Data for an artist.
+ */
+export type GoOutArtist = {
+  "@context": string;
+  "@type": "Event";
+  name: string;
+  description: string;
+  url: string;
+  image: string;
+};

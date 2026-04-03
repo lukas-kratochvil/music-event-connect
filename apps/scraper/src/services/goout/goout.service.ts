@@ -13,7 +13,7 @@ import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
 import { SharedBrowserService } from "../../puppeteer/shared-browser.service";
-import type { GoOutEvent } from "./goout.types";
+import type { GoOutArtist, GoOutEvent } from "./goout.types";
 
 type EventItem = {
   url: string;
@@ -90,6 +90,30 @@ export class GooutService implements ICronJobService {
         `::-p-xpath(//section[contains(@class, 'py-4')]/div[contains(@class, 'photo-gallery')]/a)`,
         (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href.trim())
       );
+
+      // if no images found try to get at least the artist's profile photo
+      if (images.length === 0) {
+        const artistLinkedData = await artistPage
+          .$eval('script[type="application/ld+json"]', (script) => {
+            try {
+              return JSON.parse(script.textContent || "{}") as GoOutArtist;
+            } catch {
+              return null;
+            }
+          })
+          .catch((e) => {
+            if (e instanceof Error) {
+              this.#logger.error(e.message, e.stack);
+            } else {
+              this.#logger.error(String(e));
+            }
+            return null;
+          });
+
+        if (artistLinkedData) {
+          images.push(artistLinkedData.image);
+        }
+      }
     } catch (e) {
       await artistPage.close();
       if (e instanceof Error) {
