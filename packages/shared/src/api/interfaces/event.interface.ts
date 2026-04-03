@@ -7,10 +7,10 @@ export interface IEventAccount {
 
 export interface IEventArtist {
   name: string;
-  genres: string[];
-  urls: string[];
-  accounts: IEventAccount[];
-  images: string[];
+  genres?: string[];
+  urls?: string[];
+  accounts?: IEventAccount[];
+  images?: string[];
 }
 
 export interface IEventAddress {
@@ -37,8 +37,8 @@ export interface IEvent {
   doorTime: Date | undefined;
   startDate: Date;
   endDate: Date | undefined;
-  images: string[];
-  artists: IEventArtist[];
+  images?: string[];
+  artists?: IEventArtist[];
   venues: IEventVenue[];
   offer: IEventOffer;
 }

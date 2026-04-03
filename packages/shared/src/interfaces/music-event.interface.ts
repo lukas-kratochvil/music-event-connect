@@ -26,7 +26,7 @@ export interface IMusicEvent {
   /**
    * Artists performing on the concert.
    */
-  artists: IArtist[];
+  artists?: IArtist[];
 
   /**
    * Venues where the music event takes place.
@@ -56,5 +56,5 @@ export interface IMusicEvent {
   /**
    * Images for the event.
    */
-  images: string[];
+  images?: string[];
 }

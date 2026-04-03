@@ -22,5 +22,5 @@ export interface IAddress {
   /**
    * The street address.
    */
-  street: string | undefined;
+  street?: string;
 }

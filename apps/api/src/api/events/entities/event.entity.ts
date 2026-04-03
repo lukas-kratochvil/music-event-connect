@@ -14,17 +14,17 @@ class EventArtist {
   @ApiProperty()
   name: string;
 
-  @ApiProperty({ type: "string", isArray: true })
-  genres: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  genres?: string[];
 
-  @ApiProperty({ type: "string", isArray: true })
-  urls: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  urls?: string[];
 
-  @ApiProperty({ type: () => EventAccount, isArray: true })
-  accounts: EventAccount[];
+  @ApiPropertyOptional({ type: () => EventAccount, isArray: true })
+  accounts?: EventAccount[];
 
-  @ApiProperty({ type: "string", isArray: true })
-  images: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  images?: string[];
 }
 
 class EventAddress {
@@ -76,11 +76,11 @@ export class Event implements IEvent {
   @ApiPropertyOptional({ type: Date })
   endDate: Date | undefined;
 
-  @ApiProperty({ type: "string", isArray: true })
-  images: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  images?: string[];
 
-  @ApiProperty({ type: () => EventArtist, isArray: true })
-  artists: EventArtist[];
+  @ApiPropertyOptional({ type: () => EventArtist, isArray: true })
+  artists?: EventArtist[];
 
   @ApiProperty({ type: () => EventVenue, isArray: true })
   venues: EventVenue[];

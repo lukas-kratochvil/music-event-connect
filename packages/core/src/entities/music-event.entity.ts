@@ -46,11 +46,12 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
 
   @Expose()
   @Type(() => ArtistEntity)
+  @IsOptional()
   @IsArray()
   @ArrayUnique<ArtistEntity>((elem) => elem.name)
   @ValidateNested({ each: true })
   @RDFProperty(ns.schema.performer, { kind: "class", type: () => ArtistEntity })
-  artists: ArtistEntity[];
+  artists?: ArtistEntity[];
 
   @Expose()
   @Type(() => VenueEntity)
@@ -92,9 +93,10 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   ticket: TicketEntity;
 
   @Expose()
+  @IsOptional()
   @IsArray()
   @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @ArrayUnique<string>()
   @RDFProperty(ns.schema.image, { kind: "url" })
-  images: string[];
+  images?: string[];
 }

@@ -44,7 +44,7 @@ export class LinksMapper {
   async #handleMusicEvent(event: MusicEventEntity, sourceGraph: MusicEventGraph) {
     // find links of related entities
     const relatedEntitiesTask = Promise.all([
-      ...event.artists.map((artist) => this.createEntityLinks(artist, sourceGraph)),
+      ...(event.artists?.map((artist) => this.createEntityLinks(artist, sourceGraph)) ?? []),
       ...event.venues.map((venue) => this.createEntityLinks(venue, sourceGraph)),
     ]);
 

@@ -35,8 +35,10 @@ const EventDetailPage = () => {
   }
 
   const allImages = [
-    ...event.images.map((img) => ({ type: "Event", imgUrl: img }) as const),
-    ...event.artists.flatMap((artist) => artist.images.map((img) => ({ type: "Artist", imgUrl: img }) as const)),
+    ...(event.images?.map((img) => ({ type: "Event", imgUrl: img }) as const) ?? []),
+    ...(event.artists
+      ?.flatMap((artist) => artist.images?.map((img) => ({ type: "Artist", imgUrl: img }) as const))
+      .filter((value) => value !== undefined) ?? []),
   ];
   const venueHeader = event.venues.map((venue) => venue.name + " (" + venue.address.locality + ")").join(", ");
   const venueCoords = event.venues.map((venue) => ({
@@ -131,63 +133,67 @@ const EventDetailPage = () => {
           <Separator />
 
           {/* Artists */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6">Artists</h2>
-            <div className="space-y-6">
-              {event.artists.map((artist) => (
-                <div
-                  key={artist.name}
-                  className="flex flex-col sm:flex-row gap-6 p-4 border rounded-xl bg-card"
-                >
-                  <div className="grow space-y-4">
-                    <h3 className="text-xl font-bold">{artist.name}</h3>
+          {event.artists && (
+            <>
+              <section>
+                <h2 className="text-2xl font-bold mb-6">Artists</h2>
+                <div className="space-y-6">
+                  {event.artists.map((artist) => (
+                    <div
+                      key={artist.name}
+                      className="flex flex-col sm:flex-row gap-6 p-4 border rounded-xl bg-card"
+                    >
+                      <div className="grow space-y-4">
+                        <h3 className="text-xl font-bold">{artist.name}</h3>
 
-                    {/* Genres */}
-                    <div className="flex flex-wrap gap-2">
-                      {artist.genres.map((g) => (
-                        <Badge
-                          key={g}
-                          variant="secondary"
-                        >
-                          {g}
-                        </Badge>
-                      ))}
-                    </div>
+                        {/* Genres */}
+                        <div className="flex flex-wrap gap-2">
+                          {artist.genres?.map((g) => (
+                            <Badge
+                              key={g}
+                              variant="secondary"
+                            >
+                              {g}
+                            </Badge>
+                          ))}
+                        </div>
 
-                    {/* Website and other third-party accounts */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm mt-4">
-                      {artist.urls.map((url) => (
-                        <a
-                          key={url}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 hover:text-primary transition-colors"
-                        >
-                          <Globe className="h-4 w-4" />
-                          <span>Official Site</span>
-                        </a>
-                      ))}
-                      {artist.accounts.map((account) => (
-                        <a
-                          key={account.name}
-                          href={account.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 hover:text-primary transition-colors"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          <span>{account.name}</span>
-                        </a>
-                      ))}
+                        {/* Website and other third-party accounts */}
+                        <div className="flex flex-wrap items-center gap-4 text-sm mt-4">
+                          {artist.urls?.map((url) => (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 hover:text-primary transition-colors"
+                            >
+                              <Globe className="h-4 w-4" />
+                              <span>Official Site</span>
+                            </a>
+                          ))}
+                          {artist.accounts?.map((account) => (
+                            <a
+                              key={account.name}
+                              href={account.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 hover:text-primary transition-colors"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              <span>{account.name}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              </section>
 
-          <Separator />
+              <Separator />
+            </>
+          )}
 
           {/* Venues */}
           <section>

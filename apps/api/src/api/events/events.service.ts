@@ -26,12 +26,12 @@ export class EventsService {
         id: event.id,
         name: event.name,
         startDate: event.startDate,
-        images: event.images ?? [], // TODO: improve IMusicEvent so images can be also undefined? Check other props!
-        artists: (event.artists ?? []).map((artist) => ({
+        images: event.images,
+        artists: event.artists?.map((artist) => ({
           name: artist.name,
-          images: artist.images ?? [],
+          images: artist.images,
         })),
-        venues: (event.venues ?? []).map((venue) => ({
+        venues: event.venues.map((venue) => ({
           name: venue.name,
           address: {
             locality: venue.address.locality,
@@ -62,18 +62,16 @@ export class EventsService {
       doorTime: event.doorTime,
       startDate: event.startDate,
       endDate: event.endDate,
-      images: event.images ?? [], // TODO: improve IMusicEvent so images can be also undefined? Check other props!
-      artists: event.artists.map((artist) => ({
+      images: event.images,
+      artists: event.artists?.map((artist) => ({
         name: artist.name,
-        genres: artist.genres ?? [],
-        images: artist.images ?? [],
-        urls: artist.urls ?? [],
-        accounts: artist.accounts
-          ? artist.accounts.map((account) => ({
-              url: account.url,
-              name: account.accountName,
-            }))
-          : [],
+        genres: artist.genres,
+        images: artist.images,
+        urls: artist.urls,
+        accounts: artist.accounts?.map((account) => ({
+          url: account.url,
+          name: account.accountName,
+        })),
       })),
       venues: event.venues.map((venue) => ({
         name: venue.name,

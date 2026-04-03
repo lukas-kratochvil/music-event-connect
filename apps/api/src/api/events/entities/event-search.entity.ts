@@ -1,13 +1,13 @@
 import type { IEventSearch } from "@music-event-connect/shared/api";
 import { ItemAvailability } from "@music-event-connect/shared/interfaces";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 class EventSearchArtist {
   @ApiProperty()
   name: string;
 
-  @ApiProperty({ type: "string", isArray: true })
-  images: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  images?: string[];
 }
 
 class EventSearchAddress {
@@ -44,11 +44,11 @@ export class EventSearch implements IEventSearch {
   @ApiProperty({ type: Date })
   startDate: Date;
 
-  @ApiProperty({ type: "string", isArray: true })
-  images: string[];
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  images?: string[];
 
-  @ApiProperty({ type: () => EventSearchArtist, isArray: true })
-  artists: EventSearchArtist[];
+  @ApiPropertyOptional({ type: () => EventSearchArtist, isArray: true })
+  artists?: EventSearchArtist[];
 
   @ApiProperty({ type: () => EventSearchVenue, isArray: true })
   venues: EventSearchVenue[];

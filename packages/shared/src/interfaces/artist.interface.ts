@@ -15,17 +15,22 @@ export interface IArtist {
   name: string;
 
   /**
+   * Links to the official websites.
+   */
+  urls?: string[];
+
+  /**
    * Links to other artist's accounts like Facebook, Spotify or MusicBrainz.
    */
-  accounts: IOnlineAccount[];
+  accounts?: IOnlineAccount[];
 
   /**
    * Names of music genres of artist's work.
    */
-  genres: string[];
+  genres?: string[];
 
   /**
    * Images of the artist.
    */
-  images: string[];
+  images?: string[];
 }

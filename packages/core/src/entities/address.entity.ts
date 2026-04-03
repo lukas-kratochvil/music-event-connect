@@ -37,5 +37,5 @@ export class AddressEntity extends AbstractEntity implements IAddress {
   @IsOptional()
   @IsString()
   @RDFProperty(ns.schema.streetAddress)
-  street: string | undefined;
+  street?: string;
 }

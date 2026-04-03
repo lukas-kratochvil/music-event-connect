@@ -12,7 +12,7 @@ type EventCardProps = {
 const EventCard = ({ event }: EventCardProps) => {
   // TODO: show multiple offers or choose only one that is available?
   const offer = event.offers[0]!;
-  const images = [...event.images, ...event.artists.map((artist) => artist.images).flat()];
+  const images = [...(event.images ?? []), ...(event.artists?.map((artist) => artist.images ?? []).flat() ?? [])];
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={RoutingPath.EVENTS + "/" + event.id}>
@@ -41,7 +41,7 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
         <div>
           <span className="font-semibold text-foreground">Artists: </span>
-          <span className="text-muted-foreground">{event.artists.map((artist) => artist.name).join(", ")}</span>
+          <span className="text-muted-foreground">{event.artists?.map((artist) => artist.name).join(", ") ?? ""}</span>
         </div>
         <div>
           <span className="font-semibold text-foreground">Venue: </span>
