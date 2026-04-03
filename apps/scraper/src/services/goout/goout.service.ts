@@ -256,13 +256,18 @@ export class GooutService implements ICronJobService {
       throw new Error("Missing venue city.");
     }
 
-    const [isOnSale, ticketsUrl] =
-      eventItem.linkedData?.offers?.at(0) && eventItem.linkedData.offers[0]?.url
-        ? [eventItem.linkedData.offers[0]?.availability === "InStock", eventItem.linkedData.offers[0]?.url]
-        : await page.$eval(".ticket-button", (elem) => {
-            const anchor = elem as HTMLAnchorElement;
-            return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
-          });
+    // don't take the ticket data from the linked data because ticket URLs are broken
+    const [isOnSale, ticketsUrl] = await page.$eval(".ticket-button", (elem) => {
+      const anchor = elem as HTMLAnchorElement;
+      return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
+    });
+    // const [isOnSale, ticketsUrl] =
+    //   eventItem.linkedData?.offers?.at(0) && eventItem.linkedData.offers[0]?.url
+    //     ? [eventItem.linkedData.offers[0]?.availability === "InStock", eventItem.linkedData.offers[0]?.url]
+    //     : await page.$eval(".ticket-button", (elem) => {
+    //         const anchor = elem as HTMLAnchorElement;
+    //         return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
+    //       });
     return {
       event: {
         id: extractIdFromUrl(eventItem.url),
