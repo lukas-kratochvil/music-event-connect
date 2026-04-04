@@ -50,7 +50,8 @@ const EventDetailPage = () => {
     .map((offer) => ({
       ...offer,
       origin: new URL(offer.url).hostname,
-    }));
+    }))
+    .sort((a, b) => a.origin.localeCompare(b.origin));
 
   return (
     <div className="container mx-auto px-4 py-8 md:px-8">
@@ -154,7 +155,7 @@ const EventDetailPage = () => {
 
                         {/* Genres */}
                         <div className="flex flex-wrap gap-2">
-                          {artist.genres?.map((g) => (
+                          {artist.genres?.sort().map((g) => (
                             <Badge
                               key={g}
                               variant="secondary"
@@ -262,7 +263,7 @@ const EventDetailPage = () => {
                     Sold Out
                   </Button>
                 ) : (
-                  <>
+                  <div className="flex flex-col flex-auto gap-2">
                     {availableOffers.map((offer) => (
                       <Button
                         key={offer.url}
@@ -278,7 +279,7 @@ const EventDetailPage = () => {
                         </a>
                       </Button>
                     ))}
-                  </>
+                  </div>
                 )}
               </CardFooter>
             </Card>

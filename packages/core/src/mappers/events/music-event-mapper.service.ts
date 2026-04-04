@@ -1,3 +1,4 @@
+import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { Injectable } from "@nestjs/common";
 import type { ClassConstructor } from "class-transformer";
 import { compareAsc, compareDesc } from "date-fns";
@@ -62,6 +63,18 @@ export class MusicEventMapper extends AbstractEntityMapper<MusicEventEntity> {
       const entity = this.createNewEntity(id);
       return RdfEntitySerializerService.createEntityIRI(entity);
     });
-    return this.sparqlService.getLinkedEventOffers(eventIRIs, GRAPHS_MAP.links);
+    const linkedEventOffers = await this.sparqlService.getLinkedEventOffers(eventIRIs, GRAPHS_MAP.links);
+    return linkedEventOffers.map(
+      (linkedData) =>
+        ({
+          event: {
+            id: linkedData.event.id,
+            offer: {
+              url: linkedData.event.offer.url,
+              availability: new URL(linkedData.event.offer.availability).pathname.split("/").at(-1) as ItemAvailability,
+            },
+          },
+        }) satisfies (typeof linkedEventOffers)[number]
+    );
   }
 }

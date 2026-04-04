@@ -1,4 +1,3 @@
-import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
@@ -95,7 +94,7 @@ export class SPARQLService {
         id: row[VARIABLES.event.id]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
         offer: {
           url: row[VARIABLES.event.offer.url]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
-          availability: row[VARIABLES.event.offer.availability]?.value! as ItemAvailability, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+          availability: row[VARIABLES.event.offer.availability]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
         },
       },
     }));

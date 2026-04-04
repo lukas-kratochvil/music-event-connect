@@ -223,7 +223,7 @@ export class SPARQLQueryBuilderService {
         ?event ${namedNode(schema.identifier)} ${eventId} .
         ?linkedEvent ${namedNode(schema.offers)} ?linkedOffer .
         ?linkedOffer ${namedNode(schema.url)} ${linkedOfferTicketURL} ;
-                        ${namedNode(schema.availability)} ${linkedOfferAvailability} .
+                      ${namedNode(schema.availability)} ${linkedOfferAvailability} .
       `;
   }
 
