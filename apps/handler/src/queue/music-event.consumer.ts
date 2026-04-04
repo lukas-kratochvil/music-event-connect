@@ -6,14 +6,22 @@ import {
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
 } from "@music-event-connect/core/queue";
+import type { StrictOmit } from "@music-event-connect/shared";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Logger } from "@nestjs/common";
 import type { Job, Worker } from "bullmq";
 import { LocationIQApiProxy } from "../geocoding/locationiq-api-proxy.service";
 
 type Venue = MusicEventsQueueDataType["event"]["venues"][number];
-type VenueWithCoordinates = {
-  [K in keyof Venue]: Venue[K] & {};
+type UpdatedVenue = StrictOmit<
+  {
+    [K in keyof Venue]: Venue[K] & {};
+  },
+  "address"
+> & {
+  address: Venue["address"] & {
+    locality: NonNullable<Venue["address"]["locality"]>;
+  };
 };
 
 @Processor(MusicEventsQueue.name)
@@ -46,7 +54,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
     try {
       // 1) Transform to MusicEventEntity
       const event = job.data.event;
-      const venuesWithCoords = await this.#getEventVenuesWithCoordinates(event.venues);
+      const venues = await this.#updateEventVenues(event.venues);
       // IDs will be assigned by the transformation
       const eventWithIds = {
         ...event,
@@ -81,7 +89,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
           ...event.ticket,
           id: "",
         },
-        venues: venuesWithCoords.map((venue) => ({
+        venues: venues.map((venue) => ({
           ...venue,
           id: "",
           address: {
@@ -141,27 +149,27 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
     }
   }
 
-  async #getEventVenuesWithCoordinates(
-    venues: MusicEventsQueueDataType["event"]["venues"]
-  ): Promise<VenueWithCoordinates[]> {
-    const isVenueWithCoords = (venue: (typeof venues)[number]): venue is VenueWithCoordinates =>
-      venue.latitude !== undefined && venue.longitude !== undefined;
-
-    if (venues.every(isVenueWithCoords)) {
-      return venues;
-    }
-
+  async #updateEventVenues(venues: MusicEventsQueueDataType["event"]["venues"]): Promise<UpdatedVenue[]> {
     return Promise.all(
       venues.map(async (venue) => {
-        if (isVenueWithCoords(venue)) {
-          return venue;
-        }
-
-        const coords = await this.geocodingService.search(venue.name, venue.address);
+        const coords: Awaited<ReturnType<typeof this.geocodingService.geocodeForward>> =
+          venue.latitude && venue.longitude
+            ? { latitude: venue.latitude, longitude: venue.longitude }
+            : await this.geocodingService.geocodeForward(venue.name, venue.address);
+        const address: Awaited<ReturnType<typeof this.geocodingService.geocodeReverse>> = venue.address.locality
+          ? { locality: venue.address.locality }
+          : await this.geocodingService.geocodeReverse({
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+            });
         return {
           ...venue,
           latitude: coords.latitude,
           longitude: coords.longitude,
+          address: {
+            ...venue.address,
+            locality: address.locality,
+          },
         };
       })
     );

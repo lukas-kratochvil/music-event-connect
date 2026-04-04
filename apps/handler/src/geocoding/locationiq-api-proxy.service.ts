@@ -1,7 +1,7 @@
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import Bottleneck from "bottleneck";
-import type { Address, Coordinates, ILocationIQApi } from "./locationiq-api.interface";
+import type { GeoForwardAddressParam, GeoAddress, GeoCoordinates, ILocationIQApi } from "./locationiq-api.interface";
 import { LocationIQApi } from "./locationiq-api.service";
 
 /**
@@ -53,9 +53,12 @@ export class LocationIQApiProxy implements ILocationIQApi {
     this.#rateLimiter = secondsRateLimiter.chain(minuteRateLimiter).chain(dayRateLimiter);
   }
 
-  async search(name: string, address: Address): Promise<Coordinates> {
-    type GeocodingCacheValueType = Awaited<ReturnType<typeof this.locationIQApi.search>>;
-    const cacheKey = (address.street ? address.street + ", " : "") + address.locality + ", " + address.country;
+  async geocodeForward(name: string, address: GeoForwardAddressParam): Promise<GeoCoordinates> {
+    type GeocodingCacheValueType = Awaited<ReturnType<typeof this.locationIQApi.geocodeForward>>;
+    const cacheKey =
+      (address.street ? address.street + ", " : "")
+      + (address.locality ? address.locality + ", " : "")
+      + address.country;
     const cacheResult = await this.cache.get<GeocodingCacheValueType>(cacheKey);
 
     if (cacheResult) {
@@ -63,9 +66,32 @@ export class LocationIQApiProxy implements ILocationIQApi {
     }
 
     try {
-      const coords = await this.#rateLimiter.schedule(() => this.locationIQApi.search(name, address));
+      const coords = await this.#rateLimiter.schedule(() => this.locationIQApi.geocodeForward(name, address));
       await this.cache.set<GeocodingCacheValueType>(cacheKey, coords, LOCATIONIQ_MAX_ALLOWED_CACHE_TTL);
       return coords;
+    } catch (e) {
+      if (e instanceof Error) {
+        this.#logger.error(e.message, e.stack);
+      } else {
+        this.#logger.error(e);
+      }
+      throw e;
+    }
+  }
+
+  async geocodeReverse(coords: GeoCoordinates): Promise<GeoAddress> {
+    type GeocodingCacheValueType = Awaited<ReturnType<typeof this.locationIQApi.geocodeReverse>>;
+    const cacheKey = String(coords.latitude) + "_" + String(coords.longitude);
+    const cacheResult = await this.cache.get<GeocodingCacheValueType>(cacheKey);
+
+    if (cacheResult) {
+      return cacheResult;
+    }
+
+    try {
+      const address = await this.#rateLimiter.schedule(() => this.locationIQApi.geocodeReverse(coords));
+      await this.cache.set<GeocodingCacheValueType>(cacheKey, address, LOCATIONIQ_MAX_ALLOWED_CACHE_TTL);
+      return address;
     } catch (e) {
       if (e instanceof Error) {
         this.#logger.error(e.message, e.stack);

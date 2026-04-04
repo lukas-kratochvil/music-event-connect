@@ -237,8 +237,8 @@ export class TicketmasterService implements ICronJobService {
             longitude: Number(venue.location.longitude) || undefined,
             address: {
               country: "CZ",
-              locality: venue.city.name.trim(),
-              street: venue.address.line1.trim(),
+              locality: venue.city?.name?.trim(),
+              street: venue.address?.line1?.trim(),
             },
           })),
           ticket: {

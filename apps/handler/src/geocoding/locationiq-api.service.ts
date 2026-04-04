@@ -2,8 +2,8 @@ import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
 import { AxiosError } from "axios";
 import { catchError, firstValueFrom } from "rxjs";
-import type { Address, Coordinates, ILocationIQApi } from "./locationiq-api.interface";
-import type { LocationIQSearchStructuredResponse } from "./locationiq-api.types";
+import type { GeoForwardAddressParam, GeoAddress, GeoCoordinates, ILocationIQApi } from "./locationiq-api.interface";
+import type { LocationIQReverseResponse, LocationIQSearchStructuredResponse } from "./locationiq-api.types";
 
 @Injectable()
 export class LocationIQApi implements ILocationIQApi {
@@ -33,7 +33,7 @@ export class LocationIQApi implements ILocationIQApi {
     return sortComparator ? results.toSorted(sortComparator)[0]! : results[0]!;
   }
 
-  async search(name: string, address: Address): Promise<Coordinates> {
+  async geocodeForward(name: string, address: GeoForwardAddressParam): Promise<GeoCoordinates> {
     const res = await firstValueFrom(
       this.http
         .get<LocationIQSearchStructuredResponse>("search/structured", {
@@ -91,6 +91,62 @@ export class LocationIQApi implements ILocationIQApi {
     return {
       latitude: +location.lat,
       longitude: +location.lon,
+    };
+  }
+
+  async geocodeReverse(coords: GeoCoordinates): Promise<GeoAddress> {
+    const res = await firstValueFrom(
+      this.http
+        .get<LocationIQReverseResponse>("reverse", {
+          // API reference: https://docs.locationiq.com/reference/search-structured
+          params: {
+            // JSON or XML (case-insensitive)
+            format: "json",
+            // limit search to a comma-separated list of countries - (case-insensitive) ISO 3166-1 alpha-2 codes (https://docs.locationiq.com/docs/country-codes)
+            countrycodes: "cz",
+            // https://docs.locationiq.com/docs/normalize-address
+            normalizeaddress: 1,
+            // include a breakdown of the address
+            addressdetails: 1,
+            // query params
+            lat: coords.latitude,
+            lon: coords.longitude,
+          },
+        })
+        .pipe(
+          catchError(
+            (error: AxiosError<LocationIQSearchStructuredResponse>) =>
+              new Promise<AxiosError<LocationIQSearchStructuredResponse>>((resolve) => resolve(error))
+          )
+        )
+    );
+
+    if (res instanceof AxiosError) {
+      throw new Error(res.message);
+    }
+
+    const { data, status, statusText } = res;
+
+    if (status === 404) {
+      throw new Error("Location not found");
+    }
+    if (status === 429) {
+      throw new Error("Request exceeded the rate-limits set on the account");
+    }
+    if (status !== 200) {
+      throw new Error(statusText);
+    }
+
+    const { address } = data;
+    const locality =
+      address?.village ?? address?.town ?? address?.city ?? address?.county ?? address?.region ?? address?.state;
+
+    if (!locality) {
+      throw new Error("Address not found");
+    }
+
+    return {
+      locality,
     };
   }
 }

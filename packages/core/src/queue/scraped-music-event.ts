@@ -106,7 +106,7 @@ type Address = {
   /**
    * The locality in which the street address is, and which is in the region (e.g. city).
    */
-  locality: string;
+  locality: string | undefined;
 
   /**
    * The street address.

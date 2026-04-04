@@ -161,12 +161,12 @@ export type Venue = {
   images: Image[];
   postalCode: string;
   timezone: string;
-  city: {
-    name: string;
+  city?: {
+    name?: string;
   };
   country: Country;
-  address: {
-    line1: string;
+  address?: {
+    line1?: string;
   };
   location: Location;
   upcomingEvents: VenueUpcomingEvents;
