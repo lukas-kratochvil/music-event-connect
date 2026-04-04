@@ -17,6 +17,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   Min,
   ValidateNested,
 } from "class-validator";
@@ -67,14 +68,15 @@ class Sorters implements IEventSearchSorters {
 }
 
 class Pagination implements IEventSearchPagination {
-  @ApiProperty({ type: "number", default: 0 })
+  @ApiProperty({ type: "number", minimum: 0, default: 0 })
   @IsInt()
   @Min(0)
   offset: number;
 
-  @ApiProperty({ type: "number", default: 20 })
+  @ApiProperty({ type: "number", minimum: 1, maximum: 100, default: 20 })
   @IsInt()
   @IsPositive()
+  @Max(100)
   limit: number;
 }
 

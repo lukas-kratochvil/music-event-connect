@@ -1,6 +1,6 @@
 import { getEntityOrigin, GRAPHS_MAP } from "@music-event-connect/core";
 import { MusicEventMapper } from "@music-event-connect/core/mappers";
-import type { IEventSearchOptions, IEventSearchPagination } from "@music-event-connect/shared/api";
+import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { Injectable } from "@nestjs/common";
 import type { EventSearch } from "./entities/event-search.entity";
 import type { Event } from "./entities/event.entity";
@@ -9,15 +9,8 @@ import type { Event } from "./entities/event.entity";
 export class EventsService {
   constructor(private readonly musicEventMapper: MusicEventMapper) {}
 
-  async findAll(options?: IEventSearchOptions): Promise<EventSearch[]> {
-    // apply default pagination (limit = 20 and offset = 0) if not passed by a caller
-    const pagination =
-      options?.pagination
-      ?? ({
-        limit: 20,
-        offset: 0,
-      } satisfies IEventSearchPagination);
-    const events = await this.musicEventMapper.findAll(pagination, options?.filters, options?.sorters);
+  async findAll(options: IEventSearchOptions): Promise<EventSearch[]> {
+    const events = await this.musicEventMapper.findAll(options.pagination, options?.filters, options?.sorters);
     const eventsWithRelatedTickets = await this.musicEventMapper.findAllRelatedTickets(events.map((event) => event.id));
     return events.map((event) => {
       const relatedEventData = eventsWithRelatedTickets.filter((relatedData) => relatedData.event.id === event.id);

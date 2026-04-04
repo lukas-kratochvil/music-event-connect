@@ -10,7 +10,7 @@ import { EventsService } from "./events.service";
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @ApiBody({ type: () => EventsSearchOptions, required: false, description: "Filtering of events." })
+  @ApiBody({ type: () => EventsSearchOptions, description: "Filtering of events." })
   @ApiOkResponse({
     type: () => EventSearch,
     isArray: true,
@@ -18,7 +18,7 @@ export class EventsController {
   })
   @Post("search")
   @HttpCode(200)
-  async searchEvents(@Body() searchOptions?: EventsSearchOptions): Promise<EventSearch[]> {
+  async searchEvents(@Body() searchOptions: EventsSearchOptions): Promise<EventSearch[]> {
     return this.eventsService.findAll(searchOptions);
   }
 
