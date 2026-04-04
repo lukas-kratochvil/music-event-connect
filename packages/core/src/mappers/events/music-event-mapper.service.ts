@@ -27,15 +27,16 @@ export class MusicEventMapper extends AbstractEntityMapper<MusicEventEntity> {
     filters: ConstructEventsFilters | undefined,
     sorters: ConstructEventsSorters | undefined
   ) {
-    const eventClassIRI = Reflect.getMetadata(RDF_METADATA_KEYS.class, this.getClassConstructor());
+    const eventTypeIRIStr = Reflect.getMetadata(RDF_METADATA_KEYS.class, this.getClassConstructor()) as string;
+    const eventTypeIRI = namedNode(eventTypeIRIStr);
     const dataset = await this.sparqlService.constructEvents(
-      eventClassIRI,
+      eventTypeIRI,
       GRAPHS_MAP.links,
       pagination,
       filters,
       sorters
     );
-    const eventIRIQuads = dataset.match(null, namedNode(ns.rdf.type), eventClassIRI);
+    const eventIRIQuads = dataset.match(null, namedNode(ns.rdf.type), eventTypeIRI);
     const musicEventEntities: MusicEventEntity[] = [];
 
     for (const quad of eventIRIQuads) {

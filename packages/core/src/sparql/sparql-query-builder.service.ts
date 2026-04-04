@@ -104,7 +104,7 @@ export class SPARQLQueryBuilderService {
    * Constructs events and also retrieves its nested entities max. 2 levels deep.
    */
   constructEvents(
-    _eventEntityTypeIRI: NamedNode,
+    eventEntityTypeIRI: NamedNode,
     linksGraphIRI: string,
     pagination: Pagination,
     filters: ConstructEventsFilters | undefined,
@@ -154,7 +154,7 @@ export class SPARQLQueryBuilderService {
       {
         SELECT ${event} (MIN(${startDate}) AS ${startDateGrouped})
         WHERE {
-          ${event} ${namedNode(rdf.type)} ${namedNode(schema.MusicEvent)} ;
+          ${event} ${namedNode(rdf.type)} ${eventEntityTypeIRI} ;
                     ${namedNode(schema.startDate)} ${startDate} ;
                     ${namedNode(schema.performer)} ?artist .
           OPTIONAL {
