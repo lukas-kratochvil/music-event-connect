@@ -4,22 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { searchEvents } from "@/services/mec/calls";
 import { RoutingPath } from "@/utils/routing-paths";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 type EventCardProps = {
   event: Awaited<ReturnType<typeof searchEvents>>[number];
 };
 
 const EventCard = ({ event }: EventCardProps) => {
-  // TODO: show multiple offers or choose only one that is available?
-  const offer = event.offers[0]!;
-  const images = [...(event.images ?? []), ...(event.artists?.map((artist) => artist.images ?? []).flat() ?? [])];
+  const availableOffers = event.offers
+    .filter((offer) => offer.availability === "InStock")
+    .map((offer) => ({
+      ...offer,
+      origin: new URL(offer.url).hostname,
+    }))
+    .sort((a, b) => a.origin.localeCompare(b.origin));
+  const allImages = [...(event.images ?? []), ...(event.artists?.map((artist) => artist.images ?? []).flat() ?? [])];
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
       <Link to={RoutingPath.EVENTS + "/" + event.id}>
         <div className="aspect-video w-full overflow-hidden">
           <img
             className="h-full w-full object-cover transition-transform hover:scale-105"
-            src={images.at(0)}
+            src={allImages.at(0)}
             alt={event.name}
           />
         </div>
@@ -57,7 +63,7 @@ const EventCard = ({ event }: EventCardProps) => {
       </CardContent>
 
       <CardFooter>
-        {offer.availability === "SoldOut" ? (
+        {availableOffers.length === 0 ? (
           <Button
             className="w-full"
             disabled
@@ -65,18 +71,27 @@ const EventCard = ({ event }: EventCardProps) => {
             Sold Out
           </Button>
         ) : (
-          <Button
-            asChild
-            className="w-full"
-          >
-            <a
-              href={offer.url}
-              target="_blank"
-              rel="noopener noreferrer"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="w-full">Tickets</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56"
+              align="end"
             >
-              Tickets
-            </a>
-          </Button>
+              {availableOffers.map((offer) => (
+                <DropdownMenuItem key={offer.url}>
+                  <a
+                    href={offer.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {offer.origin}
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </CardFooter>
     </Card>
