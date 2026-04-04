@@ -172,10 +172,10 @@ const EventDetailPage = () => {
                               href={url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 hover:text-primary transition-colors"
+                              className="flex items-center gap-1 hover:text-blue-400 transition-colors"
                             >
                               <Globe className="h-4 w-4" />
-                              <span>Official Site</span>
+                              <span>Official site</span>
                             </a>
                           ))}
                           {artist.accounts?.map((account) => (
@@ -184,10 +184,10 @@ const EventDetailPage = () => {
                               href={account.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 hover:text-primary transition-colors"
+                              className="flex items-center gap-1 hover:text-blue-400 transition-colors"
                             >
                               <ExternalLink className="h-4 w-4" />
-                              <span>{account.name}</span>
+                              <span>{new URL(account.url).hostname}</span>
                             </a>
                           ))}
                         </div>
