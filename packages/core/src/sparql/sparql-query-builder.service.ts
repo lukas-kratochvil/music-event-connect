@@ -174,7 +174,7 @@ export class SPARQLQueryBuilderService {
           }
         }
         GROUP BY ${event}
-        ORDER BY ${sorters?.startDate?.desc ? "DESC" : "ASC"}(${startDateGrouped})
+        ORDER BY ${sorters?.startDate?.desc ? "DESC" : "ASC"}(${startDateGrouped}) ASC(${event})
         LIMIT ${limit}
         OFFSET ${offset}
       }

@@ -1,5 +1,5 @@
 import type { IEventSearchOptions } from "@music-event-connect/shared/api";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
@@ -13,33 +13,35 @@ import { Spinner } from "@/components/ui/spinner";
 import { searchEvents } from "../services/mec/calls";
 import EventCard from "./card/EventCard";
 
+const PAGINATION_LIMIT = 20;
+
 const EventsGrid = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [startDate, setStartDate] = useState<DateRange>();
   const [tempStartDate, setTempStartDate] = useState<DateRange>();
-
-  const searchOptions = {
-    filters: {
-      startDateRange: startDate ?? { from: new Date() },
+  const startDateNow: DateRange = { from: new Date() };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery({
+    queryKey: ["events", startDate] as const,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => {
+      const searchOptions = {
+        filters: {
+          startDateRange: startDate ?? startDateNow,
+        },
+        pagination: {
+          limit: PAGINATION_LIMIT,
+          offset: pageParam,
+        },
+        sorters: {
+          startDate: { desc: false },
+        },
+      } satisfies IEventSearchOptions;
+      return searchEvents(searchOptions);
     },
-    pagination: {
-      limit: 20,
-      offset: 0,
-    },
-    sorters: {
-      startDate: {
-        desc: false,
-      },
-    },
-  } satisfies IEventSearchOptions;
-  const {
-    data: events,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["events", searchOptions] as const,
-    queryFn: () => searchEvents(searchOptions),
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length >= PAGINATION_LIMIT ? allPages.length * PAGINATION_LIMIT : undefined,
   });
+  const allEvents = data?.pages.flat() ?? [];
 
   const onStartDatePickerSelect = (selectedDate: DateRange | undefined) => {
     if (!selectedDate) {
@@ -188,33 +190,61 @@ const EventsGrid = () => {
         </div>
       </div>
 
-      {/* Events grid */}
+      {/* Main content */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center text-muted-foreground py-12 border-2 border-dashed rounded-xl">
           <Spinner className="h-10 w-10" />
           Events are loading...
         </div>
-      ) : isError || !events ? (
+      ) : isError ? (
         <div className="py-12 text-center text-destructive border-2 border-dashed rounded-xl border-destructive/50">
           Something went wrong while loading events.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {events.length > 0 ? (
-            events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-              />
-            ))
-          ) : (
-            <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
-              No events found for the selected dates.
+        <div>
+          {/* Events grid */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {allEvents.length > 0 ? (
+              allEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center text-muted-foreground border-2 border-dashed rounded-xl">
+                No events found for the selected dates.
+              </div>
+            )}
+          </div>
+
+          {/* Load More Button */}
+          {hasNextPage && (
+            <div className="mt-10 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                disabled={isFetchingNextPage}
+                onClick={() => fetchNextPage()}
+                className="min-w-50"
+              >
+                {isFetchingNextPage ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4" />
+                    Loading...
+                  </>
+                ) : (
+                  "Show more events"
+                )}
+              </Button>
             </div>
+          )}
+
+          {!hasNextPage && allEvents.length > 0 && (
+            <p className="mt-10 text-center text-sm text-muted-foreground">There are no more events.</p>
           )}
         </div>
       )}
-      {/* TODO: implement Pagination: https://ui.shadcn.com/docs/components/radix/pagination */}
     </div>
   );
 };
