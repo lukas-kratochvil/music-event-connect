@@ -338,7 +338,7 @@ export class TicketportalService implements ICronJobService {
 
       this.#logger.log("Loaded initial page: " + this.#baseUrl);
       await page
-        .locator("::-p-xpath(//div[@id='navbar-filter-homepage']//div[@id='menu2']//a[contains(text(), 'Hudba')])")
+        .locator("::-p-xpath(//nav[contains(@class, 'tp-category-bar')]//ul/li/span[contains(text(), 'Koncerty')])")
         .click();
       this.#logger.log("Applied music event filter");
 
@@ -354,15 +354,9 @@ export class TicketportalService implements ICronJobService {
 
       // 2) get music genre filters
       const genreNames = await page.$$eval(
-        "::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label)",
-        (elems) => elems.map((elem) => (elem as HTMLLabelElement).innerText.trim())
+        "::-p-xpath(//ul[contains(@class, 'tp-subcategory-dropdown')]/li/button[not(contains(@class, 'tp-subcategory-pill--all'))])",
+        (elems) => elems.map((elem) => (elem as HTMLButtonElement).innerText.trim())
       );
-      const toggleGenreFilter = (genreName: string) =>
-        page
-          .locator(
-            `::-p-xpath(//nav//div[@id='filterMenu']//div[@id='filter_subkategorie']/label[contains(text(), '${genreName}')])`
-          )
-          .click();
 
       // GET MUSIC EVENTS
       this.#logger.log("Music events scraping started");
@@ -370,7 +364,11 @@ export class TicketportalService implements ICronJobService {
 
       for (const genreName of genreNames) {
         try {
-          await toggleGenreFilter(genreName);
+          await page
+            .locator(
+              `::-p-xpath(//ul[contains(@class, 'tp-subcategory-dropdown')]/li/button[contains(text(), '${genreName}')])`
+            )
+            .click();
           const panelBlocks = await page.$$(
             "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top') or contains(@class, 'donekonecna'))])"
           );
@@ -425,7 +423,6 @@ export class TicketportalService implements ICronJobService {
             this.#logger.error(String(e));
           }
         } finally {
-          await toggleGenreFilter(genreName);
           multipleEventDatesChecker.clear();
         }
       }
