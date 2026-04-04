@@ -55,24 +55,31 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
       // 1) Transform to MusicEventEntity
       const event = job.data.event;
       const venues = await this.#updateEventVenues(event.venues);
+      const normalizeURL = (link: string) => {
+        const url = new URL(link);
+        return url.origin + url.pathname;
+      };
       // IDs will be assigned by the transformation
       const eventWithIds = {
         ...event,
+        url: normalizeURL(event.url),
         artists: event.artists.map((artist) => {
-          const [homepages, onlineAccounts] = artist.webSites.reduce<[string[], string[]]>(
-            (acc, link) => {
-              const isHomepage = new URL(link).pathname.split("/").filter(Boolean).at(-1) === undefined;
+          const [homepages, onlineAccounts] = artist.webSites
+            .map((webSite) => normalizeURL(webSite))
+            .reduce<[string[], string[]]>(
+              (acc, link) => {
+                const isHomepage = new URL(link).pathname.split("/").filter(Boolean).at(-1) === undefined;
 
-              if (isHomepage) {
-                acc[0].push(link);
-              } else {
-                acc[1].push(link);
-              }
+                if (isHomepage) {
+                  acc[0].push(link);
+                } else {
+                  acc[1].push(link);
+                }
 
-              return acc;
-            },
-            [[], []]
-          );
+                return acc;
+              },
+              [[], []]
+            );
           return {
             ...artist,
             id: "",
@@ -88,6 +95,7 @@ export class MusicEventConsumer extends WorkerHost<Worker<MusicEventsQueueDataTy
         ticket: {
           ...event.ticket,
           id: "",
+          url: normalizeURL(event.ticket.url),
         },
         venues: venues.map((venue) => ({
           ...venue,
