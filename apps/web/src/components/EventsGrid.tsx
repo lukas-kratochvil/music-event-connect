@@ -61,7 +61,8 @@ const EventsGrid = () => {
     setTempStartDate(undefined);
   };
 
-  const handleApplyFilters = () => {
+  const handleSubmitFilters = (e: React.FormEvent) => {
+    e.preventDefault();
     setStartDate(tempStartDate);
   };
 
@@ -116,8 +117,8 @@ const EventsGrid = () => {
       )}
 
       {/* Filter inputs */}
-      {/* TODO: should be implemented as a form? */}
-      <div
+      <form
+        onSubmit={handleSubmitFilters}
         className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out ${
           isFilterOpen ? "grid-rows-[1fr] opacity-100 mb-6" : "grid-rows-[0fr] opacity-0 mb-0"
         }`}
@@ -177,10 +178,11 @@ const EventsGrid = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleApplyFilters}>Apply filters</Button>
+                <Button type="submit">Apply filters</Button>
                 <Button
-                  variant="destructive"
+                  type="button"
                   onClick={handleClearFilters}
+                  variant="destructive"
                 >
                   Clear filters
                 </Button>
@@ -188,7 +190,7 @@ const EventsGrid = () => {
             </div>
           </div>
         </div>
-      </div>
+      </form>
 
       {/* Main content */}
       {isLoading ? (
