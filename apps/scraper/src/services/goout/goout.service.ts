@@ -314,7 +314,7 @@ export class GooutService implements ICronJobService {
       const page = await browserCtx.newPage();
 
       // load page and wait for a dynamic content (JS) to be loaded properly before continuing
-      if (!(await page.goto(this.#baseUrl, { waitUntil: "networkidle2" }))) {
+      if (!(await page.goto(this.#baseUrl, { waitUntil: "networkidle2", timeout: 60000 }))) {
         throw new Error(`No response from the base url: ${this.#baseUrl}.`);
       }
 
