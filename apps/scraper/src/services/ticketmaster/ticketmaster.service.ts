@@ -108,17 +108,6 @@ export class TicketmasterService implements ICronJobService {
     return undefined;
   }
 
-  #normalizeUrl(urlStr: string): string {
-    if (!URL.canParse(urlStr)) {
-      return urlStr.split(/[?#]/g)[0]!;
-    }
-
-    const url = new URL(urlStr);
-    url.search = "";
-    url.hash = "";
-    return url.toString();
-  }
-
   #getUniqueArtistImages(images: Image[]): Image[] {
     const getCommonUrlPrefix = (url: string) => {
       const urlPrefixIndex = url.lastIndexOf("/");
@@ -182,7 +171,7 @@ export class TicketmasterService implements ICronJobService {
         event: {
           id: event.id.trim(),
           name: event.name.trim(),
-          url: this.#normalizeUrl(event.url), // remove the language URL query param
+          url: event.url,
           doorTime: this.#getEventDoorTime(event.dates, startDate),
           startDate,
           endDate: this.#getEventEndDate(event.dates),
@@ -226,7 +215,7 @@ export class TicketmasterService implements ICronJobService {
             },
           })),
           ticket: {
-            url: this.#normalizeUrl(event.url), // remove the language URL query param
+            url: event.url,
             availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
           },
           images: [], // Ticketmaster has artist's images
