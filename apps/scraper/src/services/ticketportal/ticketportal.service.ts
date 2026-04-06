@@ -1,4 +1,4 @@
-import { TZDateMini } from "@date-fns/tz";
+import { tz } from "@date-fns/tz";
 import {
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
@@ -8,13 +8,26 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
-import { addDays, format, set } from "date-fns";
+import { addDays, parse, set } from "date-fns";
 import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
 import { SharedBrowserService } from "../../puppeteer/shared-browser.service";
 
 const CZ_TIMEZONE = "Europe/Prague";
+
+/**
+ * Create a Date with the correct timezone offset.
+ * @param dateStr date string in the given `format`
+ * @param format date string format
+ * @param timeZone time zone of the `dateStr`
+ */
+const getLocalizedDate = (dateStr: string, format: string, timeZone: string) =>
+  new Date(
+    parse(dateStr, format, new Date(), {
+      in: tz(timeZone),
+    }).getTime()
+  );
 
 @Injectable()
 export class TicketportalService implements ICronJobService {
@@ -223,7 +236,7 @@ export class TicketportalService implements ICronJobService {
           throw new Error("[" + musicEventUrl + "] - Missing event start date.");
         }
 
-        const startDateTime = new TZDateMini(startDateStr, CZ_TIMEZONE);
+        const startDateTime = getLocalizedDate(startDateStr, "yyyy-MM-dd'T'HH:mm", CZ_TIMEZONE);
 
         let doorDatetime: Date | undefined;
         try {
@@ -233,10 +246,9 @@ export class TicketportalService implements ICronJobService {
           );
 
           if (doorTimeStr) {
-            const datePart = format(startDateTime, "yyyy-MM-dd");
-            const [hours, minutes] = doorTimeStr.split(":").map(Number);
-            const doorDateTimeStr = `${datePart}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
-            doorDatetime = new TZDateMini(doorDateTimeStr, CZ_TIMEZONE);
+            const datePart = startDateStr.split("T")[0];
+            const [hours, minutes] = doorTimeStr.split(":").map((val) => val.padStart(2, "0"));
+            doorDatetime = getLocalizedDate(`${datePart}T${hours}:${minutes}`, "yyyy-MM-dd'T'HH:mm", CZ_TIMEZONE);
           }
         } catch {
           /* door time not found */
