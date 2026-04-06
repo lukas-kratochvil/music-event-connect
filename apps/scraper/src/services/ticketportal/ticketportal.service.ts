@@ -113,9 +113,13 @@ export class TicketportalService implements ICronJobService {
         throw new Error("Missing venue address data!");
       }
 
-      const [city, addressToProcess] = (await addressBlock.evaluate((elem) => (elem as HTMLAnchorElement).innerText))
-        .split(",")
-        .map((e) => e.trim());
+      const fullAddress = await addressBlock.evaluate((elem) => elem.firstChild?.textContent?.trim());
+
+      if (!fullAddress) {
+        throw new Error("Missing venue address data!");
+      }
+
+      const [addressToProcess, city] = fullAddress.split(",").map((e) => e.trim());
       const address = addressToProcess?.split("\n").at(0)?.trim();
 
       if (!city) {
