@@ -1,4 +1,3 @@
-import { tz } from "@date-fns/tz";
 import {
   type MusicEventsQueueDataType,
   type MusicEventsQueueNameType,
@@ -8,26 +7,12 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
-import { addDays, parse, set } from "date-fns";
+import { addDays, set } from "date-fns";
 import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
 import { SharedBrowserService } from "../../puppeteer/shared-browser.service";
-
-const CZ_TIMEZONE = "Europe/Prague";
-
-/**
- * Create a Date with the correct timezone offset.
- * @param dateStr date string in the given `format`
- * @param format date string format
- * @param timeZone time zone of the `dateStr`
- */
-const getLocalizedDate = (dateStr: string, format: string, timeZone: string) =>
-  new Date(
-    parse(dateStr, format, new Date(), {
-      in: tz(timeZone),
-    }).getTime()
-  );
+import { CZ_TIMEZONE, getLocalizedDate } from "../../utils/date";
 
 @Injectable()
 export class TicketportalService implements ICronJobService {

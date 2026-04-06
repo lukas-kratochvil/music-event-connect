@@ -1,4 +1,3 @@
-import { TZDateMini } from "@date-fns/tz";
 import {
   MusicEventsQueue,
   type MusicEventsQueueDataType,
@@ -8,12 +7,13 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { Queue } from "bullmq";
-import { addDays, addHours, compareAsc, max, set } from "date-fns";
+import { addDays, compareAsc, max, set } from "date-fns";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
+import { getLocalizedDate } from "../../utils/date";
 import { RateLimitError } from "./rate-limit.error";
 import { TicketmasterApiProxy } from "./ticketmaster-api-proxy.service";
-import type { AccessDate, Dates, Image } from "./ticketmaster-api.types";
+import type { Dates, Image } from "./ticketmaster-api.types";
 
 @Injectable()
 export class TicketmasterService implements ICronJobService {
@@ -71,55 +71,39 @@ export class TicketmasterService implements ICronJobService {
     this.#runDate = max([nextAvailableDate, nextPeriodDate]);
   }
 
-  /**
-   * Access date holds only the local time but is represented as UTC date string.
-   * @param refDate reference Date from which we create correct date (year, month, day)
-   */
-  #getAccessDate(accessDates: AccessDate | undefined, refDate: Date): Date | undefined {
-    const dateTimeStr = accessDates?.startDateTime;
-
-    if (!dateTimeStr || Number.isNaN(refDate.getTime())) {
-      return undefined;
-    }
-
-    const incorrectAccessDate = new Date(dateTimeStr);
-    incorrectAccessDate.setUTCFullYear(refDate.getUTCFullYear());
-    incorrectAccessDate.setUTCMonth(refDate.getUTCMonth());
-    incorrectAccessDate.setUTCDate(refDate.getUTCDate());
-    // `AccessDate.startDateTime` is incorrect - it is 1 hour more than it should be
-    return addHours(incorrectAccessDate, -1);
+  #getAccessDate(dates: Dates) {
+    // access date holds the local datetime but is represented as the UTC date string
+    const dateTimeStr = dates.access?.startDateTime?.split("Z")[0];
+    return dateTimeStr ? getLocalizedDate(dateTimeStr, "yyyy-MM-dd'T'HH:mm:ss", dates.timezone) : undefined;
   }
 
-  #getEventDoorTime(accessDates: AccessDate | undefined, startDate: Date): Date | undefined {
-    const doorTime = this.#getAccessDate(accessDates, startDate);
-
+  #getEventDoorTime(dates: Dates, startDate: Date) {
+    const doorTime = this.#getAccessDate(dates);
     if (!doorTime) {
       return undefined;
     }
-
+    // doors must be before the event start date
     return compareAsc(doorTime, startDate) === 1 ? undefined : doorTime;
   }
 
-  #getEventStartDate(dates: Dates): Date {
+  #getEventStartDate(dates: Dates) {
     if (dates.start.dateTime) {
       return new Date(dates.start.dateTime);
     }
     if (dates.start.localDate && dates.start.localTime) {
       const localDateTimeStr = `${dates.start.localDate}T${dates.start.localTime}`;
-      return new TZDateMini(localDateTimeStr, dates.timezone);
+      return getLocalizedDate(localDateTimeStr, "yyyy-MM-dd'T'HH:mm:ss", dates.timezone);
     }
-
-    const tzDate = new TZDateMini(dates.start.localDate, dates.timezone);
-    return this.#getAccessDate(dates.access, tzDate) ?? tzDate;
+    return this.#getAccessDate(dates) ?? getLocalizedDate(dates.start.localDate, "yyyy-MM-dd", dates.timezone);
   }
 
-  #getEventEndDate(dates: Dates): Date | undefined {
+  #getEventEndDate(dates: Dates) {
     if (dates.end?.dateTime) {
       return new Date(dates.end.dateTime);
     }
     if (dates.end?.localDate && dates.end?.localTime) {
       const localDateTimeStr = `${dates.end.localDate}T${dates.end.localTime}`;
-      return new TZDateMini(localDateTimeStr, dates.timezone);
+      return getLocalizedDate(localDateTimeStr, "yyyy-MM-dd'T'HH:mm:ss", dates.timezone);
     }
     return undefined;
   }
@@ -199,7 +183,7 @@ export class TicketmasterService implements ICronJobService {
           id: event.id.trim(),
           name: event.name.trim(),
           url: this.#normalizeUrl(event.url), // remove the language URL query param
-          doorTime: this.#getEventDoorTime(event.dates.access, startDate),
+          doorTime: this.#getEventDoorTime(event.dates, startDate),
           startDate,
           endDate: this.#getEventEndDate(event.dates),
           artists: event._embedded.attractions
