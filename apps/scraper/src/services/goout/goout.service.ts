@@ -63,8 +63,7 @@ export class GooutService implements ICronJobService {
 
   async #getArtist(
     browserCtx: BrowserContext,
-    artistUrl: string,
-    availableGenres: string[]
+    artistUrl: string
   ): Promise<ScrapedMusicEvent["artists"][number] | null> {
     const artistPage = await browserCtx.newPage();
     let name: string;
@@ -79,15 +78,11 @@ export class GooutService implements ICronJobService {
 
       name = await artistPage.$eval("header h1", (elem) => elem.innerText.trim());
       webSites = await artistPage.$$eval(
-        `::-p-xpath(//header/descendant::ul[contains(@class, 'links-row')]/descendant::a)`,
+        "::-p-xpath(//header/descendant::ul[contains(@class, 'links-row')]/descendant::a)",
         (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href).filter((url) => url.startsWith("http"))
       );
-      genres = await artistPage.$$eval(
-        `::-p-xpath(//section[contains(@class, 'py-4')]/p/span[not(contains(@class, 'tags-title'))]/a)`,
-        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.innerText.trim())
-      );
       images = await artistPage.$$eval(
-        `::-p-xpath(//section[contains(@class, 'py-4')]/div[contains(@class, 'photo-gallery')]/a)`,
+        "::-p-xpath(//section[contains(@class, 'py-4')]/div[contains(@class, 'photo-gallery')]/a)",
         (elem) => (elem as HTMLAnchorElement[]).map((a) => a.href.trim())
       );
 
@@ -114,6 +109,22 @@ export class GooutService implements ICronJobService {
           images.push(artistLinkedData.image);
         }
       }
+
+      // set english language and extract genres that are already correctly mapped to MusicBrainz genres
+      await artistPage.locator("div.language-menu > button#language-trigger").click();
+      const artistPageUrlEn = await artistPage.$eval(
+        "::-p-xpath(//div[contains(@class, 'language-menu')]/div[contains(@class, 'dropdown-menu')]//ul//a[contains(text(), 'English')])",
+        (elem) => (elem as HTMLAnchorElement).href
+      );
+      const pageCtxForGenres = await artistPage.browserContext().newPage();
+      if (!(await pageCtxForGenres.goto(artistPageUrlEn))) {
+        throw new Error("Cannot navigate to the URL: " + artistPageUrlEn);
+      }
+      genres = await pageCtxForGenres.$$eval(
+        "::-p-xpath(//section[contains(@class, 'py-4')]/p/span[not(contains(@class, 'tags-title'))]/a)",
+        (elem) => (elem as HTMLAnchorElement[]).map((a) => a.innerText.trim().toLowerCase())
+      );
+      await pageCtxForGenres.close();
     } catch (e) {
       await artistPage.close();
       if (e instanceof Error) {
@@ -124,45 +135,6 @@ export class GooutService implements ICronJobService {
       return null;
     }
 
-    genres = genres
-      .filter((genre) => availableGenres.includes(genre))
-      // map genre names to MusicBrainz RDF genre names
-      .map((genre) => {
-        const g = genre.toLocaleLowerCase();
-        switch (g) {
-          case "alternative & indie":
-          case "alternativa & indie":
-            return "alternative music";
-          case "elektronika":
-            return "electronic";
-          case "experimentální":
-            return "experimental";
-          case "filmová hudba":
-            return "film music";
-          case "hip-hop":
-            return "hip hop";
-          case "jam session":
-            return "jam band";
-          case "klasická":
-            return "classical";
-          case "latin music":
-          case "latinskoamerická hudba":
-            return "latin";
-          case "lidová hudba":
-            return "contemporary folk";
-          case "release party":
-          case "křest":
-            return undefined;
-          case "šanson":
-            return "chanson";
-          case "tanec":
-            return "dance";
-          default:
-            return g;
-        }
-      })
-      .filter((genre): genre is string => typeof genre === "string");
-
     await artistPage.close();
     return {
       name,
@@ -172,7 +144,7 @@ export class GooutService implements ICronJobService {
     };
   }
 
-  async #getMusicEvent(page: Page, eventItem: EventItem, availableGenres: string[]): Promise<MusicEventsQueueDataType> {
+  async #getMusicEvent(page: Page, eventItem: EventItem): Promise<MusicEventsQueueDataType> {
     if (!(await page.goto(eventItem.url))) {
       throw new Error("Cannot navigate to the URL.");
     }
@@ -187,7 +159,7 @@ export class GooutService implements ICronJobService {
         artistsDivs.map(async (artistDiv) => {
           try {
             const artistUrl = await artistDiv.$eval("::-p-xpath(./a[1])", (elem) => (elem as HTMLAnchorElement).href);
-            return this.#getArtist(page.browserContext(), artistUrl, availableGenres);
+            return this.#getArtist(page.browserContext(), artistUrl);
           } catch {
             return null;
           }
@@ -331,14 +303,14 @@ export class GooutService implements ICronJobService {
 
       // 2) check that first dropdown menu button has selected "Czechia" as a country
       const countryButton = await page.$(
-        `::-p-xpath(//button[contains(@class, 'filter-trigger') and (contains(text(), 'Czechia') or contains(text(), 'Česko'))])`
+        "::-p-xpath(//button[contains(@class, 'filter-trigger') and (contains(text(), 'Czechia') or contains(text(), 'Česko'))])"
       );
 
       if (!countryButton) {
         await page.locator("button.filter-trigger").click();
         await page
           .locator(
-            `::-p-xpath(//div[contains(@class, 'country-list')]//a[contains(text(), 'Czechia') or contains(text(), 'Česko')])`
+            "::-p-xpath(//div[contains(@class, 'country-list')]//a[contains(text(), 'Czechia') or contains(text(), 'Česko')])"
           )
           .click();
       }
@@ -355,17 +327,6 @@ export class GooutService implements ICronJobService {
         )
         .click();
       this.#logger.log("Applied music event filter");
-
-      // 4) get available music genres
-      const genresBtn = page.locator(
-        "::-p-xpath(//button[contains(@class, 'filter-trigger') and (contains(text(), 'Genres') or contains(text(), 'Žánry'))])"
-      );
-      await genresBtn.click(); // open the genres dropdown
-      const availableGenres = await page.$$eval(
-        "::-p-xpath(//div[contains(@class, 'dropdown-menu') and contains(@class, 'show')]/descendant::div[contains(@class, 'tag-columns')]/descendant::input[@type='checkbox' and position()>1])",
-        (elems) => (elems as HTMLInputElement[]).map((elem) => elem.name)
-      );
-      await genresBtn.click(); // close the genres dropdown
 
       // GET MUSIC EVENTS
       this.#logger.log("Music events scraping started");
@@ -407,7 +368,7 @@ export class GooutService implements ICronJobService {
             const linkedData = eventsLinkedData?.find((eventLd) => eventLd?.url === url) ?? null;
 
             try {
-              const musicEvent = await this.#getMusicEvent(musicEventPage, { url, linkedData }, availableGenres);
+              const musicEvent = await this.#getMusicEvent(musicEventPage, { url, linkedData });
               await this.musicEventsQueue.add("goout", musicEvent);
             } catch (e) {
               if (e instanceof Error) {
