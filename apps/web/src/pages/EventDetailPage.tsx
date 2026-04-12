@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { MapPin, Calendar, Clock, Globe, ExternalLink, Ticket } from "lucide-react";
 import { useParams } from "react-router";
 import { Map, type MapProps } from "@/components/map/Map";
@@ -138,11 +138,11 @@ const EventDetailPage = () => {
                 <span className="font-semibold">Starts:</span>
                 <span>{format(event.startDate, "H:mm")}</span>
               </div>
-              {event.endDate && (
+              {event.endDate && !isSameDay(event.endDate, event.startDate) && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
                   <span className="font-semibold">Ends:</span>
-                  <span>{format(event.endDate, "dd.MM.y (H:mm)")}</span>
+                  <span>{format(event.endDate, "dd.MM.y")}</span>
                 </div>
               )}
             </div>
