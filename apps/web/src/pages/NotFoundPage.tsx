@@ -1,6 +1,3 @@
-const NotFoundPage = () => {
-  // TODO: create not found page for routing
-  return <>Not found page</>;
-};
+const NotFoundPage = () => <div className="text-4xl text-center w-full">Page not found.</div>;
 
 export default NotFoundPage;
