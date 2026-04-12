@@ -1,21 +1,27 @@
 import type { SpotNearby } from "@music-event-connect/shared/api";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
+import { createSpotMarkerIcon } from "./icons";
 
-export type MapProps = {
-  coords: {
-    text: string;
-    type: "venue" | SpotNearby;
-    position: [number, number];
-  }[];
+type Marker = {
+  name: string;
+  position: [number, number];
 };
 
-export const Map = ({ coords }: MapProps) => {
-  if (coords.length === 0) {
+type MapProps = {
+  venues: Marker[];
+  spotsNearby: (Marker & { type: SpotNearby })[];
+};
+
+export const Map = ({ venues, spotsNearby }: MapProps) => {
+  if (venues.length === 0) {
     return null;
   }
 
-  const venueCoords = coords.filter((coord) => coord.type === "venue");
-  const center = venueCoords[0]!.position;
+  const center = venues[0]!.position;
+  const coords = [...venues, ...spotsNearby];
   const bounds =
     coords.length > 1
       ? ([
@@ -45,14 +51,27 @@ export const Map = ({ coords }: MapProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {coords.map(({ text, position }) => (
+        {venues.map(({ name, position }) => (
           <Marker
-            key={text + "_" + position.toString()}
+            key={name + "_" + position.toString()}
             position={position}
           >
-            <Popup>{text}</Popup>
+            <Popup>{name}</Popup>
           </Marker>
         ))}
+        <MarkerClusterGroup chunkedLoading>
+          {spotsNearby.map(({ name, position, type }) => (
+            <Marker
+              key={name + "_" + position.toString()}
+              position={position}
+              icon={createSpotMarkerIcon(type)}
+            >
+              <Popup>
+                {name} ({type.split("_").join(" ")})
+              </Popup>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </MapContainer>
     </div>
   );

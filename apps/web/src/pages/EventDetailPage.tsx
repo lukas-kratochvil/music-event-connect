@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, isSameDay } from "date-fns";
 import { MapPin, Calendar, Clock, Globe, ExternalLink, Ticket } from "lucide-react";
 import { useParams } from "react-router";
-import { Map, type MapProps } from "@/components/map/Map";
+import { Map } from "@/components/map/Map";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,20 +41,18 @@ const EventDetailPage = () => {
       .filter((value) => value !== undefined) ?? []),
   ];
   const venueHeader = event.venues.map((venue) => venue.name + " (" + venue.address.locality + ")").join(", ");
-  const mapCoords = event.venues
-    .map((venue): MapProps["coords"] => {
-      const venueCoords: MapProps["coords"][number] = {
-        text: venue.name,
-        type: "venue",
-        position: [venue.latitude, venue.longitude] as [number, number],
-      };
-      const spotsNearbyCoords: MapProps["coords"] = venue.spotsNearby.map((spotNearby) => ({
-        text: spotNearby.name,
+  const mapVenues = event.venues.map((venue) => ({
+    name: venue.name,
+    position: [venue.latitude, venue.longitude] as [number, number],
+  }));
+  const mapSpotsNearby = event.venues
+    .map((venue) =>
+      venue.spotsNearby.map((spotNearby) => ({
+        name: spotNearby.name,
         type: spotNearby.type,
         position: [spotNearby.latitude, spotNearby.longitude] as [number, number],
-      }));
-      return [venueCoords, ...spotsNearbyCoords];
-    })
+      }))
+    )
     .flat();
   const availableOffers = event.offers
     .filter((offer) => offer.availability === "InStock")
@@ -247,7 +245,10 @@ const EventDetailPage = () => {
 
               {/* Map */}
               <div className="overflow-hidden rounded-xl border shadow-sm">
-                <Map coords={mapCoords} />
+                <Map
+                  venues={mapVenues}
+                  spotsNearby={mapSpotsNearby}
+                />
               </div>
             </div>
           </section>
