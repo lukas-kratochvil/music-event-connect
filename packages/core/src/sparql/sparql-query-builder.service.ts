@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
-import { ns } from "../rdf/ontology";
+import { ns, prefixes } from "../rdf/ontology";
 import type { SparqlBuilderType } from "./util";
 
 const { literal, namedNode, variable } = DataFactory;
@@ -60,6 +60,15 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
         iri: "addressIRI",
         street: "addressStreet",
       },
+    },
+  },
+  selectOSMSpotsNearby: {
+    spot: {
+      name: "placeName",
+      type: "placeType",
+      latitude: "placeLatitude",
+      longitude: "placeLongitude",
+      distInM: "placeDistInM",
     },
   },
 };
@@ -395,5 +404,57 @@ export class SPARQLQueryBuilderService {
         FILTER (bif:st_intersects(${coords}, bif:st_point(${longitude}, ${latitude}), ${radiusInKm}))
       }
     `;
+  }
+
+  /**
+   * Selects all the places close to the given coordinates in the OSM graph.
+   *
+   * The place is one of: bus stop, tram stop, bar, fast-food, pub or restaurant.
+   *
+   * @param radiusInKm radius to search (in kilometers)
+   * @param limit max number of results
+   */
+  selectOSMSpotsNearby(latitude: number, longitude: number, osmGraphIRI: string, radiusInKm: number, limit: number) {
+    const sourceGraph = namedNode(osmGraphIRI);
+    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.name);
+    const type = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.type);
+    const lat = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.latitude);
+    const lon = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.longitude);
+    const distInM = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.distInM);
+
+    return this.builder.SELECT.DISTINCT`${name} ${type} ${lat} ${lon} (xsd:integer(ROUND(?dist * 1000)) AS ${distInM})`
+      .WHERE`
+        GRAPH ${sourceGraph} {
+          ?place ${namedNode(`${prefixes.osmkey}name`)} ${name} ;
+                  ${namedNode(`${prefixes.geo}hasGeometry`)}/${namedNode(`${prefixes.geo}asWKT`)} ?wkt .
+
+          FILTER(REGEX(?wkt, "^POINT"))
+          BIND(bif:st_distance(?wkt, bif:st_point(${longitude}, ${latitude})) AS ?dist)
+          FILTER(?dist < ${radiusInKm})
+
+          {
+            {
+              ?place ${namedNode(`${prefixes.osmkey}highway`)} "bus_stop" .
+              BIND("bus_stop" AS ${type})
+            }
+            UNION
+            {
+              ?place ${namedNode(`${prefixes.osmkey}railway`)} "tram_stop" .
+              BIND("tram_stop" AS ${type})
+            }
+            UNION
+            {
+              ?place ${namedNode(`${prefixes.osmkey}amenity`)} ${type} .
+              FILTER(${type} IN ("bar", "pub", "restaurant"))
+            }
+          }
+
+          BIND(bif:st_y(?wkt) AS ${lat})
+          BIND(bif:st_x(?wkt) AS ${lon})
+        }
+      `
+      .ORDER()
+      .BY(distInM)
+      .LIMIT(limit);
   }
 }

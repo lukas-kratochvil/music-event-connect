@@ -19,11 +19,30 @@ export interface IEventAddress {
   country: string;
 }
 
+export const SpotNearby = {
+  busStop: "bus_stop",
+  tramStop: "tram_stop",
+  bar: "bar",
+  pub: "pub",
+  restaurant: "restaurant",
+} as const;
+
+export type SpotNearby = (typeof SpotNearby)[keyof typeof SpotNearby];
+
+export interface IEventSpotNearby {
+  name: string;
+  type: SpotNearby;
+  latitude: number;
+  longitude: number;
+  distInM: number;
+}
+
 export interface IEventVenue {
   name: string;
   latitude: number;
   longitude: number;
   address: IEventAddress;
+  spotsNearby: IEventSpotNearby[];
 }
 
 export interface IEventOffer {

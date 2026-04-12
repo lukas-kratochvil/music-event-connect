@@ -1,8 +1,10 @@
+import type { SpotNearby } from "@music-event-connect/shared/api";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
-type MapProps = {
+export type MapProps = {
   coords: {
     text: string;
+    type: "venue" | SpotNearby;
     position: [number, number];
   }[];
 };
@@ -12,7 +14,8 @@ export const Map = ({ coords }: MapProps) => {
     return null;
   }
 
-  const center = coords[0]!.position;
+  const venueCoords = coords.filter((coord) => coord.type === "venue");
+  const center = venueCoords[0]!.position;
   const bounds =
     coords.length > 1
       ? ([

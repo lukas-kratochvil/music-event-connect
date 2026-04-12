@@ -1,5 +1,5 @@
 import { getEntityOrigin, GRAPHS_MAP } from "@music-event-connect/core";
-import { MusicEventMapper } from "@music-event-connect/core/mappers";
+import { MusicEventMapper, OSMMapper } from "@music-event-connect/core/mappers";
 import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { Injectable } from "@nestjs/common";
 import type { EventSearch } from "./entities/event-search.entity";
@@ -7,7 +7,10 @@ import type { Event } from "./entities/event.entity";
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly musicEventMapper: MusicEventMapper) {}
+  constructor(
+    private readonly musicEventMapper: MusicEventMapper,
+    private readonly osmMapper: OSMMapper
+  ) {}
 
   async findAll(options: IEventSearchOptions): Promise<EventSearch[]> {
     const events = await this.musicEventMapper.findAll(options.pagination, options?.filters, options?.sorters);
@@ -48,8 +51,16 @@ export class EventsService {
 
     const graphIri = GRAPHS_MAP["events"][eventOrigin];
     const event = await this.musicEventMapper.getWholeEntity(eventId, graphIri);
+    const spotsNearbyLimit = { min: 10, max: 50 };
+    const venuesWithSpotsNearbyPromise = Promise.all(
+      event.venues.map(async (venue) => {
+        const spotsNearby = await this.osmMapper.findSpotsNearby(venue.latitude, venue.longitude, spotsNearbyLimit);
+        return { ...venue, spotsNearby };
+      })
+    );
     const relatedData = await this.musicEventMapper.findAllRelatedTickets([event.id]);
     const relatedOffers = relatedData.map((data) => data.event.offer);
+    const venuesWithSpotsNearby = await venuesWithSpotsNearbyPromise;
     return {
       id: event.id,
       name: event.name,
@@ -67,7 +78,7 @@ export class EventsService {
           name: account.accountName,
         })),
       })),
-      venues: event.venues.map((venue) => ({
+      venues: venuesWithSpotsNearby.map((venue) => ({
         name: venue.name,
         latitude: venue.latitude,
         longitude: venue.longitude,
@@ -76,6 +87,7 @@ export class EventsService {
           locality: venue.address.locality,
           country: venue.address.country,
         },
+        spotsNearby: venue.spotsNearby,
       })),
       offers: [event.ticket, ...relatedOffers].map((ticket) => ({
         url: ticket.url,

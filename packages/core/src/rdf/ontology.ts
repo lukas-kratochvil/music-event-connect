@@ -7,8 +7,10 @@ import { foaf, rdf, rdfs, schema, skos, xsd } from "rdf-namespaces";
  */
 export const prefixes = {
   foaf: "https://xmlns.com/foaf/spec/",
+  geo: "http://www.opengis.net/ont/geosparql#",
   mb: "https://linkedmusic.ca/graphs/musicbrainz/",
   mec: "http://music-event-connect.cz/entity/",
+  osmkey: "https://www.openstreetmap.org/wiki/Key:",
   rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
   rdfs: "http://www.w3.org/2000/01/rdf-schema#",
   schema: "http://schema.org/",
@@ -100,4 +102,4 @@ export const ns = {
     streetAddress: `${prefixes.wdt}P6375`,
   } as const,
   xsd,
-} satisfies Record<keyof StrictOmit<typeof prefixes, "mec">, object>;
+} satisfies Record<keyof StrictOmit<typeof prefixes, "geo" | "mec" | "osmkey">, object>;

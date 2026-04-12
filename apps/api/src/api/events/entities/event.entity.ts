@@ -1,4 +1,4 @@
-import type { IEvent } from "@music-event-connect/shared/api";
+import { SpotNearby, type IEvent, type IEventSpotNearby } from "@music-event-connect/shared/api";
 import { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -38,6 +38,23 @@ class EventAddress {
   country: string;
 }
 
+class EventSpotNearby implements IEventSpotNearby {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ enum: SpotNearby })
+  type: SpotNearby;
+
+  @ApiProperty({ type: "number" })
+  latitude: number;
+
+  @ApiProperty({ type: "number" })
+  longitude: number;
+
+  @ApiProperty({ type: "number" })
+  distInM: number;
+}
+
 class EventVenue {
   @ApiProperty()
   name: string;
@@ -50,6 +67,9 @@ class EventVenue {
 
   @ApiProperty({ type: () => EventAddress })
   address: EventAddress;
+
+  @ApiProperty({ type: () => EventSpotNearby, isArray: true })
+  spotsNearby: EventSpotNearby[];
 }
 
 class EventOffer {

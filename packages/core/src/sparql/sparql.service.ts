@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { Term } from "@rdfjs/types";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
@@ -165,6 +166,38 @@ export class SPARQLService {
         iri: row[VARIABLES.place.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
         name: row[VARIABLES.place.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
         address: undefined,
+      },
+    }));
+  }
+
+  /**
+   * @param limit the min limit is soft, if the first search doesn't return at least `limit.min` results it will search again with a larger radius
+   */
+  async getSpotsNearby(latitude: number, longitude: number, osmGraphIRI: string, limit: { min: number; max: number }) {
+    const selectQuery = this.queryBuilder.selectOSMSpotsNearby(latitude, longitude, osmGraphIRI, 0.3, limit.max);
+    let results: Record<string, Term>[] = [];
+    results = await selectQuery.execute(this.sparqlClient);
+
+    // if the SELECT query returns small amount of results try again with a larger radius
+    if (results.length < limit.min) {
+      const selectQueryWithLargerRadius = this.queryBuilder.selectOSMSpotsNearby(
+        latitude,
+        longitude,
+        osmGraphIRI,
+        0.5,
+        limit.max
+      );
+      results = await selectQueryWithLargerRadius.execute(this.sparqlClient);
+    }
+
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby;
+    return results.map((row) => ({
+      spot: {
+        name: row[VARIABLES.spot.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        type: row[VARIABLES.spot.type]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        latitude: row[VARIABLES.spot.latitude]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        longitude: row[VARIABLES.spot.longitude]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        distInM: row[VARIABLES.spot.distInM]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
       },
     }));
   }
