@@ -22,6 +22,7 @@ export interface IEventAddress {
 export const SpotNearby = {
   busStop: "bus_stop",
   tramStop: "tram_stop",
+  subwayStation: "subway_station",
   bar: "bar",
   pub: "pub",
   restaurant: "restaurant",

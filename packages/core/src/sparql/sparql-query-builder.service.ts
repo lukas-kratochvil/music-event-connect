@@ -444,6 +444,12 @@ export class SPARQLQueryBuilderService {
             }
             UNION
             {
+              ?place ${namedNode(`${prefixes.osmkey}railway`)} "station" ;
+                      ${namedNode(`${prefixes.osmkey}station`)} "subway" .
+              BIND("subway_station" AS ${type})
+            }
+            UNION
+            {
               ?place ${namedNode(`${prefixes.osmkey}amenity`)} ${type} .
               FILTER(${type} IN ("bar", "pub", "restaurant"))
             }
