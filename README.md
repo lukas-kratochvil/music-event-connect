@@ -9,6 +9,7 @@
     - [Import data from MusicBrainz and OpenStreetMap](#import-data-from-musicbrainz-and-openstreetmap)
     - [Create users](#create-users)
     - [Clearing RDF graphs](#clearing-rdf-graphs)
+    - [Managing Linked Data](#managing-linked-data)
 
 ## Initial setup
 
@@ -97,4 +98,11 @@ DB.DBA.RDF_GRAPH_USER_PERMS_DEL('<GRAPH_IRI>', '<USER_NAME>');
 In the **Virtuoso ISQL interface** run:
 ```sql
 SPARQL CLEAR GRAPH <GRAPH_IRI>
+```
+
+#### Managing Linked Data
+It's useful to add custom or missing RDF namespaces. In the **Virtuoso Conductor** (Web UI) navigate to `Linked Data > Namespaces` and add your prefixes. For example:
+```
+mec: http://music-event-connect.cz/entity/
+schema: http://schema.org/
 ```
