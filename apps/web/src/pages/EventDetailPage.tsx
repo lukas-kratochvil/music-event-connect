@@ -217,10 +217,9 @@ const EventDetailPage = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {event.venues.map((venue) => (
-                  // TODO: show the venue pin in the map on venue card hover
                   <div
                     key={venue.name}
-                    className="flex flex-col p-5 border rounded-xl bg-card transition-shadow hover:shadow-md"
+                    className="flex flex-col p-5 border rounded-xl bg-card"
                   >
                     <div className="flex gap-2">
                       <MapPin className="h-5 w-5 text-primary shrink-0" />

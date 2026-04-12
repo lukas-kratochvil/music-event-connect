@@ -55,6 +55,8 @@ export const Map = ({ venues, spotsNearby }: MapProps) => {
           <Marker
             key={name + "_" + position.toString()}
             position={position}
+            icon={createSpotMarkerIcon("venue")}
+            riseOnHover
           >
             <Popup>{name}</Popup>
           </Marker>

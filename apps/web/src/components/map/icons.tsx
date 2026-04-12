@@ -3,6 +3,8 @@ import { divIcon } from "leaflet";
 import { MapPin, type LucideProps } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+type IconType = "venue" | SpotNearby;
+
 const ICON_SIZE = 36;
 
 const COMMON_ICON_PROPS: LucideProps = {
@@ -10,8 +12,10 @@ const COMMON_ICON_PROPS: LucideProps = {
   fillOpacity: 0.2,
 };
 
-const getIcon = (type: SpotNearby) => {
+const getIcon = (type: IconType) => {
   switch (type) {
+    case "venue":
+      return <MapPin {...COMMON_ICON_PROPS} />;
     case "bus_stop":
     case "tram_stop":
     case "subway_station":
@@ -19,7 +23,6 @@ const getIcon = (type: SpotNearby) => {
         <MapPin
           {...COMMON_ICON_PROPS}
           color="blue"
-          fill="blue"
         />
       );
     case "bar":
@@ -29,13 +32,12 @@ const getIcon = (type: SpotNearby) => {
         <MapPin
           {...COMMON_ICON_PROPS}
           color="orange"
-          fill="orange"
         />
       );
   }
 };
 
-export const createSpotMarkerIcon = (type: SpotNearby) =>
+export const createSpotMarkerIcon = (type: IconType) =>
   divIcon({
     html: renderToStaticMarkup(getIcon(type)),
     className: "custom-lucide-icon", // remove default leaflet CSS styles
