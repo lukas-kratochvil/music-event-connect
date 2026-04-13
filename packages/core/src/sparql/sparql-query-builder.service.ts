@@ -393,15 +393,15 @@ export class SPARQLQueryBuilderService {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
     const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
-    const coords = variable("coordinates");
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName}`.WHERE`
       GRAPH ${sourceGraph} {
         ${placeIRI} ${namedNode(rdf.type)} ${namedNode(mb.Place)} ;
                     ${namedNode(rdfs.label)} ${placeName} ;
-                    ${namedNode(`${prefixes.wdt}P625`)} ${coords} .
+                    ${namedNode(`${prefixes.wdt}P625`)} ?coords .
 
-        FILTER (bif:st_intersects(${coords}, bif:st_point(${longitude}, ${latitude}), ${radiusInKm}))
+        BIND(bif:st_distance(?coords, bif:st_point(${longitude}, ${latitude})) AS ?dist)
+        FILTER(?dist < ${radiusInKm})
       }
     `;
   }
