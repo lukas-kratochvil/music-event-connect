@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
-import { ns, prefixes } from "../rdf/ontology";
+import { ns, nsPrefixes } from "../rdf/ontology";
 import type { SparqlBuilderType } from "./util";
 
 const { literal, namedNode, variable } = DataFactory;
@@ -300,7 +300,7 @@ export class SPARQLQueryBuilderService {
         GRAPH ${sourceGraph} {
           ${eventIRI} ${namedNode(rdf.type)} ${namedNode(mb.Event)} ;
                       ${namedNode(rdfs.label)} ${eventName} ;
-                      ${namedNode(`${prefixes.wdt}P580`)} ${eventStartDate} .
+                      ${namedNode(`${nsPrefixes.wdt}P580`)} ${eventStartDate} .
           FILTER(STRSTARTS(STR(${eventStartDate}), ${eventStartDatePrefix}))
         }
       `;
@@ -398,7 +398,7 @@ export class SPARQLQueryBuilderService {
       GRAPH ${sourceGraph} {
         ${placeIRI} ${namedNode(rdf.type)} ${namedNode(mb.Place)} ;
                     ${namedNode(rdfs.label)} ${placeName} ;
-                    ${namedNode(`${prefixes.wdt}P625`)} ?coords .
+                    ${namedNode(`${nsPrefixes.wdt}P625`)} ?coords .
 
         BIND(bif:st_distance(?coords, bif:st_point(${longitude}, ${latitude})) AS ?dist)
         FILTER(?dist < ${radiusInKm})
@@ -425,8 +425,8 @@ export class SPARQLQueryBuilderService {
     return this.builder.SELECT.DISTINCT`${name} ${type} ${lat} ${lon} (xsd:integer(ROUND(?dist * 1000)) AS ${distInM})`
       .WHERE`
         GRAPH ${sourceGraph} {
-          ?place ${namedNode(`${prefixes.osmkey}name`)} ${name} ;
-                  ${namedNode(`${prefixes.geo}hasGeometry`)}/${namedNode(`${prefixes.geo}asWKT`)} ?wkt .
+          ?place ${namedNode(`${nsPrefixes.osmkey}name`)} ${name} ;
+                  ${namedNode(`${nsPrefixes.geo}hasGeometry`)}/${namedNode(`${nsPrefixes.geo}asWKT`)} ?wkt .
 
           FILTER(REGEX(?wkt, "^POINT"))
           BIND(bif:st_distance(?wkt, bif:st_point(${longitude}, ${latitude})) AS ?dist)
@@ -434,23 +434,23 @@ export class SPARQLQueryBuilderService {
 
           {
             {
-              ?place ${namedNode(`${prefixes.osmkey}highway`)} "bus_stop" .
+              ?place ${namedNode(`${nsPrefixes.osmkey}highway`)} "bus_stop" .
               BIND("bus_stop" AS ${type})
             }
             UNION
             {
-              ?place ${namedNode(`${prefixes.osmkey}railway`)} "tram_stop" .
+              ?place ${namedNode(`${nsPrefixes.osmkey}railway`)} "tram_stop" .
               BIND("tram_stop" AS ${type})
             }
             UNION
             {
-              ?place ${namedNode(`${prefixes.osmkey}railway`)} "station" ;
-                      ${namedNode(`${prefixes.osmkey}station`)} "subway" .
+              ?place ${namedNode(`${nsPrefixes.osmkey}railway`)} "station" ;
+                      ${namedNode(`${nsPrefixes.osmkey}station`)} "subway" .
               BIND("subway_station" AS ${type})
             }
             UNION
             {
-              ?place ${namedNode(`${prefixes.osmkey}amenity`)} ${type} .
+              ?place ${namedNode(`${nsPrefixes.osmkey}amenity`)} ${type} .
               FILTER(${type} IN ("bar", "pub", "restaurant"))
             }
           }

@@ -5,7 +5,7 @@ import { foaf, rdf, rdfs, schema, skos, xsd } from "rdf-namespaces";
 /**
  * The exhaustive list of RDF namespace prefixes used in this project.
  */
-export const prefixes = {
+export const nsPrefixes = {
   foaf: "https://xmlns.com/foaf/spec/",
   geo: "http://www.opengis.net/ont/geosparql#",
   mb: "https://linkedmusic.ca/graphs/musicbrainz/",
@@ -66,12 +66,12 @@ type SchemaProperties = Pick<
  * @see https://schema.org/ItemAvailability
  */
 type SchemaItemAvailabilityEnum = {
-  [K in ItemAvailability]: `${typeof prefixes.schema}${K}`;
+  [K in ItemAvailability]: `${typeof nsPrefixes.schema}${K}`;
 };
 
 const schemaItemAvailabilityEnum: SchemaItemAvailabilityEnum = {
-  InStock: `${prefixes.schema}InStock`,
-  SoldOut: `${prefixes.schema}SoldOut`,
+  InStock: `${nsPrefixes.schema}InStock`,
+  SoldOut: `${nsPrefixes.schema}SoldOut`,
 } as const;
 
 /**
@@ -88,12 +88,12 @@ type SchemaSubset = SchemaTypes & SchemaProperties & SchemaItemAvailabilityEnum;
 export const ns = {
   foaf: foaf as FoafSubset,
   mb: {
-    Area: `${prefixes.mb}Area`,
-    Artist: `${prefixes.mb}Artist`,
-    Event: `${prefixes.mb}Event`,
-    Genre: `${prefixes.mb}Genre`,
-    Place: `${prefixes.mb}Place`,
-    ReleaseGroup: `${prefixes.mb}ReleaseGroup`,
+    Area: `${nsPrefixes.mb}Area`,
+    Artist: `${nsPrefixes.mb}Artist`,
+    Event: `${nsPrefixes.mb}Event`,
+    Genre: `${nsPrefixes.mb}Genre`,
+    Place: `${nsPrefixes.mb}Place`,
+    ReleaseGroup: `${nsPrefixes.mb}ReleaseGroup`,
   } as const,
   rdf,
   rdfs,
@@ -103,4 +103,4 @@ export const ns = {
   } as SchemaSubset,
   skos,
   xsd,
-} satisfies Record<keyof StrictOmit<typeof prefixes, "geo" | "mec" | "osmkey" | "wdt">, object>;
+} satisfies Record<keyof StrictOmit<typeof nsPrefixes, "geo" | "mec" | "osmkey" | "wdt">, object>;
