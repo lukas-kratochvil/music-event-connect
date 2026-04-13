@@ -289,7 +289,7 @@ export class SPARQLQueryBuilderService {
    * Selects all the Event entities for the given start date in the MusicBrainz graph.
    */
   selectMusicBrainzEventsByDate(startDate: Date, musicBrainzGraphIRI: string) {
-    const { mb, rdf, rdfs, wdt } = ns;
+    const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
     const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
@@ -300,7 +300,7 @@ export class SPARQLQueryBuilderService {
         GRAPH ${sourceGraph} {
           ${eventIRI} ${namedNode(rdf.type)} ${namedNode(mb.Event)} ;
                       ${namedNode(rdfs.label)} ${eventName} ;
-                      ${namedNode(wdt.startTime)} ${eventStartDate} .
+                      ${namedNode(`${prefixes.wdt}P580`)} ${eventStartDate} .
           FILTER(STRSTARTS(STR(${eventStartDate}), ${eventStartDatePrefix}))
         }
       `;
@@ -389,7 +389,7 @@ export class SPARQLQueryBuilderService {
     musicBrainzGraphIRI: string,
     radiusInKm = 0.222
   ) {
-    const { mb, rdf, rdfs, wdt } = ns;
+    const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
     const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
@@ -399,7 +399,7 @@ export class SPARQLQueryBuilderService {
       GRAPH ${sourceGraph} {
         ${placeIRI} ${namedNode(rdf.type)} ${namedNode(mb.Place)} ;
                     ${namedNode(rdfs.label)} ${placeName} ;
-                    ${namedNode(wdt.coordinateLocation)} ${coords} .
+                    ${namedNode(`${prefixes.wdt}P625`)} ${coords} .
 
         FILTER (bif:st_intersects(${coords}, bif:st_point(${longitude}, ${latitude}), ${radiusInKm}))
       }

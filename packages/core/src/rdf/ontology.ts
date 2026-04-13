@@ -3,7 +3,7 @@ import type { ItemAvailability } from "@music-event-connect/shared/interfaces";
 import { foaf, rdf, rdfs, schema, skos, xsd } from "rdf-namespaces";
 
 /**
- * RDF prefixes used in this project.
+ * The exhaustive list of RDF namespace prefixes used in this project.
  */
 export const prefixes = {
   foaf: "https://xmlns.com/foaf/spec/",
@@ -80,14 +80,20 @@ const schemaItemAvailabilityEnum: SchemaItemAvailabilityEnum = {
 type SchemaSubset = SchemaTypes & SchemaProperties & SchemaItemAvailabilityEnum;
 
 /**
- * RDF namespaces used in this project.
+ * The non-exhaustive list of RDF namespaces used in this project.
+ *
+ * It is not exhaustive, because some of required namespaces are not present in the third-party library `rdf-namespaces`.
+ * If you cannot find the namespace try to use `prefixes` exported constant instead.
  */
 export const ns = {
   foaf: foaf as FoafSubset,
   mb: {
+    Area: `${prefixes.mb}Area`,
     Artist: `${prefixes.mb}Artist`,
     Event: `${prefixes.mb}Event`,
+    Genre: `${prefixes.mb}Genre`,
     Place: `${prefixes.mb}Place`,
+    ReleaseGroup: `${prefixes.mb}ReleaseGroup`,
   } as const,
   rdf,
   rdfs,
@@ -96,10 +102,5 @@ export const ns = {
     ...schema,
   } as SchemaSubset,
   skos,
-  wdt: {
-    coordinateLocation: `${prefixes.wdt}P625`,
-    startTime: `${prefixes.wdt}P580`,
-    streetAddress: `${prefixes.wdt}P6375`,
-  } as const,
   xsd,
-} satisfies Record<keyof StrictOmit<typeof prefixes, "geo" | "mec" | "osmkey">, object>;
+} satisfies Record<keyof StrictOmit<typeof prefixes, "geo" | "mec" | "osmkey" | "wdt">, object>;
