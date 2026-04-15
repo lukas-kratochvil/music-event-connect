@@ -6,7 +6,7 @@ FROM node:20-bullseye AS base
 WORKDIR /app
 
 # Tell Puppeteer to store Chrome inside the specified directory, not in a user's home folder (~/.cache/puppeteer).
-# (When the user is not defined it defaults to the root user: /root/.cache/puppeteer/chrome-headless-shell and /root/.cache/puppeteer/chrome).
+# When the user is not defined it defaults to the root user: /root/.cache/puppeteer/chrome-headless-shell and /root/.cache/puppeteer/chrome.
 ENV PUPPETEER_CACHE_DIR="/puppeteer/.cache"
 
 # Install dependencies required by Chromium, see https://pptr.dev/troubleshooting#chrome-doesnt-launch-on-linux.

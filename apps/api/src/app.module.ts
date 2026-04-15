@@ -22,7 +22,6 @@ import { configSchema, type ConfigSchema } from "./config/schema";
       ],
     }),
     // TODO: caching with Redis (https://docs.nestjs.com/techniques/caching)
-    // TODO: REST API documentation with Swagger (https://docs.nestjs.com/openapi/introduction)
     EventsModule,
   ],
   providers: [
