@@ -12,6 +12,7 @@ import type {
   ConstructEventsSorters,
   Pagination,
 } from "../../sparql/sparql-query-builder.service";
+import { validateEntity } from "../../utils/entity";
 import { GRAPHS_MAP } from "../../utils/graphs";
 import { AbstractEntityMapper } from "./abstract-entity-mapper.service";
 
@@ -43,7 +44,10 @@ export class MusicEventMapper extends AbstractEntityMapper<MusicEventEntity> {
     for (const quad of eventIRIQuads) {
       const eventIRI = quad.subject as NamedNode;
       const musicEventEntity = this.deserializer.deserialize(this.getClassConstructor(), eventIRI, dataset);
-      musicEventEntities.push(musicEventEntity);
+      const validationErrors = await validateEntity(musicEventEntity);
+      if (validationErrors.length === 0) {
+        musicEventEntities.push(musicEventEntity);
+      }
     }
 
     if (sorters) {

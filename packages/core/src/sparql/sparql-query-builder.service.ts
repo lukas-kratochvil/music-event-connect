@@ -148,9 +148,9 @@ export class SPARQLQueryBuilderService {
       }
     }
 
-    // the length must be greater than 0 otherwise '?var IN ()' is always false so no triples will be returned
+    // the length must be greater than 0 otherwise '?var IN ()' is always false and the SPARQL query will not return any triples
     if (filters?.artistNames && filters.artistNames.length > 0) {
-      const artistLiterals = filters.artistNames.map((name) => literal(name));
+      const artistLiterals = filters.artistNames.map((name) => literal(name.trim()));
       // the library automatically separates arrays with '\n', but the IN operator requires comma-separated values
       const escapedArtistNameArray = this.builder.sparql`${artistLiterals}`.toString().replaceAll("\n", ", ");
       filterClauses.push(this.builder.sparql`FILTER (${artistName} IN (${escapedArtistNameArray}))`);
