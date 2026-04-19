@@ -27,7 +27,7 @@ export class EventsService {
           name: artist.name,
           images: artist.images,
         })),
-        venues: event.venues.map((venue) => ({
+        venues: event.venues?.map((venue) => ({
           name: venue.name,
           address: {
             locality: venue.address.locality,
