@@ -20,7 +20,7 @@ const EventCard = ({ event }: EventCardProps) => {
     .sort((a, b) => a.origin.localeCompare(b.origin));
   const allImages = [...(event.images ?? []), ...(event.artists?.map((artist) => artist.images ?? []).flat() ?? [])];
   return (
-    <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
+    <Card className="flex flex-col w-full h-full overflow-hidden transition-all hover:shadow-md">
       <Link to={RoutingPath.EVENTS + "/" + event.id}>
         <div className="aspect-video w-full overflow-hidden">
           <img
