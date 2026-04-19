@@ -16,6 +16,7 @@ export interface IEventSearchDateRange {
 export interface IEventSearchFilters {
   artistNames?: string[];
   startDateRange?: IEventSearchDateRange;
+  genres?: string[];
 }
 
 export interface IEventSearchSorters {

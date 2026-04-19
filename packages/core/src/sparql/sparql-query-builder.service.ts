@@ -18,6 +18,7 @@ export type ConstructEventsFilters = {
     from: Date | undefined;
     to?: Date | undefined;
   };
+  genres?: string[];
 };
 
 export type ConstructEventsSorters = {
@@ -72,7 +73,13 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
       distInM: "placeDistInM",
     },
   },
-};
+  selectMusicBrainzGenres: {
+    genre: {
+      iri: "genreIRI",
+      name: "genreName",
+    },
+  },
+} as const;
 
 /**
  * SPARQL service for building [SPARQL 1.1 Query Language](http://www.w3.org/TR/2013/REC-sparql11-query-20130321/) queries.
@@ -127,6 +134,7 @@ export class SPARQLQueryBuilderService {
     const startDate = variable("startDate");
     const startDateGrouped = variable("startDateGrouped");
     const artistName = variable("artistName");
+    const genreName = variable("genreName");
     const linkedEventImage = variable("linkedEventImage");
     const eventArtist = variable("eventArtist");
     const linkedArtistImage = variable("linkedArtistImage");
@@ -156,6 +164,14 @@ export class SPARQLQueryBuilderService {
       filterClauses.push(this.builder.sparql`FILTER (${artistName} IN (${escapedArtistNameArray}))`);
     }
 
+    // the length must be greater than 0 otherwise '?var IN ()' is always false and the SPARQL query will not return any triples
+    if (filters?.genres && filters.genres.length > 0) {
+      const genreLiterals = filters.genres.map((genre) => literal(genre.trim(), "en"));
+      // the library automatically separates arrays with '\n', but the IN operator requires comma-separated values
+      const escapedGenresArray = this.builder.sparql`${genreLiterals}`.toString().replaceAll("\n", ", ");
+      filterClauses.push(this.builder.sparql`FILTER (${genreName} IN (${escapedGenresArray}))`);
+    }
+
     // Pagination
     const { limit, offset } = pagination;
 
@@ -174,7 +190,8 @@ export class SPARQLQueryBuilderService {
                     ${namedNode(schema.startDate)} ${startDate} ;
                     ${namedNode(schema.performer)} ?artist .
           OPTIONAL {
-            ?artist ${namedNode(schema.name)} ${artistName}
+            ?artist ${namedNode(schema.name)} ${artistName} ;
+                    ${namedNode(schema.genre)} ${genreName} .
           }
 
           ${filterClauses}
@@ -469,5 +486,21 @@ export class SPARQLQueryBuilderService {
       .ORDER()
       .BY(distInM)
       .LIMIT(limit);
+  }
+
+  /**
+   * Selects all the Genre entities in the MusicBrainz graph.
+   */
+  selectMusicBrainzGenres(musicBrainzGraphIRI: string) {
+    const { mb, rdf, rdfs } = ns;
+    const sourceGraph = namedNode(musicBrainzGraphIRI);
+    const iri = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres.genre.iri);
+    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres.genre.name);
+    return this.builder.SELECT.DISTINCT`${iri} ${name}`.WHERE`
+      GRAPH ${sourceGraph} {
+        ${iri} ${namedNode(rdf.type)} ${namedNode(mb.Genre)} ;
+                ${namedNode(rdfs.label)} ${name} .
+      }
+    `;
   }
 }

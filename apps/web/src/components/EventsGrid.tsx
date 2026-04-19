@@ -1,5 +1,5 @@
 import type { IEventSearchOptions } from "@music-event-connect/shared/api";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
@@ -8,25 +8,45 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectGroup,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { searchEvents } from "../services/mec/calls";
+import { fetchGenres, searchEvents } from "../services/mec/calls";
 import EventCard from "./card/EventCard";
 
 const PAGINATION_LIMIT = 20;
 
 const EventsGrid = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [startDate, setStartDate] = useState<DateRange>();
-  const [tempStartDate, setTempStartDate] = useState<DateRange>();
+  const [pickedStartDate, setPickedStartDate] = useState<DateRange>();
+  const [pickedTempStartDate, setPickedTempStartDate] = useState<DateRange>();
   const startDateNow: DateRange = { from: new Date() };
+  const [selectedTempGenres, setSelectedTempGenres] = useState<string[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [areActiveFiltersDisplayed, setAreActiveFiltersDisplayed] = useState(false);
+  const { data: genres } = useQuery({
+    queryKey: ["genres"] as const,
+    queryFn: fetchGenres,
+    select: (data) => data.toSorted((a, b) => a.name.localeCompare(b.name)),
+    retry: false,
+    staleTime: Infinity,
+    gcTime: 0,
+  });
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery({
-    queryKey: ["events", startDate] as const,
+    queryKey: ["events", pickedStartDate] as const,
     initialPageParam: 0,
     queryFn: ({ pageParam }) => {
       const searchOptions = {
         filters: {
-          startDateRange: startDate ?? startDateNow,
+          startDateRange: pickedStartDate ?? startDateNow,
+          genres: selectedGenres,
         },
         pagination: {
           limit: PAGINATION_LIMIT,
@@ -45,30 +65,35 @@ const EventsGrid = () => {
 
   const onStartDatePickerSelect = (selectedDate: DateRange | undefined) => {
     if (!selectedDate) {
-      setTempStartDate(undefined);
+      setPickedTempStartDate(undefined);
       return;
     }
 
     if (selectedDate.from) {
       if (!selectedDate.to || isSameDay(selectedDate.to, selectedDate.from)) {
-        setTempStartDate({ from: startOfDay(selectedDate.from) });
+        setPickedTempStartDate({ from: startOfDay(selectedDate.from) });
       } else {
-        setTempStartDate({ from: startOfDay(selectedDate.from), to: endOfDay(selectedDate.to) });
+        setPickedTempStartDate({ from: startOfDay(selectedDate.from), to: endOfDay(selectedDate.to) });
       }
       return;
     }
 
-    setTempStartDate(undefined);
+    setPickedTempStartDate(undefined);
   };
 
   const handleSubmitFilters = (e: React.FormEvent) => {
     e.preventDefault();
-    setStartDate(tempStartDate);
+    setPickedStartDate(pickedTempStartDate);
+    setSelectedGenres(selectedTempGenres);
+    setAreActiveFiltersDisplayed(true);
   };
 
   const handleClearFilters = () => {
-    setStartDate(undefined);
-    setTempStartDate(undefined);
+    setAreActiveFiltersDisplayed(false);
+    setPickedStartDate(undefined);
+    setPickedTempStartDate(undefined);
+    setSelectedGenres([]);
+    setSelectedTempGenres([]);
   };
 
   return (
@@ -90,29 +115,53 @@ const EventsGrid = () => {
       </div>
 
       {/* Active filters */}
-      {startDate?.from && (
+      {areActiveFiltersDisplayed && (
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="text-sm text-muted-foreground">Active filters:</span>
-          <Badge
-            variant="secondary"
-            className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
-          >
-            <span>
-              Start date: {format(startDate.from, "dd.MM.y")}
-              {startDate.to && !isSameDay(startDate.from, startDate.to) ? ` - ${format(startDate.to, "dd.MM.y")}` : ""}
-            </span>
-            <Button
-              title="Remove filter"
-              variant="destructive"
-              className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
-              onClick={() => {
-                setStartDate(undefined);
-                setTempStartDate(undefined);
-              }}
+          {pickedStartDate?.from && (
+            <Badge
+              variant="secondary"
+              className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
             >
-              <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-            </Button>
-          </Badge>
+              <span>
+                Start date: {format(pickedStartDate.from, "dd.MM.y")}
+                {pickedStartDate.to && !isSameDay(pickedStartDate.from, pickedStartDate.to)
+                  ? ` - ${format(pickedStartDate.to, "dd.MM.y")}`
+                  : ""}
+              </span>
+              <Button
+                title="Remove filter"
+                variant="destructive"
+                className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
+                onClick={() => {
+                  setPickedStartDate(undefined);
+                  setPickedTempStartDate(undefined);
+                }}
+              >
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              </Button>
+            </Badge>
+          )}
+          {selectedGenres.map((genre) => (
+            <Badge
+              key={"genre_" + genre}
+              variant="secondary"
+              className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
+            >
+              <span>Genre: {genre}</span>
+              <Button
+                title="Remove filter"
+                variant="destructive"
+                className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
+                onClick={() => {
+                  setSelectedGenres((prev) => prev.filter((genreName) => genreName !== genre));
+                  setSelectedTempGenres((prev) => prev.filter((genreName) => genreName !== genre));
+                }}
+              >
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              </Button>
+            </Badge>
+          ))}
         </div>
       )}
 
@@ -126,55 +175,96 @@ const EventsGrid = () => {
         <div className="overflow-hidden">
           <div className="flex flex-wrap items-center gap-4 p-5 border rounded-xl bg-card shadow-sm">
             <div className="flex flex-col gap-6">
-              {/* Start date range picker */}
-              <div className="flex flex-col gap-1.5 w-full sm:w-auto">
-                <Label htmlFor="start-date-picker">Start date</Label>
-                <div className="flex items-center gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        id="start-date-picker"
-                        variant={"outline"}
-                        className={"w-full sm:w-75 justify-start text-left font-normal"}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {tempStartDate?.from ? (
-                          tempStartDate.to && !isSameDay(tempStartDate.from, tempStartDate.to) ? (
-                            <>
-                              {format(tempStartDate.from, "dd.MM.y")} - {format(tempStartDate.to, "dd.MM.y")}
-                            </>
+              {/* Filter inputs */}
+              <div className="flex gap-8">
+                {/* Start date range picker */}
+                <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                  <Label htmlFor="start-date-picker">Start date</Label>
+                  <div className="flex items-center gap-2 h-full">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          id="start-date-picker"
+                          variant={"outline"}
+                          className={"w-full sm:w-75 justify-start text-left font-normal"}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {pickedTempStartDate?.from ? (
+                            pickedTempStartDate.to && !isSameDay(pickedTempStartDate.from, pickedTempStartDate.to) ? (
+                              <>
+                                {format(pickedTempStartDate.from, "dd.MM.y")} -{" "}
+                                {format(pickedTempStartDate.to, "dd.MM.y")}
+                              </>
+                            ) : (
+                              format(pickedTempStartDate.from, "dd.MM.y")
+                            )
                           ) : (
-                            format(tempStartDate.from, "dd.MM.y")
-                          )
-                        ) : (
-                          <span className="text-muted-foreground">Pick a date range</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0"
-                      align="start"
-                    >
-                      <Calendar
-                        mode="range"
-                        defaultMonth={tempStartDate?.from}
-                        selected={tempStartDate}
-                        onSelect={onStartDatePickerSelect}
-                        numberOfMonths={2}
-                        disabled={{ before: new Date() }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {tempStartDate?.from && (
+                            <span className="text-muted-foreground">Pick a date range</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="range"
+                          defaultMonth={pickedTempStartDate?.from}
+                          selected={pickedTempStartDate}
+                          onSelect={onStartDatePickerSelect}
+                          numberOfMonths={2}
+                          disabled={{ before: new Date() }}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <Button
                       title="Clear start date"
                       variant="destructive"
                       size="icon"
-                      onClick={() => setTempStartDate(undefined)}
+                      onClick={() => setPickedTempStartDate(undefined)}
+                      disabled={pickedTempStartDate?.from === undefined}
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                  )}
+                  </div>
+                </div>
+                {/* Genre multi-select */}
+                <div className="flex flex-col gap-1.5 w-full sm:w-auto">
+                  <Label htmlFor="start-date-picker">Genre</Label>
+                  <div className="flex items-center gap-2 h-full">
+                    <MultiSelect
+                      values={selectedTempGenres}
+                      onValuesChange={(values) => setSelectedTempGenres(values)}
+                    >
+                      <MultiSelectTrigger className="w-full max-w-100">
+                        <MultiSelectValue
+                          overflowBehavior="wrap-when-open"
+                          placeholder="Select genres"
+                        />
+                      </MultiSelectTrigger>
+                      <MultiSelectContent>
+                        <MultiSelectGroup>
+                          {genres?.map((genre) => (
+                            <MultiSelectItem
+                              key={genre.name}
+                              value={genre.name}
+                            >
+                              {genre.name}
+                            </MultiSelectItem>
+                          ))}
+                        </MultiSelectGroup>
+                      </MultiSelectContent>
+                    </MultiSelect>
+                    <Button
+                      title="Clear genres"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => setSelectedTempGenres([])}
+                      disabled={selectedTempGenres.length === 0}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2">

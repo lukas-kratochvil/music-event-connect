@@ -50,6 +50,13 @@ class Filters implements IEventSearchFilters {
   @IsOptional()
   @ValidateNested()
   startDateRange?: DateRange;
+
+  @ApiPropertyOptional({ type: "string", isArray: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique<string>()
+  @IsString({ each: true })
+  genres?: string[];
 }
 
 class SorterOptions {

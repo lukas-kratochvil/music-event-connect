@@ -5,11 +5,19 @@ import { SPARQLModule } from "../sparql/sparql.module";
 import { MusicEventMapper } from "./events/music-event-mapper.service";
 import { LinksMapper } from "./links/links-mapper.service";
 import { ConfigurableModuleClass, ASYNC_OPTIONS_TYPE } from "./mapper.module-definition";
+import { MusicBrainzMapper } from "./musicbrainz/musicbrainz-mapper.service";
 import { OSMMapper } from "./osm/osm-mapper.service";
 
 @Module({
-  providers: [LinksMapper, MusicEventMapper, OSMMapper, RdfEntitySerializerService, RdfEntityDeserializerService],
-  exports: [MusicEventMapper, OSMMapper],
+  providers: [
+    LinksMapper,
+    MusicBrainzMapper,
+    MusicEventMapper,
+    OSMMapper,
+    RdfEntitySerializerService,
+    RdfEntityDeserializerService,
+  ],
+  exports: [MusicBrainzMapper, MusicEventMapper, OSMMapper],
 })
 export class MapperModule extends ConfigurableModuleClass {
   static registerAsync(options: typeof ASYNC_OPTIONS_TYPE): DynamicModule {

@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { seconds, ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { EventsModule } from "./api/events/events.module";
+import { GenresModule } from "./api/genres/genres.module";
 import { configSchema, type ConfigSchema } from "./config/schema";
 
 @Module({
@@ -23,6 +24,7 @@ import { configSchema, type ConfigSchema } from "./config/schema";
     }),
     // TODO: caching with Redis (https://docs.nestjs.com/techniques/caching)
     EventsModule,
+    GenresModule,
   ],
   providers: [
     Logger,

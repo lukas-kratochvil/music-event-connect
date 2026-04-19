@@ -201,4 +201,16 @@ export class SPARQLService {
       },
     }));
   }
+
+  async getMusicBrainzGenres(musicBrainzGraphIRI: string) {
+    const selectQuery = this.queryBuilder.selectMusicBrainzGenres(musicBrainzGraphIRI);
+    const results = await selectQuery.execute(this.sparqlClient);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres;
+    return results.map((row) => ({
+      genre: {
+        iri: row[VARIABLES.genre.iri]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+        name: row[VARIABLES.genre.name]?.value!, // eslint-disable-line @typescript-eslint/no-non-null-asserted-optional-chain
+      },
+    }));
+  }
 }
