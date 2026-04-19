@@ -155,9 +155,9 @@ const EventsGrid = () => {
       >
         <div className="overflow-hidden">
           <div className="flex flex-wrap items-center gap-4 p-5 border rounded-xl bg-card shadow-sm">
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 w-full">
               {/* Filter inputs */}
-              <div className="flex gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full ">
                 {/* Start date range picker */}
                 <div className="flex flex-col gap-1.5 w-full sm:w-auto">
                   <Label htmlFor="start-date-picker">Start date</Label>
@@ -217,7 +217,7 @@ const EventsGrid = () => {
                       values={selectedTempGenres}
                       onValuesChange={(values) => setSelectedTempGenres(values)}
                     >
-                      <MultiSelectTrigger className="w-full max-w-100">
+                      <MultiSelectTrigger className="flex-1">
                         <MultiSelectValue
                           overflowBehavior="wrap-when-open"
                           placeholder="Select genres"
