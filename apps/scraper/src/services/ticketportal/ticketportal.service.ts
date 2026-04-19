@@ -274,17 +274,17 @@ export class TicketportalService implements ICronJobService {
           };
         }
 
-        // TODO: extract artists (their name and country) from the event name or from the event description
+        // TODO: extract artists from the event name or from the event description
         const artistNames: string[] = [];
 
-        if (!["Vážná hudba", "Pro děti", "Párty", "Disco"].includes(genreName)) {
-          artistNames.push(
-            eventName
-              .split(/[,:;(-]/)
-              .at(0)
-              ?.trim() as string
-          );
-        }
+        // if (!["Vážná hudba", "Pro děti", "Párty", "Disco"].includes(genreName.toLowerCase())) {
+        //   artistNames.push(
+        //     eventName
+        //       .split(/[,:;(-]/)
+        //       .at(0)
+        //       ?.trim() as string
+        //   );
+        // }
 
         const artists = artistNames.map((artistName): MusicEventsQueueDataType["event"]["artists"][number] => ({
           name: artistName,
