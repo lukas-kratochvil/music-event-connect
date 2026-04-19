@@ -4,7 +4,6 @@ import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -20,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Spinner } from "@/components/ui/spinner";
 import { fetchGenres, searchEvents } from "../services/mec/calls";
 import EventCard from "./card/EventCard";
+import { FilterBadge } from "./utils/FilterBadge";
 
 const PAGINATION_LIMIT = 20;
 
@@ -119,48 +119,29 @@ const EventsGrid = () => {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           {pickedStartDate?.from && (
-            <Badge
-              variant="secondary"
-              className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
-            >
-              <span>
-                Start date: {format(pickedStartDate.from, "dd.MM.y")}
-                {pickedStartDate.to && !isSameDay(pickedStartDate.from, pickedStartDate.to)
+            <FilterBadge
+              label={
+                "Start date: "
+                + format(pickedStartDate.from, "dd.MM.y")
+                + (pickedStartDate.to && !isSameDay(pickedStartDate.from, pickedStartDate.to)
                   ? ` - ${format(pickedStartDate.to, "dd.MM.y")}`
-                  : ""}
-              </span>
-              <Button
-                title="Remove filter"
-                variant="destructive"
-                className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
-                onClick={() => {
-                  setPickedStartDate(undefined);
-                  setPickedTempStartDate(undefined);
-                }}
-              >
-                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-              </Button>
-            </Badge>
+                  : "")
+              }
+              onRemove={() => {
+                setPickedStartDate(undefined);
+                setPickedTempStartDate(undefined);
+              }}
+            />
           )}
           {selectedGenres.map((genre) => (
-            <Badge
+            <FilterBadge
               key={"genre_" + genre}
-              variant="secondary"
-              className="flex items-center gap-1.5 pl-2.5 pr-0 py-1 text-sm font-normal border-gray-400"
-            >
-              <span>Genre: {genre}</span>
-              <Button
-                title="Remove filter"
-                variant="destructive"
-                className="ml-1 rounded-full border-0 hover:bg-muted-foreground/20 transition-colors"
-                onClick={() => {
-                  setSelectedGenres((prev) => prev.filter((genreName) => genreName !== genre));
-                  setSelectedTempGenres((prev) => prev.filter((genreName) => genreName !== genre));
-                }}
-              >
-                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-              </Button>
-            </Badge>
+              label={"Genre: " + genre}
+              onRemove={() => {
+                setSelectedGenres((prev) => prev.filter((genreName) => genreName !== genre));
+                setSelectedTempGenres((prev) => prev.filter((genreName) => genreName !== genre));
+              }}
+            />
           ))}
         </div>
       )}
