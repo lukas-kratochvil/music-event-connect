@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import type { SparqlTemplateResult } from "@tpluscode/sparql-builder" with { "resolution-mode": "import" };
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
 import { ns, nsPrefixes } from "../rdf/ontology";
@@ -131,22 +132,28 @@ export class SPARQLQueryBuilderService {
     const linkedArtistImage = variable("linkedArtistImage");
 
     // Filters
-    let filterClauses = "";
+    const filterClauses: SparqlTemplateResult[] = [];
 
     if (filters?.startDateRange) {
       const { from, to } = filters.startDateRange;
       if (from) {
-        filterClauses += `FILTER (?${startDate.value} >= "${from.toISOString()}"^^<${xsd.dateTime}>)\n`;
+        filterClauses.push(
+          this.builder.sparql`FILTER (${startDate} >= ${literal(from.toISOString(), namedNode(xsd.dateTime))})\n`
+        );
       }
       if (to) {
-        filterClauses += `FILTER (?${startDate.value} <= "${to.toISOString()}"^^<${xsd.dateTime}>)\n`;
+        filterClauses.push(
+          this.builder.sparql`FILTER (${startDate} <= ${literal(to.toISOString(), namedNode(xsd.dateTime))})\n`
+        );
       }
     }
 
-    // the length must be greater than 0 otherwise `?var IN ()` is always false so no triples will be returned
+    // the length must be greater than 0 otherwise '?var IN ()' is always false so no triples will be returned
     if (filters?.artistNames && filters.artistNames.length > 0) {
-      const names = filters.artistNames.map((name) => `"${name}"`).join(", ");
-      filterClauses += `FILTER (?${artistName.value} IN (${names}))\n`;
+      const artistLiterals = filters.artistNames.map((name) => literal(name));
+      // the library automatically separates arrays with '\n', but the IN operator requires comma-separated values
+      const escapedArtistNameArray = this.builder.sparql`${artistLiterals}`.toString().replaceAll("\n", ", ");
+      filterClauses.push(this.builder.sparql`FILTER (${artistName} IN (${escapedArtistNameArray}))`);
     }
 
     // Pagination
