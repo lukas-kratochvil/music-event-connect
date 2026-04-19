@@ -40,7 +40,7 @@ const EventsGrid = () => {
     gcTime: 0,
   });
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery({
-    queryKey: ["events", pickedStartDate] as const,
+    queryKey: ["events", { pickedStartDate, selectedGenres }] as const,
     initialPageParam: 0,
     queryFn: ({ pageParam }) => {
       const searchOptions = {
