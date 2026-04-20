@@ -33,6 +33,24 @@ You can use the tool [mkcert](https://github.com/FiloSottile/mkcert) to generate
 
 ### Virtuoso triple store
 
+#### Preprocessing of the OpenStreetMap dataset
+
+Use Geofabrik instead of the osm2rdf dump, because it doesn't contains all the metadata and history etc. It still contains 'version' and 'timestamp' metadata.
+
+1. Download the [CZE dataset](https://download.geofabrik.de/europe/czech-republic.html) from Geofabrik.
+2. Use the [Osmium](https://osmcode.org/osmium-tool/) tool to extract only specific area from the whole dataset and also remove the metadata. In the example below, Prague and its closer surrounding is extracted:
+
+```sh
+osmium extract -b 14.22,49.94,14.71,50.18 {INPUT_PBF_FILE} -o {OUTPUT_PBF_FILE} -f pbf,add_metadata=false
+```
+
+3. Use the [osm2rdf](https://github.com/ad-freiburg/osm2rdf) tool to transform the dataset from PBF format into RDF:
+
+```sh
+# in case of path problem on Windows OS add `MSYS_NO_PATHCONV=1` in front of the command below
+docker run --rm -v "$(pwd)/rdf-data/osm2rdf":/input adfreiburg/osm2rdf -o /input/{OUTPUT_TTL_FILE} /input/{INPUT_PBF_FILE}
+```
+
 #### Import data from MusicBrainz and OpenStreetMap
 
 Firstly, adjust the values of the env variables `VIRT_Parameters_NumberOfBuffers` and `VIRT_Parameters_MaxDirtyBuffers` in the `docker-compose.yml`. Set `VIRT_Parameters_MaxDirtyBuffers` to a max of 50 % of total buffers (value `VIRT_Parameters_NumberOfBuffers`) and a max of 1 GB. Then restart the `virtuoso` service. After successful import, change these env vars back to one of the recommended settings listed in the `virtuoso.ini` and restart `virtuoso`.
