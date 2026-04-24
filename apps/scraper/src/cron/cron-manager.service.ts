@@ -28,24 +28,22 @@ export class CronManagerService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.#logger.log("Triggering initial cron jobs run");
-    this.runJobs();
+    this.runServices();
   }
 
-  readonly #runJobMap: Record<ICronJobService["jobType"], (job: ICronJobService) => void> = {
-    interval: (job) => this.#runIntervalJob(job),
-    timeout: (job) => this.#runTimeoutJob(job),
+  readonly #runServiceMap: Record<ICronJobService["jobType"], (service: ICronJobService) => void> = {
+    interval: (service) => this.#runIntervalService(service),
+    timeout: (service) => this.#runTimeoutService(service),
   };
 
   @Interval(minutesToMilliseconds(10))
-  runJobs() {
+  runServices() {
     this.cronJobServices
-      .filter((cronJobService) => !cronJobService.isInProcess())
-      .forEach((cronJobService) => {
-        if (cronJobService.getRunDate().getTime() <= Date.now()) {
-          this.#logger.log("Run job: " + cronJobService.jobName);
-          const runJob = this.#runJobMap[cronJobService.jobType];
-          runJob(cronJobService);
-        }
+      .filter((service) => !service.isInProcess() && service.getRunDate().getTime() <= Date.now())
+      .forEach((service) => {
+        this.#logger.log("Run job: " + service.jobName);
+        const runService = this.#runServiceMap[service.jobType];
+        runService(service);
       });
   }
 
@@ -55,7 +53,7 @@ export class CronManagerService implements OnApplicationBootstrap {
     }
   }
 
-  #runTimeoutJob(service: ICronJobService) {
+  #runTimeoutService(service: ICronJobService) {
     const timeout = setTimeout(async () => {
       try {
         await this.#runService(service);
@@ -69,7 +67,7 @@ export class CronManagerService implements OnApplicationBootstrap {
     this.schedulerRegistry.addTimeout(service.jobName, timeout);
   }
 
-  #runIntervalJob(service: ICronJobService) {
+  #runIntervalService(service: ICronJobService) {
     const interval = setInterval(async () => {
       try {
         await this.#runService(service);
