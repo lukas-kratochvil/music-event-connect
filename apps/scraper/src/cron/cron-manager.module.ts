@@ -1,5 +1,6 @@
 import { Module, type DynamicModule, type Type } from "@nestjs/common";
 import type { ConfigSchema } from "../config/schema";
+import { QueueModule } from "../queue/queue.module";
 import { GooutModule } from "../services/goout/goout.module";
 import { GooutService } from "../services/goout/goout.service";
 import { TicketmasterModule } from "../services/ticketmaster/ticketmaster.module";
@@ -25,6 +26,7 @@ const services: Record<keyof ConfigSchema["services"], { module: Type; provider:
 };
 
 @Module({
+  imports: [QueueModule],
   providers: [CronManagerService],
   exports: [CronManagerService],
 })

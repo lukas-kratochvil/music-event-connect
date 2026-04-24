@@ -1,12 +1,6 @@
-import {
-  MusicEventsQueue,
-  type MusicEventsQueueDataType,
-  type MusicEventsQueueNameType,
-} from "@music-event-connect/core/queue";
-import { InjectQueue } from "@nestjs/bullmq";
+import type { ScrapedMusicEvent } from "@music-event-connect/core/queue";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Queue } from "bullmq";
 import { addDays, compareAsc, max, set } from "date-fns";
 import type { ConfigSchema } from "../../config/schema";
 import type { ICronJobService } from "../../cron/cron-job-service.interface";
@@ -26,12 +20,6 @@ export class TicketmasterService implements ICronJobService {
   readonly jobType = "interval";
 
   constructor(
-    @InjectQueue(MusicEventsQueue.name)
-    private readonly musicEventsQueue: Queue<
-      MusicEventsQueueDataType,
-      MusicEventsQueueDataType,
-      MusicEventsQueueNameType
-    >,
     private readonly ticketmasterApi: TicketmasterApiProxy,
     config: ConfigService<ConfigSchema, true>
   ) {
@@ -138,7 +126,7 @@ export class TicketmasterService implements ICronJobService {
     return Array.from(filteredImages.values());
   }
 
-  async run() {
+  async *run() {
     let data: Awaited<ReturnType<typeof this.ticketmasterApi.getMusicEvents>>;
 
     try {
@@ -165,64 +153,61 @@ export class TicketmasterService implements ICronJobService {
     this.#currentPage++;
 
     // extract music event data
-    const musicEvents = data._embedded.events.map<MusicEventsQueueDataType>((event) => {
+    for (const event of data._embedded.events) {
       const startDate = this.#getEventStartDate(event.dates);
-      return {
-        event: {
-          id: event.id.trim(),
-          name: event.name.trim(),
-          url: event.url,
-          doorTime: this.#getEventDoorTime(event.dates, startDate),
-          startDate,
-          endDate: this.#getEventEndDate(event.dates),
-          artists: event._embedded.attractions
-            .filter(
-              (attraction) =>
-                !attraction.classifications
-                  .map((classification) => classification.subType.name)
+      const musicEvent: ScrapedMusicEvent = {
+        id: event.id.trim(),
+        name: event.name.trim(),
+        url: event.url,
+        doorTime: this.#getEventDoorTime(event.dates, startDate),
+        startDate,
+        endDate: this.#getEventEndDate(event.dates),
+        artists: event._embedded.attractions
+          .filter(
+            (attraction) =>
+              !attraction.classifications
+                .map((classification) => classification.subType.name)
+                .flat()
+                .includes("Concert")
+          )
+          .map((attraction) => ({
+            name: attraction.name.trim(),
+            genres: [
+              ...new Set(
+                attraction.classifications
+                  .map((classification) => [classification.genre.name.trim(), classification.subGenre.name.trim()])
                   .flat()
-                  .includes("Concert")
-            )
-            .map((attraction) => ({
-              name: attraction.name.trim(),
-              genres: [
-                ...new Set(
-                  attraction.classifications
-                    .map((classification) => [classification.genre.name.trim(), classification.subGenre.name.trim()])
-                    .flat()
-                ),
-              ],
-              webSites: attraction.externalLinks
-                ? [
-                    ...new Set(
-                      Object.values(attraction.externalLinks)
-                        .flat()
-                        .map((url) => url.url)
-                        .filter((url) => url.startsWith("http"))
-                    ),
-                  ]
-                : [],
-              images: this.#getUniqueArtistImages(attraction.images).map((img) => img.url),
-            })),
-          venues: event._embedded.venues.map((venue) => ({
-            name: venue.name.trim(),
-            latitude: Number(venue.location.latitude) || undefined,
-            longitude: Number(venue.location.longitude) || undefined,
-            address: {
-              country: "CZ",
-              locality: venue.city?.name?.trim(),
-              street: venue.address?.line1?.trim(),
-            },
+              ),
+            ],
+            webSites: attraction.externalLinks
+              ? [
+                  ...new Set(
+                    Object.values(attraction.externalLinks)
+                      .flat()
+                      .map((url) => url.url)
+                      .filter((url) => url.startsWith("http"))
+                  ),
+                ]
+              : [],
+            images: this.#getUniqueArtistImages(attraction.images).map((img) => img.url),
           })),
-          ticket: {
-            url: event.url,
-            availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
+        venues: event._embedded.venues.map((venue) => ({
+          name: venue.name.trim(),
+          latitude: Number(venue.location.latitude) || undefined,
+          longitude: Number(venue.location.longitude) || undefined,
+          address: {
+            country: "CZ",
+            locality: venue.city?.name?.trim(),
+            street: venue.address?.line1?.trim(),
           },
-          images: [], // Ticketmaster has artist's images
+        })),
+        ticket: {
+          url: event.url,
+          availability: event.dates.status.code === "onsale" ? "InStock" : "SoldOut",
         },
+        images: [], // Ticketmaster has artist's images
       };
-    });
-    // add data to the queue
-    await this.musicEventsQueue.addBulk(musicEvents.map((event) => ({ name: "ticketmaster", data: event })));
+      yield { event: musicEvent };
+    }
   }
 }

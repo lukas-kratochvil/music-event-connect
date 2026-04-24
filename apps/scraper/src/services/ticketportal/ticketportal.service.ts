@@ -1,12 +1,6 @@
-import {
-  type MusicEventsQueueDataType,
-  type MusicEventsQueueNameType,
-  MusicEventsQueue,
-} from "@music-event-connect/core/queue";
-import { InjectQueue } from "@nestjs/bullmq";
+import type { ScrapedMusicEvent } from "@music-event-connect/core/queue";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Queue } from "bullmq";
 import { addDays, set } from "date-fns";
 import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
@@ -27,12 +21,6 @@ export class TicketportalService implements ICronJobService {
   readonly jobType = "timeout";
 
   constructor(
-    @InjectQueue(MusicEventsQueue.name)
-    private readonly musicEventsQueue: Queue<
-      MusicEventsQueueDataType,
-      MusicEventsQueueDataType,
-      MusicEventsQueueNameType
-    >,
     private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
@@ -83,16 +71,13 @@ export class TicketportalService implements ICronJobService {
     ];
   }
 
-  async #getVenueData(
-    venueUrl: string,
-    browserCtx: BrowserContext
-  ): Promise<MusicEventsQueueDataType["event"]["venues"][number]> {
+  async #getVenueData(venueUrl: string, browserCtx: BrowserContext): Promise<ScrapedMusicEvent["venues"][number]> {
     if (!venueUrl) {
       throw new Error("Venue URL is undefined!");
     }
 
     const venuePage = await browserCtx.newPage();
-    let venue: MusicEventsQueueDataType["event"]["venues"][number];
+    let venue: ScrapedMusicEvent["venues"][number];
 
     try {
       if (!(await venuePage.goto(venueUrl))) {
@@ -181,12 +166,12 @@ export class TicketportalService implements ICronJobService {
     return [...new Set(images)];
   }
 
-  async #getMusicEvents(
+  async *#getMusicEvents(
     page: Page,
     musicEventUrl: string,
     genreName: string,
     multipleEventDatesChecker: Set<string>
-  ): Promise<MusicEventsQueueDataType[]> {
+  ): AsyncGenerator<ScrapedMusicEvent> {
     if (!(await page.goto(musicEventUrl))) {
       throw new Error("Cannot navigate to the URL: " + musicEventUrl);
     }
@@ -195,14 +180,13 @@ export class TicketportalService implements ICronJobService {
 
     if (tickets.length > 1) {
       if (multipleEventDatesChecker.has(musicEventUrl)) {
-        return [];
+        return;
       }
 
       multipleEventDatesChecker.add(musicEventUrl);
     }
 
     const images = await this.#getUniqueEventImages(page);
-    const musicEventData: Pick<MusicEventsQueueDataType, "event">["event"][] = [];
 
     for (const ticket of tickets) {
       try {
@@ -252,7 +236,7 @@ export class TicketportalService implements ICronJobService {
         }
 
         const venueUrl = await venueBlock.$eval("a.building", (elem) => elem.href.trim());
-        let venueData: MusicEventsQueueDataType["event"]["venues"][number];
+        let venueData: ScrapedMusicEvent["venues"][number];
 
         try {
           venueData = await this.#getVenueData(venueUrl, page.browserContext());
@@ -286,7 +270,7 @@ export class TicketportalService implements ICronJobService {
         //   );
         // }
 
-        const artists = artistNames.map((artistName): MusicEventsQueueDataType["event"]["artists"][number] => ({
+        const artists = artistNames.map((artistName): ScrapedMusicEvent["artists"][number] => ({
           name: artistName,
           genres: this.#getUniqueEnGenreNames(genreName),
           webSites: [],
@@ -295,7 +279,7 @@ export class TicketportalService implements ICronJobService {
 
         const soldOutBox = await ticket.$("div.ticket-info > div.status > div.status-content");
 
-        musicEventData.push({
+        yield {
           id,
           name: eventName,
           url: musicEventUrl,
@@ -309,7 +293,7 @@ export class TicketportalService implements ICronJobService {
             availability: soldOutBox === null ? "InStock" : "SoldOut",
           },
           images,
-        });
+        };
       } catch (e) {
         if (e instanceof Error) {
           this.#logger.error("[" + musicEventUrl + "]: " + e.message, e.stack);
@@ -318,10 +302,9 @@ export class TicketportalService implements ICronJobService {
         }
       }
     }
-    return musicEventData.map((event): MusicEventsQueueDataType => ({ event }));
   }
 
-  async run() {
+  async *run() {
     const browserCtx = await this.sharedBrowser.acquireContext();
 
     try {
@@ -393,15 +376,15 @@ export class TicketportalService implements ICronJobService {
               const musicEventPage = await browserCtx.newPage();
 
               try {
-                const musicEvents = await this.#getMusicEvents(
+                const musicEventGenerator = this.#getMusicEvents(
                   musicEventPage,
                   url,
                   genreName,
                   multipleEventDatesChecker
                 );
-                await this.musicEventsQueue.addBulk(
-                  musicEvents.map((event) => ({ name: "ticketportal", data: event }))
-                );
+                for await (const musicEvent of musicEventGenerator) {
+                  yield { event: musicEvent };
+                }
               } catch (e) {
                 if (e instanceof Error) {
                   this.#logger.error("[" + url + "]: " + e.message, e.stack);

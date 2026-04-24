@@ -1,13 +1,6 @@
-import {
-  type MusicEventsQueueDataType,
-  type MusicEventsQueueNameType,
-  type ScrapedMusicEvent,
-  MusicEventsQueue,
-} from "@music-event-connect/core/queue";
-import { InjectQueue } from "@nestjs/bullmq";
+import type { ScrapedMusicEvent } from "@music-event-connect/core/queue";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Queue } from "bullmq";
 import { addDays, parse, set } from "date-fns";
 import type { BrowserContext, Page } from "puppeteer";
 import type { ConfigSchema } from "../../config/schema";
@@ -36,12 +29,6 @@ export class GooutService implements ICronJobService {
   readonly jobType = "timeout";
 
   constructor(
-    @InjectQueue(MusicEventsQueue.name)
-    private readonly musicEventsQueue: Queue<
-      MusicEventsQueueDataType,
-      MusicEventsQueueDataType,
-      MusicEventsQueueNameType
-    >,
     private readonly sharedBrowser: SharedBrowserService,
     config: ConfigService<ConfigSchema, true>
   ) {
@@ -144,7 +131,7 @@ export class GooutService implements ICronJobService {
     };
   }
 
-  async #getMusicEvent(page: Page, eventItem: EventItem): Promise<MusicEventsQueueDataType> {
+  async #getMusicEvent(page: Page, eventItem: EventItem): Promise<ScrapedMusicEvent> {
     if (!(await page.goto(eventItem.url))) {
       throw new Error("Cannot navigate to the URL.");
     }
@@ -241,36 +228,34 @@ export class GooutService implements ICronJobService {
     //         return [["Tickets", "Vstupenky"].includes(anchor.innerText.trim()), anchor.href] as const;
     //       });
     return {
-      event: {
-        id: extractIdFromUrl(eventItem.url),
-        name: eventName,
-        url: eventItem.url,
-        doorTime: doorDatetime,
-        startDate: startDatetime,
-        endDate: endDatetime,
-        artists,
-        venues: [
-          {
-            name: venueName,
-            address: {
-              country: "CZ",
-              locality: venueCity,
-              street: venueAddress || undefined, // check for empty string
-            },
-            latitude: undefined,
-            longitude: undefined,
+      id: extractIdFromUrl(eventItem.url),
+      name: eventName,
+      url: eventItem.url,
+      doorTime: doorDatetime,
+      startDate: startDatetime,
+      endDate: endDatetime,
+      artists,
+      venues: [
+        {
+          name: venueName,
+          address: {
+            country: "CZ",
+            locality: venueCity,
+            street: venueAddress || undefined, // check for empty string
           },
-        ],
-        ticket: {
-          url: ticketsUrl,
-          availability: isOnSale ? "InStock" : "SoldOut",
+          latitude: undefined,
+          longitude: undefined,
         },
-        images: [], // GoOut has artist's images
+      ],
+      ticket: {
+        url: ticketsUrl,
+        availability: isOnSale ? "InStock" : "SoldOut",
       },
+      images: [], // GoOut has artist's images
     };
   }
 
-  async run() {
+  async *run() {
     this.#isInProcess = true;
     const browserCtx = await this.sharedBrowser.acquireContext();
 
@@ -369,7 +354,7 @@ export class GooutService implements ICronJobService {
 
             try {
               const musicEvent = await this.#getMusicEvent(musicEventPage, { url, linkedData });
-              await this.musicEventsQueue.add("goout", musicEvent);
+              yield { event: musicEvent };
             } catch (e) {
               if (e instanceof Error) {
                 this.#logger.error("[" + url + "]: " + e.message, e.stack);

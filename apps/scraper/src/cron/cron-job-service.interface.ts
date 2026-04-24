@@ -1,3 +1,5 @@
+import type { MusicEventsQueueDataType, MusicEventsQueueNameType } from "@music-event-connect/core/queue";
+
 /**
  * Scraper of a concert portal must implement this interface in order to be taken into account and launched.
  */
@@ -5,7 +7,7 @@ export interface ICronJobService {
   /**
    * The name of the action.
    */
-  readonly jobName: string;
+  readonly jobName: MusicEventsQueueNameType;
 
   /**
    * The type determines how this job should be executed.
@@ -15,7 +17,7 @@ export interface ICronJobService {
   /**
    * The action that should be executed as a Cron job.
    */
-  run(): Promise<void>;
+  run(): AsyncGenerator<MusicEventsQueueDataType>;
 
   /**
    * The earliest time in UTC datetime when the job can be executed again.

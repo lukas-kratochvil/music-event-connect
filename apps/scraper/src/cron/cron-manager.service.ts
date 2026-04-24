@@ -1,5 +1,12 @@
+import {
+  MusicEventsQueue,
+  type MusicEventsQueueDataType,
+  type MusicEventsQueueNameType,
+} from "@music-event-connect/core/queue";
+import { InjectQueue } from "@nestjs/bullmq";
 import { Inject, Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common";
 import { Interval, SchedulerRegistry } from "@nestjs/schedule";
+import type { Queue } from "bullmq";
 import { minutesToMilliseconds } from "date-fns";
 import { CRON_MANAGER_PROVIDERS } from "./constants";
 import type { ICronJobService } from "./cron-job-service.interface";
@@ -10,6 +17,12 @@ export class CronManagerService implements OnApplicationBootstrap {
 
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
+    @InjectQueue(MusicEventsQueue.name)
+    private readonly musicEventsQueue: Queue<
+      MusicEventsQueueDataType,
+      MusicEventsQueueDataType,
+      MusicEventsQueueNameType
+    >,
     @Inject(CRON_MANAGER_PROVIDERS.cronJobServices) private readonly cronJobServices: ICronJobService[]
   ) {}
 
@@ -36,39 +49,39 @@ export class CronManagerService implements OnApplicationBootstrap {
       });
   }
 
-  #runTimeoutJob(timeoutService: ICronJobService) {
-    const timeout = setTimeout(async () => {
-      try {
-        await timeoutService.run();
-        this.#logger.log("Job '" + timeoutService.jobName + "' has finished.");
-      } catch (e) {
-        this.#logger.error(
-          "Job '" + timeoutService.jobName + "' thrown error: " + (e instanceof Error ? e.message : e),
-          e
-        );
-      } finally {
-        this.schedulerRegistry.deleteTimeout(timeoutService.jobName);
-      }
-    }, 1_000);
-    this.schedulerRegistry.addTimeout(timeoutService.jobName, timeout);
+  async #runService(service: ICronJobService) {
+    for await (const event of service.run()) {
+      await this.musicEventsQueue.add(service.jobName, event);
+    }
   }
 
-  #runIntervalJob(intervalService: ICronJobService) {
-    const interval = setInterval(async () => {
+  #runTimeoutJob(service: ICronJobService) {
+    const timeout = setTimeout(async () => {
       try {
-        await intervalService.run();
-
-        if (intervalService.getRunDate().getTime() > Date.now()) {
-          this.schedulerRegistry.deleteInterval(intervalService.jobName);
-          this.#logger.log("Job '" + intervalService.jobName + "' has finished.");
-        }
+        await this.#runService(service);
+        this.#logger.log("Job '" + service.jobName + "' has finished.");
       } catch (e) {
-        this.#logger.error(
-          "Job '" + intervalService.jobName + "' thrown error: " + (e instanceof Error ? e.message : e),
-          e
-        );
+        this.#logger.error("Job '" + service.jobName + "' thrown error: " + (e instanceof Error ? e.message : e), e);
+      } finally {
+        this.schedulerRegistry.deleteTimeout(service.jobName);
       }
     }, 1_000);
-    this.schedulerRegistry.addInterval(intervalService.jobName, interval);
+    this.schedulerRegistry.addTimeout(service.jobName, timeout);
+  }
+
+  #runIntervalJob(service: ICronJobService) {
+    const interval = setInterval(async () => {
+      try {
+        await this.#runService(service);
+
+        if (service.getRunDate().getTime() > Date.now()) {
+          this.schedulerRegistry.deleteInterval(service.jobName);
+          this.#logger.log("Job '" + service.jobName + "' has finished.");
+        }
+      } catch (e) {
+        this.#logger.error("Job '" + service.jobName + "' thrown error: " + (e instanceof Error ? e.message : e), e);
+      }
+    }, 1_000);
+    this.schedulerRegistry.addInterval(service.jobName, interval);
   }
 }
