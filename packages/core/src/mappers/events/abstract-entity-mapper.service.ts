@@ -40,7 +40,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
     const deleteSourceIRI = RdfEntitySerializerService.createEntityIRI(deleteEntity);
     const insertQuads = this.serializer.serialize(insertEntity);
     const updateResult = await this.sparqlService.update(deleteSourceIRI, insertQuads, graphIri);
-    await this.linksMapper.createEntityLinks(insertEntity, graphIri);
+    await this.linksMapper.updateEntityLinks(insertEntity, graphIri);
     return updateResult;
   }
 

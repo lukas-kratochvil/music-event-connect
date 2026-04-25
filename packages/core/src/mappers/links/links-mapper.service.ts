@@ -184,8 +184,12 @@ export class LinksMapper {
 
   async createEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
     const handler = this.#handlers.get(entity.constructor.name);
-    if (handler) {
-      await handler(entity, sourceGraph);
-    }
+    return handler?.(entity, sourceGraph);
+  }
+
+  async updateEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
+    const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
+    await this.sparqlService.deleteLinks(entityIRI, sourceGraph);
+    return this.createEntityLinks(entity, sourceGraph);
   }
 }

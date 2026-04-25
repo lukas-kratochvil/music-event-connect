@@ -36,6 +36,30 @@ export class SPARQLUpdateBuilderService {
   }
 
   /**
+   * Creates SPARQL DELETE query.
+   *
+   * Deletes all triples given by the quads pattern from the specified graph.
+   */
+  delete(quads: Quad[], graphIRI: string | undefined) {
+    if (quads.length === 0) {
+      return undefined;
+    }
+
+    // named graph
+    if (graphIRI) {
+      const graphTemplate = this.builder.sparql`
+        GRAPH ${namedNode(graphIRI)} {
+          ${quads}
+        }
+      `;
+      return this.builder.DELETE`${graphTemplate}`.WHERE`${graphTemplate}`;
+    }
+
+    // default graph
+    return this.builder.DELETE`${quads}`.WHERE`${quads}`;
+  }
+
+  /**
    * Creates an atomic SPARQL DELETE/INSERT query (UPSERT).
    *
    * Deletes only the direct properties of the `deleteSourceIRI`, preserving nested entities, and inserts the updated properties.

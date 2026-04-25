@@ -13,7 +13,7 @@ import {
 } from "./sparql-query-builder.service";
 import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
 
-const { namedNode, triple } = DataFactory;
+const { namedNode, triple, variable } = DataFactory;
 
 /**
  * SPARQL service realizes communication with RDF triple store.
@@ -74,6 +74,14 @@ export class SPARQLService {
       .flat();
     const insertQuery = this.updateBuilder.insert(quads, linksGraphIRI);
     return insertQuery?.execute(this.sparqlClient);
+  }
+
+  deleteLinks(sourceIRI: NamedNode, linksGraphIRI: string) {
+    const target = variable("linkedSource");
+    const sameAs = namedNode(ns.schema.sameAs);
+    const quads = [triple(sourceIRI, sameAs, target), triple(target, sameAs, sourceIRI)];
+    const deleteQuery = this.updateBuilder.delete(quads, linksGraphIRI);
+    return deleteQuery?.execute(this.sparqlClient);
   }
 
   async getLinkedResources(sourceIRI: NamedNode, linksGraphIRI: string) {
