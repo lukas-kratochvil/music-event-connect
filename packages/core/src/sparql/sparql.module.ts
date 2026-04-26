@@ -22,7 +22,7 @@ import { createDigestFetch, type SparqlBuilderType } from "./util";
         return new sparqlClient.ParsingClient({
           endpointUrl: options.endpointUrl,
           updateUrl: options.updateUrl,
-          // Virtuoso requires Digest Auth method, but sparql-http-client uses Basic Auth
+          // Virtuoso requires Digest Auth method, but sparql-http-client uses Basic Auth by default
           fetch: createDigestFetch(options.user, options.password),
         });
       },

@@ -6,7 +6,7 @@ import type { SparqlBuilderType } from "./util";
 const { namedNode, variable } = DataFactory;
 
 /**
- * SPARQL service for building [SPARQL 1.1 Update](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/) queries.
+ * SPARQL service for building [SPARQL 1.1 Update](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/) operations.
  */
 @Injectable()
 export class SPARQLUpdateBuilderService {
