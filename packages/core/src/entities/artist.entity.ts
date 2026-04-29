@@ -1,7 +1,7 @@
 import { hash } from "node:crypto";
 import type { IArtist, IOnlineAccount } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform, Type } from "class-transformer";
-import { ArrayUnique, IsArray, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
+import { ArrayUnique, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { createEntityId, isEntityId } from "../utils/entity-id";
@@ -31,7 +31,6 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
   @Expose()
   @Transform(({ value }) => (Array.isArray(value) ? (value as string[]).map((str) => str.toLowerCase()) : undefined))
   @IsOptional()
-  @IsArray()
   @ArrayUnique<string>()
   @IsString({ each: true })
   @RDFProperty(ns.schema.genre, { kind: "language", language: "en" })
@@ -39,16 +38,14 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
 
   @Expose()
   @IsOptional()
-  @IsArray()
-  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @ArrayUnique<string>()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @RDFProperty(ns.schema.url, { kind: "url" })
   urls?: string[];
 
   @Expose()
   @Type(() => OnlineAccountEntity)
   @IsOptional()
-  @IsArray()
   @ArrayUnique<OnlineAccountEntity>((elem) => elem.url)
   @ValidateNested({ each: true })
   @RDFProperty(ns.foaf.account, { kind: "class", type: () => OnlineAccountEntity })
@@ -56,9 +53,8 @@ export class ArtistEntity extends AbstractEntity implements IArtist {
 
   @Expose()
   @IsOptional()
-  @IsArray()
-  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @ArrayUnique<string>()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @RDFProperty(ns.schema.image, { kind: "url" })
   images?: string[];
 }

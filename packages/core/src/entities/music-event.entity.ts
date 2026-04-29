@@ -1,15 +1,6 @@
 import type { IMusicEvent } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform, Type } from "class-transformer";
-import {
-  ArrayNotEmpty,
-  ArrayUnique,
-  IsArray,
-  IsDate,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
-} from "class-validator";
+import { Allow, ArrayNotEmpty, ArrayUnique, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
 import { ns } from "../rdf/ontology";
 import { createEntityId, isEntityId } from "../utils/entity-id";
@@ -47,7 +38,6 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @Expose()
   @Type(() => ArtistEntity)
   @IsOptional()
-  @IsArray()
   @ArrayUnique<ArtistEntity>((elem) => elem.name)
   @ValidateNested({ each: true })
   @RDFProperty(ns.schema.performer, { kind: "class", type: () => ArtistEntity })
@@ -55,7 +45,6 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
 
   @Expose()
   @Type(() => VenueEntity)
-  @IsArray()
   @ArrayNotEmpty()
   @ArrayUnique<VenueEntity>((elem) => elem.name)
   @ValidateNested({ each: true })
@@ -71,7 +60,7 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
 
   @Expose()
   @Type(() => Date)
-  @IsDate()
+  @Allow() // only to satisfy "@darraghor/nestjs-typed/all-properties-are-whitelisted" rule, because it does not recognize custom validators implemented with class-validator as class-validator's decorators
   @IsFutureDate()
   @IsDateEqualOrMoreInFutureThan<MusicEventEntity>("doorTime")
   @RDFProperty(ns.schema.startDate, { kind: "datatype", datatype: ns.xsd.dateTime })
@@ -80,7 +69,6 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
   @Expose()
   @Type(() => Date)
   @IsOptional()
-  @IsDate()
   @IsFutureDate()
   @IsDateMoreInFutureThan<MusicEventEntity>("startDate")
   @RDFProperty(ns.schema.endDate, { kind: "datatype", datatype: ns.xsd.dateTime })
@@ -94,9 +82,8 @@ export class MusicEventEntity extends AbstractEntity implements IMusicEvent {
 
   @Expose()
   @IsOptional()
-  @IsArray()
-  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @ArrayUnique<string>()
+  @IsUrl({ protocols: ["http", "https"] }, { each: true })
   @RDFProperty(ns.schema.image, { kind: "url" })
   images?: string[];
 }
