@@ -1,3 +1,3 @@
-export * from "./interfaces/event.interface";
-export * from "./interfaces/event-search.interface";
-export * from "./interfaces/genre.interface";
+export * from "./event.interface";
+export * from "./event-search.interface";
+export * from "./genre.interface";

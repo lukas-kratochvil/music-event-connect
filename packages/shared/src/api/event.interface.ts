@@ -1,4 +1,4 @@
-import type { ItemAvailability } from "../../interfaces/ticket.interface";
+import type { ItemAvailability } from "../interfaces/ticket.interface";
 
 export interface IEventAccount {
   name: string;
