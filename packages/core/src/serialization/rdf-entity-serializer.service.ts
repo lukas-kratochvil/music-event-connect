@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { AbstractEntity } from "../entities";
 import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "../rdf/decorators";
-import { ns } from "../rdf/ontology";
+import { ns, nsPrefixes } from "../rdf/namespace";
 
 const { literal, namedNode, triple } = DataFactory;
 

@@ -3,7 +3,7 @@ import type { IArtist, IOnlineAccount } from "@music-event-connect/shared/interf
 import { Expose, Transform, Type } from "class-transformer";
 import { ArrayUnique, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
-import { ns } from "../rdf/ontology";
+import { ns } from "../rdf/namespace";
 import { createEntityId, isEntityId } from "../utils/entity-id";
 import { AbstractEntity } from "./abstract.entity";
 import type { EntityClassTransformOptions } from "./context";

@@ -1,6 +1,6 @@
 import { Allow } from "class-validator";
 import { RDFPrefixIRI, RDFProperty } from "../rdf/decorators";
-import { ns, nsPrefixes } from "../rdf/ontology";
+import { ns, nsPrefixes } from "../rdf/namespace";
 import { IsEntityId } from "../validation";
 
 @RDFPrefixIRI(nsPrefixes.mec)

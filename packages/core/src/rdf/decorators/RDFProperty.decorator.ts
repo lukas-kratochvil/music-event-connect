@@ -5,7 +5,7 @@ import { RDF_METADATA_KEYS } from "./metadata-keys";
 type RDFPropertyOptions<TFieldType extends string> =
   | {
       /**
-       * Indicates that the property has a datatype literal value. Cannot be used together with `language`.
+       * Indicates that the property has a datatype literal value.
        */
       kind: "datatype";
       /**
@@ -15,7 +15,7 @@ type RDFPropertyOptions<TFieldType extends string> =
     }
   | {
       /**
-       * Indicates that the property has a language-tagged literal value. Cannot be used together with `datatype`.
+       * Indicates that the property has a language-tagged literal value.
        */
       kind: "language";
       /**
@@ -35,7 +35,7 @@ type RDFPropertyOptions<TFieldType extends string> =
        */
       kind: "class";
       /**
-       * Mapping of enum values to their corresponding IRIs.
+       * Mapping of value to the corresponding IRI.
        */
       type: () => ClassConstructor<AbstractEntity>;
     }

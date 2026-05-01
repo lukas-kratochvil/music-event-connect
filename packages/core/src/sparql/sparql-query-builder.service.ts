@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { SparqlTemplateResult } from "@tpluscode/sparql-builder" with { "resolution-mode": "import" };
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import { SPARQL_PROVIDERS } from "../constants";
-import { ns, nsPrefixes } from "../rdf/ontology";
+import { ns, nsPrefixes } from "../rdf/namespace";
 import type { SparqlBuilderType } from "./util";
 
 const { literal, namedNode, variable } = DataFactory;
@@ -239,11 +239,10 @@ export class SPARQLQueryBuilderService {
   selectLinkedEventOffers(eventIRIs: NamedNode[], linksGraphIRI: string) {
     const { schema } = ns;
     const linksGraph = namedNode(linksGraphIRI);
-    const eventId = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.id);
-    const linkedOfferTicketURL = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.offer.url);
-    const linkedOfferAvailability = variable(
-      SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers.event.offer.availability
-    );
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectLinkedEventOffers;
+    const eventId = variable(VARIABLES.event.id);
+    const linkedOfferTicketURL = variable(VARIABLES.event.offer.url);
+    const linkedOfferAvailability = variable(VARIABLES.event.offer.availability);
     return this.builder.SELECT.DISTINCT`${eventId} ${linkedOfferTicketURL} ${linkedOfferAvailability}`.WHERE`
         VALUES ?event { ${eventIRIs} }
 
@@ -266,8 +265,9 @@ export class SPARQLQueryBuilderService {
   selectLinks(sourceIRI: NamedNode, linksGraphIRI: string) {
     const { schema } = ns;
     const linksGraph = namedNode(linksGraphIRI);
-    const linkedResourceIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.iri);
-    const linkedResourceGraph = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectLinks.linkedResource.graph);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectLinks;
+    const linkedResourceIRI = variable(VARIABLES.linkedResource.iri);
+    const linkedResourceGraph = variable(VARIABLES.linkedResource.graph);
 
     return this.builder.SELECT.DISTINCT`${linkedResourceIRI} ${linkedResourceGraph}`.WHERE`
       GRAPH ${linksGraph} {
@@ -294,8 +294,9 @@ export class SPARQLQueryBuilderService {
   selectEventEntitiesByDate(startDate: Date, eventGraphIRI: string) {
     const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
-    const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
-    const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate;
+    const eventIRI = variable(VARIABLES.event.iri);
+    const eventName = variable(VARIABLES.event.name);
     const eventStartDate = variable("eventStartDate");
     const eventStartDatePrefix = literal(startDate.toISOString().split("T").at(0)!);
 
@@ -315,8 +316,9 @@ export class SPARQLQueryBuilderService {
   selectMusicBrainzEventsByDate(startDate: Date, musicBrainzGraphIRI: string) {
     const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
-    const eventIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.iri);
-    const eventName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate.event.name);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectEventsByDate;
+    const eventIRI = variable(VARIABLES.event.iri);
+    const eventName = variable(VARIABLES.event.name);
     const eventStartDate = variable("eventStartDate");
     const eventStartDatePrefix = literal(startDate.toISOString().split("T").at(0)!);
 
@@ -336,8 +338,9 @@ export class SPARQLQueryBuilderService {
   selectArtistEntitiesByName(artistName: string, eventGraphIRI: string) {
     const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
-    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
-    return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
+    const artistIRI = variable(VARIABLES.artist.iri);
+    return this.builder.SELECT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         ${artistIRI}  ${namedNode(rdf.type)} ${namedNode(schema.MusicGroup)} ;
                       ${namedNode(schema.name)} ${literal(artistName)} .
@@ -351,11 +354,12 @@ export class SPARQLQueryBuilderService {
   selectMusicBrainzArtistsByName(artistName: string, musicBrainzGraphIRI: string) {
     const { mb, rdf, rdfs, skos, xsd } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
-    const artistIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName.artist.iri);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
+    const artistIRI = variable(VARIABLES.artist.iri);
     // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
     // in the extracted MusicBrainz RDF data, RDFS label and SKOS altLabel are mostly XSD strings and sometimes language-tagged literals
     // HACK: we must use `${literal(artistName)}^^<${xsd.string}>` instead of `${literal(artistName, namedNode(xsd.string))}`, because `literal()` strips the XSD string datatype as is the intended behavior for RDF 1.1, but Virtuoso is still using the RDF 1.0 specification: https://github.com/openlink/virtuoso-opensource/issues/728
-    return this.builder.SELECT.DISTINCT`${artistIRI}`.WHERE`
+    return this.builder.SELECT`${artistIRI}`.WHERE`
       GRAPH ${sourceGraph} {
         {
           ${artistIRI}  ${namedNode(rdf.type)} ${namedNode(mb.Artist)} ;
@@ -376,10 +380,11 @@ export class SPARQLQueryBuilderService {
   selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
     const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
-    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
-    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
-    const addressIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.iri);
-    const addressStreet = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.address.street);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
+    const placeIRI = variable(VARIABLES.place.iri);
+    const placeName = variable(VARIABLES.place.name);
+    const addressIRI = variable(VARIABLES.place.address.iri);
+    const addressStreet = variable(VARIABLES.place.address.street);
     const latVar = variable("latitude");
     const lonVar = variable("longitude");
 
@@ -415,8 +420,9 @@ export class SPARQLQueryBuilderService {
   ) {
     const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
-    const placeIRI = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.iri);
-    const placeName = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords.place.name);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
+    const placeIRI = variable(VARIABLES.place.iri);
+    const placeName = variable(VARIABLES.place.name);
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName}`.WHERE`
       GRAPH ${sourceGraph} {
@@ -440,11 +446,12 @@ export class SPARQLQueryBuilderService {
    */
   selectOSMSpotsNearby(latitude: number, longitude: number, osmGraphIRI: string, radiusInKm: number, limit: number) {
     const sourceGraph = namedNode(osmGraphIRI);
-    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.name);
-    const type = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.type);
-    const lat = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.latitude);
-    const lon = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.longitude);
-    const distInM = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby.spot.distInM);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectOSMSpotsNearby;
+    const name = variable(VARIABLES.spot.name);
+    const type = variable(VARIABLES.spot.type);
+    const lat = variable(VARIABLES.spot.latitude);
+    const lon = variable(VARIABLES.spot.longitude);
+    const distInM = variable(VARIABLES.spot.distInM);
 
     return this.builder.SELECT.DISTINCT`${name} ${type} ${lat} ${lon} (xsd:integer(ROUND(?dist * 1000)) AS ${distInM})`
       .WHERE`
@@ -494,8 +501,9 @@ export class SPARQLQueryBuilderService {
   selectMusicBrainzGenres(musicBrainzGraphIRI: string) {
     const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
-    const iri = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres.genre.iri);
-    const name = variable(SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres.genre.name);
+    const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectMusicBrainzGenres;
+    const iri = variable(VARIABLES.genre.iri);
+    const name = variable(VARIABLES.genre.name);
     return this.builder.SELECT.DISTINCT`${iri} ${name}`.WHERE`
       GRAPH ${sourceGraph} {
         ${iri} ${namedNode(rdf.type)} ${namedNode(mb.Genre)} ;

@@ -4,7 +4,7 @@ import type { ClassConstructor } from "class-transformer";
 import { DataFactory, Store, type NamedNode } from "n3";
 import { AbstractEntity } from "../entities";
 import { RDF_METADATA_KEYS, type RDFPropertyMetadata } from "../rdf/decorators";
-import { ns } from "../rdf/ontology";
+import { ns } from "../rdf/namespace";
 
 const { namedNode } = DataFactory;
 

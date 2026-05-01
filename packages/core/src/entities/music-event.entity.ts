@@ -2,7 +2,7 @@ import type { IMusicEvent } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform, Type } from "class-transformer";
 import { Allow, ArrayNotEmpty, ArrayUnique, IsOptional, IsString, IsUrl, ValidateNested } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
-import { ns } from "../rdf/ontology";
+import { ns } from "../rdf/namespace";
 import { createEntityId, isEntityId } from "../utils/entity-id";
 import { IsDateEqualOrMoreInFutureThan, IsDateMoreInFutureThan, IsFutureDate } from "../validation";
 import { AbstractEntity } from "./abstract.entity";

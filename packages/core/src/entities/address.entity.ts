@@ -3,7 +3,7 @@ import type { IAddress } from "@music-event-connect/shared/interfaces";
 import { Expose, Transform } from "class-transformer";
 import { IsISO31661Alpha2, IsOptional, IsString } from "class-validator";
 import { RDFClass, RDFProperty } from "../rdf/decorators";
-import { ns } from "../rdf/ontology";
+import { ns } from "../rdf/namespace";
 import { createEntityId, isEntityId } from "../utils/entity-id";
 import { AbstractEntity } from "./abstract.entity";
 import type { EntityClassTransformOptions } from "./context";

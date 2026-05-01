@@ -3,7 +3,7 @@ import type { Term } from "@rdfjs/types";
 import { DataFactory, type NamedNode, type Quad } from "n3";
 import type { ParsingClient } from "sparql-http-client" with { "resolution-mode": "import" };
 import { SPARQL_PROVIDERS } from "../constants";
-import { ns } from "../rdf/ontology";
+import { ns } from "../rdf/namespace";
 import {
   SPARQL_QUERY_BUILDER_VARIABLES,
   SPARQLQueryBuilderService,
