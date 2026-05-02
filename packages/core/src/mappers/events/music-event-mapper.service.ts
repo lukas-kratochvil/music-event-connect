@@ -6,7 +6,7 @@ import { DataFactory, type NamedNode } from "n3";
 import { MusicEventEntity } from "../../entities";
 import { RDF_METADATA_KEYS } from "../../rdf/decorators/metadata-keys";
 import { ns } from "../../rdf/namespace";
-import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
+import { RdfEntitySerializer } from "../../serialization/rdf-entity-serializer.service";
 import type {
   ConstructEventsFilters,
   ConstructEventsSorters,
@@ -65,7 +65,7 @@ export class MusicEventMapper extends AbstractEntityMapper<MusicEventEntity> {
   async findAllRelatedTickets(eventIds: string[]) {
     const eventIRIs = eventIds.map((id) => {
       const entity = this.createEntityIdObject(id);
-      return RdfEntitySerializerService.createEntityIRI(entity);
+      return RdfEntitySerializer.createEntityIRI(entity);
     });
     const linkedEventOffers = await this.sparqlService.getLinkedEventOffers(eventIRIs, GRAPHS_MAP.links);
     return linkedEventOffers.map(

@@ -10,7 +10,7 @@ const { literal, namedNode, triple } = DataFactory;
  * Serialize domain object (entity) into RDF data.
  */
 @Injectable()
-export class RdfEntitySerializerService {
+export class RdfEntitySerializer {
   static createEntityIRI(entity: AbstractEntity): NamedNode {
     const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, entity.constructor);
 
@@ -52,7 +52,7 @@ export class RdfEntitySerializerService {
     switch (options?.kind) {
       case "class": {
         if (rdfObject instanceof AbstractEntity) {
-          const objectIRI = RdfEntitySerializerService.createEntityIRI(rdfObject);
+          const objectIRI = RdfEntitySerializer.createEntityIRI(rdfObject);
           quads.push(triple(rdfSubjectIRI, namedNode(rdfPredicate), objectIRI));
           this.#serializeRDFClass(rdfObject, objectIRI, quads);
           return;
@@ -104,7 +104,7 @@ export class RdfEntitySerializerService {
       throw new Error("Missing @RDFClass on " + entity.constructor.name);
     }
 
-    const rdfSubjectIRI = subjectIRI ?? RdfEntitySerializerService.createEntityIRI(entity);
+    const rdfSubjectIRI = subjectIRI ?? RdfEntitySerializer.createEntityIRI(entity);
     quads.push(triple(rdfSubjectIRI, namedNode(ns.rdf.type), namedNode(classIRI)));
 
     for (const [propKey, propValue] of Object.entries(entity) as [string, unknown][]) {

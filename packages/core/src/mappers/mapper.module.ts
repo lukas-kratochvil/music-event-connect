@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from "@nestjs/common";
-import { RdfEntityDeserializerService } from "../serialization/rdf-entity-deserializer.service";
-import { RdfEntitySerializerService } from "../serialization/rdf-entity-serializer.service";
+import { RdfEntityDeserializer } from "../serialization/rdf-entity-deserializer.service";
+import { RdfEntitySerializer } from "../serialization/rdf-entity-serializer.service";
 import { SPARQLModule } from "../sparql/sparql.module";
 import { MusicEventMapper } from "./events/music-event-mapper.service";
 import { LinksMapper } from "./links/links-mapper.service";
@@ -9,14 +9,7 @@ import { MusicBrainzMapper } from "./musicbrainz/musicbrainz-mapper.service";
 import { OSMMapper } from "./osm/osm-mapper.service";
 
 @Module({
-  providers: [
-    LinksMapper,
-    MusicBrainzMapper,
-    MusicEventMapper,
-    OSMMapper,
-    RdfEntitySerializerService,
-    RdfEntityDeserializerService,
-  ],
+  providers: [LinksMapper, MusicBrainzMapper, MusicEventMapper, OSMMapper, RdfEntityDeserializer, RdfEntitySerializer],
   exports: [MusicBrainzMapper, MusicEventMapper, OSMMapper],
 })
 export class MapperModule extends ConfigurableModuleClass {

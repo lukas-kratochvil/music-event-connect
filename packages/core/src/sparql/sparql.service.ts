@@ -6,12 +6,12 @@ import { SPARQL_PROVIDERS } from "../constants";
 import { ns } from "../rdf/namespace";
 import {
   SPARQL_QUERY_BUILDER_VARIABLES,
-  SPARQLQueryBuilderService,
+  SPARQLQueryBuilder,
   type ConstructEventsFilters,
   type ConstructEventsSorters,
   type Pagination,
 } from "./sparql-query-builder.service";
-import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
+import { SPARQLUpdateBuilder } from "./sparql-update-builder.service";
 
 const { namedNode, triple, variable } = DataFactory;
 
@@ -21,8 +21,8 @@ const { namedNode, triple, variable } = DataFactory;
 @Injectable()
 export class SPARQLService {
   constructor(
-    private readonly queryBuilder: SPARQLQueryBuilderService,
-    private readonly updateBuilder: SPARQLUpdateBuilderService,
+    private readonly queryBuilder: SPARQLQueryBuilder,
+    private readonly updateBuilder: SPARQLUpdateBuilder,
     @Inject(SPARQL_PROVIDERS.client) private readonly sparqlClient: ParsingClient
   ) {}
 

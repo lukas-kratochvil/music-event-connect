@@ -9,7 +9,7 @@ const { namedNode, variable } = DataFactory;
  * SPARQL service for building [SPARQL 1.1 Update](https://www.w3.org/TR/2013/REC-sparql11-update-20130321/) operations.
  */
 @Injectable()
-export class SPARQLUpdateBuilderService {
+export class SPARQLUpdateBuilder {
   constructor(@Inject(SPARQL_PROVIDERS.builder) private readonly builder: SparqlBuilderType) {}
 
   /**

@@ -1,18 +1,18 @@
 import { Inject } from "@nestjs/common";
 import type { ClassConstructor } from "class-transformer";
 import type { AbstractEntity } from "../../entities/abstract.entity";
-import { RdfEntityDeserializerService } from "../../serialization/rdf-entity-deserializer.service";
-import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
+import { RdfEntityDeserializer } from "../../serialization/rdf-entity-deserializer.service";
+import { RdfEntitySerializer } from "../../serialization/rdf-entity-serializer.service";
 import { SPARQLService } from "../../sparql/sparql.service";
 import type { MusicEventGraph } from "../../utils";
 import { LinksMapper } from "../links/links-mapper.service";
 
 export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
-  @Inject(RdfEntitySerializerService)
-  protected readonly serializer: RdfEntitySerializerService;
+  @Inject(RdfEntitySerializer)
+  protected readonly serializer: RdfEntitySerializer;
 
-  @Inject(RdfEntityDeserializerService)
-  protected readonly deserializer: RdfEntityDeserializerService;
+  @Inject(RdfEntityDeserializer)
+  protected readonly deserializer: RdfEntityDeserializer;
 
   @Inject(SPARQLService)
   protected readonly sparqlService: SPARQLService;
@@ -37,7 +37,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
   }
 
   async update(deleteEntity: TEntity, insertEntity: TEntity, graphIri: MusicEventGraph) {
-    const deleteSourceIRI = RdfEntitySerializerService.createEntityIRI(deleteEntity);
+    const deleteSourceIRI = RdfEntitySerializer.createEntityIRI(deleteEntity);
     const insertQuads = this.serializer.serialize(insertEntity);
     const updateResult = await this.sparqlService.update(deleteSourceIRI, insertQuads, graphIri);
     await this.linksMapper.updateEntityLinks(insertEntity, graphIri);
@@ -52,7 +52,7 @@ export abstract class AbstractEntityMapper<TEntity extends AbstractEntity> {
 
   async getWholeEntity(id: string, graphIri: MusicEventGraph) {
     const entity = this.createEntityIdObject(id);
-    const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
+    const entityIRI = RdfEntitySerializer.createEntityIRI(entity);
     const dataset = await this.sparqlService.constructEntity(entityIRI, graphIri);
     return this.deserializer.deserialize(this.getClassConstructor(), entityIRI, dataset);
   }

@@ -12,7 +12,7 @@ const { namedNode } = DataFactory;
  * Deserialize RDF data into domain object (entity).
  */
 @Injectable()
-export class RdfEntityDeserializerService {
+export class RdfEntityDeserializer {
   #getEntityId<TEntity extends AbstractEntity>(cls: ClassConstructor<TEntity>, entityIRI: NamedNode): string {
     const prefixIRI = Reflect.getMetadata(RDF_METADATA_KEYS.prefixIRI, cls);
 

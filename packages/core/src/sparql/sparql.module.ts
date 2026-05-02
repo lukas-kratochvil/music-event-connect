@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { SPARQL_PROVIDERS } from "../constants";
-import { SPARQLQueryBuilderService } from "./sparql-query-builder.service";
-import { SPARQLUpdateBuilderService } from "./sparql-update-builder.service";
+import { SPARQLQueryBuilder } from "./sparql-query-builder.service";
+import { SPARQLUpdateBuilder } from "./sparql-update-builder.service";
 import { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, type SPARQLModuleOptions } from "./sparql.module-definition";
 import { SPARQLService } from "./sparql.service";
 import { createDigestFetch, type SparqlBuilderType } from "./util";
@@ -12,8 +12,8 @@ import { createDigestFetch, type SparqlBuilderType } from "./util";
       provide: SPARQL_PROVIDERS.builder,
       useFactory: async () => (await import("@tpluscode/sparql-builder")) satisfies SparqlBuilderType,
     },
-    SPARQLQueryBuilderService,
-    SPARQLUpdateBuilderService,
+    SPARQLQueryBuilder,
+    SPARQLUpdateBuilder,
     {
       provide: SPARQL_PROVIDERS.client,
       inject: [MODULE_OPTIONS_TOKEN],

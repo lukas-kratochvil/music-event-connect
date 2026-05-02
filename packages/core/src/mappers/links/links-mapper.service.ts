@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { NamedNode } from "n3";
 import { stringSimilarity } from "string-similarity-js";
 import { AbstractEntity, ArtistEntity, MusicEventEntity, VenueEntity } from "../../entities";
-import { RdfEntitySerializerService } from "../../serialization/rdf-entity-serializer.service";
+import { RdfEntitySerializer } from "../../serialization/rdf-entity-serializer.service";
 import { SPARQLService } from "../../sparql/sparql.service";
 import { GRAPHS_MAP, LINKED_GRAPHS, MUSIC_EVENT_GRAPHS, type MusicEventGraph } from "../../utils";
 
@@ -49,7 +49,7 @@ export class LinksMapper {
     ]);
 
     // find event links
-    const eventIRI = RdfEntitySerializerService.createEntityIRI(event);
+    const eventIRI = RdfEntitySerializer.createEntityIRI(event);
     const eventName = event.name.toLowerCase().trim();
     const missingGraphs = await this.#getEntityMissingLinkGraphs(eventIRI, sourceGraph);
     const candidateLinkIRIs = await Promise.all(
@@ -102,7 +102,7 @@ export class LinksMapper {
   ]);
 
   async #handleArtist(artist: ArtistEntity, sourceGraph: MusicEventGraph) {
-    const artistIRI = RdfEntitySerializerService.createEntityIRI(artist);
+    const artistIRI = RdfEntitySerializer.createEntityIRI(artist);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(artistIRI, sourceGraph);
     const candidatesLinkIRIs = await Promise.all(
       missingGraphs.map(async (targetGraphIRI) => {
@@ -143,8 +143,8 @@ export class LinksMapper {
   ]);
 
   async #handleVenue(venue: VenueEntity, sourceGraph: MusicEventGraph) {
-    const venueIRI = RdfEntitySerializerService.createEntityIRI(venue);
-    const addressIRI = RdfEntitySerializerService.createEntityIRI(venue.address);
+    const venueIRI = RdfEntitySerializer.createEntityIRI(venue);
+    const addressIRI = RdfEntitySerializer.createEntityIRI(venue.address);
     const missingGraphs = await this.#getEntityMissingLinkGraphs(venueIRI, sourceGraph);
     const candidatesLinkIRIs = await Promise.all(
       missingGraphs.map(async (targetGraphIRI) => {
@@ -188,7 +188,7 @@ export class LinksMapper {
   }
 
   async updateEntityLinks<TEntity extends AbstractEntity>(entity: TEntity, sourceGraph: MusicEventGraph) {
-    const entityIRI = RdfEntitySerializerService.createEntityIRI(entity);
+    const entityIRI = RdfEntitySerializer.createEntityIRI(entity);
     await this.sparqlService.deleteLinks(entityIRI, sourceGraph);
     return this.createEntityLinks(entity, sourceGraph);
   }

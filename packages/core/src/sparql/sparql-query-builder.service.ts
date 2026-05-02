@@ -85,7 +85,7 @@ export const SPARQL_QUERY_BUILDER_VARIABLES = {
  * SPARQL service for building [SPARQL 1.1 Query Language](http://www.w3.org/TR/2013/REC-sparql11-query-20130321/) queries.
  */
 @Injectable()
-export class SPARQLQueryBuilderService {
+export class SPARQLQueryBuilder {
   constructor(@Inject(SPARQL_PROVIDERS.builder) private readonly builder: SparqlBuilderType) {}
 
   /**
