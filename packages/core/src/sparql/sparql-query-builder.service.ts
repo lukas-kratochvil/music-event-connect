@@ -356,7 +356,7 @@ export class SPARQLQueryBuilder {
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectArtistsByName;
     const artistIRI = variable(VARIABLES.artist.iri);
-    // for performance reasons, it's better to use UNION instead of the alternative property path (pipe)
+    // performance: the indexing in triple stores works better by using UNION pattern graphs instead of the alternative property path (pipe)
     // in the extracted MusicBrainz RDF data, RDFS label and SKOS altLabel are mostly XSD strings and sometimes language-tagged literals
     // HACK: we must use `${literal(artistName)}^^<${xsd.string}>` instead of `${literal(artistName, namedNode(xsd.string))}`, because `literal()` strips the XSD string datatype as is the intended behavior for RDF 1.1, but Virtuoso is still using the RDF 1.0 specification: https://github.com/openlink/virtuoso-opensource/issues/728
     return this.builder.SELECT`${artistIRI}`.WHERE`
@@ -375,9 +375,9 @@ export class SPARQLQueryBuilder {
   /**
    * Selects all the Venue entities close enough to the given coordinates in the Event graph.
    *
-   * @param toleranceInDegrees default tolerance is set to ~222 meters
+   * @param radiusInKm default radius is set to 200 meters
    */
-  selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, toleranceInDegrees = 0.002) {
+  selectPlaceEntitiesByCoords(latitude: number, longitude: number, eventGraphIRI: string, radiusInKm = 0.2) {
     const { rdf, schema } = ns;
     const sourceGraph = namedNode(eventGraphIRI);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
@@ -385,24 +385,22 @@ export class SPARQLQueryBuilder {
     const placeName = variable(VARIABLES.place.name);
     const addressIRI = variable(VARIABLES.place.address.iri);
     const addressStreet = variable(VARIABLES.place.address.street);
-    const latVar = variable("latitude");
-    const lonVar = variable("longitude");
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName} ${addressIRI} ${addressStreet}`.WHERE`
       GRAPH ${sourceGraph} {
+        BIND(bif:st_point(${longitude}, ${latitude}) AS ?centerPoint)
+
         ${placeIRI} ${namedNode(rdf.type)} ${namedNode(schema.Place)} ;
                     ${namedNode(schema.name)} ${placeName} ;
-                    ${namedNode(schema.latitude)} ${latVar} ;
-                    ${namedNode(schema.longitude)} ${lonVar} ;
+                    ${namedNode(schema.latitude)} ?lat ;
+                    ${namedNode(schema.longitude)} ?lon ;
                     ${namedNode(schema.address)} ${addressIRI} .
+
+        BIND(bif:st_distance(?centerPoint, bif:st_point(?lon, ?lat)) AS ?dist)
+        FILTER(?dist < ${radiusInKm})
 
         ${addressIRI} ${namedNode(rdf.type)} ${namedNode(schema.PostalAddress)} ;
                       ${namedNode(schema.streetAddress)} ${addressStreet} .
-
-        FILTER (
-          ABS(${latVar} - ${latitude}) <= ${toleranceInDegrees} &&
-          ABS(${lonVar} - ${longitude}) <= ${toleranceInDegrees}
-        )
       }
     `;
   }
@@ -410,14 +408,9 @@ export class SPARQLQueryBuilder {
   /**
    * Selects all the Venue entities close enough to the given coordinates in the MusicBrainz graph.
    *
-   * @param radiusInKm default radius is set to 222 meters
+   * @param radiusInKm default radius is set to 200 meters
    */
-  selectMusicBrainzPlacesByCoords(
-    latitude: number,
-    longitude: number,
-    musicBrainzGraphIRI: string,
-    radiusInKm = 0.222
-  ) {
+  selectMusicBrainzPlacesByCoords(latitude: number, longitude: number, musicBrainzGraphIRI: string, radiusInKm = 0.2) {
     const { mb, rdf, rdfs } = ns;
     const sourceGraph = namedNode(musicBrainzGraphIRI);
     const VARIABLES = SPARQL_QUERY_BUILDER_VARIABLES.selectPlacesByCoords;
@@ -426,11 +419,13 @@ export class SPARQLQueryBuilder {
 
     return this.builder.SELECT.DISTINCT`${placeIRI} ${placeName}`.WHERE`
       GRAPH ${sourceGraph} {
+        BIND(bif:st_point(${longitude}, ${latitude}) AS ?centerPoint)
+
         ${placeIRI} ${namedNode(rdf.type)} ${namedNode(mb.Place)} ;
                     ${namedNode(rdfs.label)} ${placeName} ;
                     ${namedNode(`${nsPrefixes.wdt}P625`)} ?coords .
 
-        BIND(bif:st_distance(?coords, bif:st_point(${longitude}, ${latitude})) AS ?dist)
+        BIND(bif:st_distance(?centerPoint, ?coords) AS ?dist)
         FILTER(?dist < ${radiusInKm})
       }
     `;
