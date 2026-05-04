@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { loadConfig } from "./config/config";
+import "./index.css";
 
 const App = lazy(() => import("./App"));
 

@@ -10,7 +10,7 @@ import { EventsService } from "./events.service";
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @ApiBody({ type: () => EventsSearchOptions, description: "Filtering of events." })
+  @ApiBody({ type: () => EventsSearchOptions, description: "Events pagination, filtering and sorting." })
   @ApiOkResponse({
     type: () => EventSearch,
     isArray: true,
