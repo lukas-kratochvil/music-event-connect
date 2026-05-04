@@ -132,7 +132,7 @@ export class SPARQLQueryBuilder {
     const linksGraph = namedNode(linksGraphIRI);
     const event = variable("event");
     const startDate = variable("startDate");
-    const startDateGrouped = variable("startDateGrouped");
+    const minStartDate = variable("minStartDate");
     const artistName = variable("artistName");
     const genreName = variable("genreName");
     const linkedEventImage = variable("linkedEventImage");
@@ -184,7 +184,7 @@ export class SPARQLQueryBuilder {
       ${eventArtist} ${namedNode(schema.image)} ${linkedArtistImage} .
     `.WHERE`
       {
-        SELECT ${event} (MIN(${startDate}) AS ${startDateGrouped})
+        SELECT ${event} (MIN(${startDate}) AS ${minStartDate})
         WHERE {
           ${event} ${namedNode(rdf.type)} ${eventEntityTypeIRI} ;
                     ${namedNode(schema.startDate)} ${startDate} ;
@@ -207,7 +207,7 @@ export class SPARQLQueryBuilder {
           }
         }
         GROUP BY ${event}
-        ORDER BY ${sorters?.startDate?.desc ? "DESC" : "ASC"}(${startDateGrouped}) ASC(${event})
+        ORDER BY ${sorters?.startDate?.desc ? "DESC" : "ASC"}(${minStartDate}) ASC(${event})
         LIMIT ${limit}
         OFFSET ${offset}
       }

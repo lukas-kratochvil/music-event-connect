@@ -1,5 +1,5 @@
 import type { IEventSearchOptions } from "@music-event-connect/shared/api";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { endOfDay, format, isSameDay, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
 import { useState } from "react";
@@ -17,11 +17,25 @@ import {
 } from "@/components/ui/multi-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
-import { fetchGenres, searchEvents } from "../services/mec/calls";
+import { searchEvents } from "../services/mec/calls";
 import EventCard from "./card/EventCard";
 import { FilterBadge } from "./utils/FilterBadge";
 
 const PAGINATION_LIMIT = 20;
+
+const TOP_GENRES: { name: string }[] = [
+  { name: "pop" },
+  { name: "rock" },
+  { name: "alternative music" },
+  { name: "rap" },
+  { name: "punk" },
+  { name: "metal" },
+  { name: "electronic" },
+  { name: "hip-hop" },
+  { name: "jazz" },
+  { name: "classical" },
+  { name: "country" },
+].sort((a, b) => a.name.localeCompare(b.name));
 
 const EventsGrid = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -31,14 +45,6 @@ const EventsGrid = () => {
   const [selectedTempGenres, setSelectedTempGenres] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [areActiveFiltersDisplayed, setAreActiveFiltersDisplayed] = useState(false);
-  const { data: genres } = useQuery({
-    queryKey: ["genres"] as const,
-    queryFn: fetchGenres,
-    select: (data) => data.toSorted((a, b) => a.name.localeCompare(b.name)),
-    retry: false,
-    staleTime: Infinity,
-    gcTime: 0,
-  });
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } = useInfiniteQuery({
     queryKey: ["events", { pickedStartDate, selectedGenres }] as const,
     initialPageParam: 0,
@@ -167,7 +173,7 @@ const EventsGrid = () => {
                         <Button
                           id="start-date-picker"
                           variant={"outline"}
-                          className={"w-full sm:w-75 justify-start text-left font-normal"}
+                          className={"flex-1 justify-start text-left font-normal"}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {pickedTempStartDate?.from ? (
@@ -225,7 +231,7 @@ const EventsGrid = () => {
                       </MultiSelectTrigger>
                       <MultiSelectContent>
                         <MultiSelectGroup>
-                          {genres?.map((genre) => (
+                          {TOP_GENRES?.map((genre) => (
                             <MultiSelectItem
                               key={genre.name}
                               value={genre.name}
