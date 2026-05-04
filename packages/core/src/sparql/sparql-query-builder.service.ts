@@ -212,7 +212,18 @@ export class SPARQLQueryBuilder {
         OFFSET ${offset}
       }
 
-      # get data from the linked artists
+      # get images from the linked events
+      OPTIONAL {
+        GRAPH ${linksGraph} {
+          { ${event} ${namedNode(schema.sameAs)} ?linkedEvent }
+          UNION
+          { ?linkedEvent ${namedNode(schema.sameAs)} ${event} }
+        }
+
+        ?linkedEvent ${namedNode(schema.image)} ${linkedEventImage} .
+      }
+
+      # get images from the linked artists
       OPTIONAL {
         ${event} ${namedNode(schema.performer)} ${eventArtist} .
 
@@ -451,12 +462,7 @@ export class SPARQLQueryBuilder {
     return this.builder.SELECT.DISTINCT`${name} ${type} ${lat} ${lon} (xsd:integer(ROUND(?dist * 1000)) AS ${distInM})`
       .WHERE`
         GRAPH ${sourceGraph} {
-          ?place ${namedNode(`${nsPrefixes.osmkey}name`)} ${name} ;
-                  ${namedNode(`${nsPrefixes.geo}hasGeometry`)}/${namedNode(`${nsPrefixes.geo}asWKT`)} ?wkt .
-
-          FILTER(REGEX(?wkt, "^POINT"))
-          BIND(bif:st_distance(?wkt, bif:st_point(${longitude}, ${latitude})) AS ?dist)
-          FILTER(?dist < ${radiusInKm})
+          BIND(bif:st_point(${longitude}, ${latitude}) AS ?centerPoint)
 
           {
             {
@@ -481,8 +487,15 @@ export class SPARQLQueryBuilder {
             }
           }
 
-          BIND(bif:st_y(?wkt) AS ${lat})
+          ?place ${namedNode(`${nsPrefixes.osmkey}name`)} ${name} ;
+                  ${namedNode(`${nsPrefixes.geo}hasGeometry`)}/${namedNode(`${nsPrefixes.geo}asWKT`)} ?wkt .
+
+          FILTER(REGEX(?wkt, "^POINT"))
+          BIND(bif:st_distance(?centerPoint, ?wkt) AS ?dist)
+          FILTER(?dist < ${radiusInKm})
+
           BIND(bif:st_x(?wkt) AS ${lon})
+          BIND(bif:st_y(?wkt) AS ${lat})
         }
       `
       .ORDER()
