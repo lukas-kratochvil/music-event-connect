@@ -23,6 +23,32 @@ const useSpotifyProvider = (): Auth => {
     }
   }, [user]);
 
+  // Load user if the Spotify account is in the local storage
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const profile = await spotifySDK.currentUser.profile();
+        const accessToken = await spotifySDK.getAccessToken();
+
+        if (accessToken) {
+          setUser({
+            username: profile.display_name,
+            accessToken: accessToken.access_token,
+            profileImageUrl: profile.images.sort((a, b) => a.height - b.height).at(0)?.url,
+          });
+        } else {
+          spotifySDK.logOut();
+        }
+      } catch {
+        spotifySDK.logOut();
+      }
+    };
+
+    if (!user && window.localStorage.getItem(SessionStorageKeys.SPOTIFY_SDK_TOKEN)) {
+      void loadUser();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // The Spotify login is implemented manually because the official Spotify Web API SDK doesn't allow to change the user.
   const logIn: Auth["logIn"] = async () => {
     window.sessionStorage.setItem(SessionStorageKeys.USER_RETURN_PATH_AFTER_LOGIN, window.location.pathname);
