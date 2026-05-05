@@ -1,6 +1,6 @@
 import type { IEventSearchOptions } from "@music-event-connect/shared/api";
 import { useQuery } from "@tanstack/react-query";
-import { addMonths, startOfDay } from "date-fns";
+import { addMonths } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Spinner } from "@/components/ui/spinner";
@@ -36,7 +36,7 @@ const PersonalizedEvents = () => {
     staleTime: 1000 * 60 * 60, // cache for 1 hour, because followed artists don't change often
     select: (data) => data.map((artist) => artist.name),
   });
-  const startDateFrom = startOfDay(new Date());
+  const startDateFrom = new Date();
   const startDateRange = {
     from: startDateFrom,
     to: addMonths(startDateFrom, 1),
