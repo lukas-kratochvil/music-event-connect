@@ -4,7 +4,7 @@ upstream mec_api {
 
 # HTTP requests
 server {
-  # SSL/TLS is realized at the MAFIL Docker container level
+  # SSL/TLS is realized at the Docker container level
   listen 80;      # IPv4
   listen [::]:80; # IPv6
 
