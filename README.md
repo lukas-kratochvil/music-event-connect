@@ -2,6 +2,7 @@
 
 ## Table of contents
 
+- [Deployment](#deployment)
 - [Initial setup](#initial-setup)
   - [Apps](#apps)
   - [Traefik](#traefik)
@@ -12,13 +13,15 @@
     - [Clearing RDF graphs](#clearing-rdf-graphs)
     - [Managing Linked Data](#managing-linked-data)
 
-## Initial setup
+## Deployment
 
 The whole system is deployed using docker-compose files in the root folder. [docker-compose.yml](docker-compose.yml) is for the local development and [docker-compose.prod.yml](docker-compose.prod.yml) is for the production deployment.
 
-### Apps
-
 Every application needs its own configuration file to run properly. Sample configurations with the required structure can be found in the [configs](./configs/) directory.
+
+## Initial setup
+
+### Apps
 
 More in app-specific READMEs:
 
