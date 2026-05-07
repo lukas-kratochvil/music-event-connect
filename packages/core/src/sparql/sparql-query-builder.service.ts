@@ -101,12 +101,11 @@ export class SPARQLQueryBuilder {
    */
   constructEntity(entityIRI: NamedNode, graphIRI: string | undefined) {
     const query = this.builder.CONSTRUCT`
-      ?s ?p1 ?child .
+      ${entityIRI} ?p1 ?child .
       ?child ?p2 ?grandchild .
       ?grandchild ?p3 ?o .
     `.WHERE`
-      VALUES ?s { ${entityIRI} }
-      ?s ?p1 ?child .
+      ${entityIRI} ?p1 ?child .
       OPTIONAL {
         ?child ?p2 ?grandchild .
         OPTIONAL {
