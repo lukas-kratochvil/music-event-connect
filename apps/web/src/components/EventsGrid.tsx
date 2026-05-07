@@ -113,7 +113,7 @@ const EventsGrid = () => {
         <Button
           variant="outline"
           onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="flex items-center gap-2 shrink-0"
+          className="flex items-center gap-2 shrink-0 bg-gray-300"
         >
           <Filter className="h-4 w-4" />
           {isFilterOpen ? "Hide Filters" : "Filter"}
