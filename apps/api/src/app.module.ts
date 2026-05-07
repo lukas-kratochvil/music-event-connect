@@ -21,7 +21,6 @@ import { configSchema, type ConfigSchema } from "./config/schema";
         },
       ],
     }),
-    // TODO: caching with Redis (https://docs.nestjs.com/techniques/caching)
     EventsModule,
   ],
   providers: [

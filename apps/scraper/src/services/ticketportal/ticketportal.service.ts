@@ -260,16 +260,6 @@ export class TicketportalService implements ICronJobService {
 
         // TODO: extract artists from the event name or from the event description
         const artistNames: string[] = [];
-
-        // if (!["Vážná hudba", "Pro děti", "Párty", "Disco"].includes(genreName.toLowerCase())) {
-        //   artistNames.push(
-        //     eventName
-        //       .split(/[,:;(-]/)
-        //       .at(0)
-        //       ?.trim() as string
-        //   );
-        // }
-
         const artists = artistNames.map((artistName): ScrapedMusicEvent["artists"][number] => ({
           name: artistName,
           genres: this.#getUniqueEnGenreNames(genreName),
@@ -337,6 +327,12 @@ export class TicketportalService implements ICronJobService {
         "::-p-xpath(//ul[contains(@class, 'tp-subcategory-dropdown')]/li/button[not(contains(@class, 'tp-subcategory-pill--all'))])",
         (elems) => elems.map((elem) => (elem as HTMLButtonElement).innerText.trim())
       );
+      const toggleEvent = (genreName: string) =>
+        page
+          .locator(
+            `::-p-xpath(//ul[contains(@class, 'tp-subcategory-dropdown')]/li/button[contains(text(), '${genreName}')])`
+          )
+          .click();
 
       // GET MUSIC EVENTS
       this.#logger.log("Music events scraping started");
@@ -344,11 +340,8 @@ export class TicketportalService implements ICronJobService {
 
       for (const genreName of genreNames) {
         try {
-          await page
-            .locator(
-              `::-p-xpath(//ul[contains(@class, 'tp-subcategory-dropdown')]/li/button[contains(text(), '${genreName}')])`
-            )
-            .click();
+          await toggleEvent(genreName);
+          this.#logger.log("Selected genre: " + genreName);
           const panelBlocks = await page.$$(
             "::-p-xpath(//div[contains(@class, 'panel-blok') and not(contains(@class, 'super-nove-top') or contains(@class, 'donekonecna'))])"
           );
@@ -404,6 +397,8 @@ export class TicketportalService implements ICronJobService {
           }
         } finally {
           multipleEventDatesChecker.clear();
+          await toggleEvent(genreName);
+          this.#logger.log("Unselected genre: " + genreName);
         }
       }
     } catch (e) {
